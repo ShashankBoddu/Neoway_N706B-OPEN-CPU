@@ -1,0 +1,10 @@
+# Ignore ZIP archives and PDFs at the root
+/*.zip
+/*.pdf
+
+# Ignore SDK, firmware, tools, and debug folders at the root
+/FOTA/
+/N706B-A07-STD-OE_CN1X_ITRI-009/
+/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/
+/N706B-A07-STD-OE_CN1X_ITRI-009_dbgFiles_20250712/
+/nwy_open_app_009/
