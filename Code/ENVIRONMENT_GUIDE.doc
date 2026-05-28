@@ -1,0 +1,83 @@
+================================================================================
+NEOWAY N706B OPENCPU ENVIRONMENT & BUILD GUIDE
+================================================================================
+
+This document details the build scripts, compiler databases, and IDE tools 
+established for the Neoway N706B OpenCPU project environment.
+
+--------------------------------------------------------------------------------
+1. THE BUILD SCRIPTS (build_<ProjectName>.bat)
+--------------------------------------------------------------------------------
+Each project folder contains a dedicated Windows batch script (e.g., build_Blinky.bat).
+When run, the script performs the following tasks:
+
+1. Environment Definitions:
+   - Configures the SDK root path:
+     SDK_ROOT = E:\projects\DevelopmentLevelCode\Neoway_N706B\N706B-A07-STD-OE_CN1X_ITRI-009_SDK\N706B-A07-STD-OE_CN1X_ITRI-009_SDK
+   - Automatically detects the current project folder:
+     CUST_PROJ_DIR = E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\<ProjectName>
+
+2. Environment Bootstrapping:
+   - Calls the SDK environment setup script:
+     call tools\env_init.bat
+
+3. Build Cleanup (Cache avoidance):
+   - Deletes the existing SDK build directory:
+     rd /s /q "%SDK_ROOT%\out"
+     This is critical to prevent stale CMake paths and compiler caches.
+
+4. CMake Configuration with IntelliSense Export:
+   - Configures the project with Ninja build system generator.
+   - Passes CUST_PROJ_DIR to the SDK's CMakeLists.txt to compile the custom project.
+   - Sets -DCMAKE_EXPORT_COMPILE_COMMANDS=ON to generate a compiler database.
+
+5. Ninja Compilation:
+   - Compiles the source files using the ARM GNU Toolchain.
+   - Generates the target raw binary in:
+     %SDK_ROOT%\out\bin\nwy_open_app.bin
+
+6. Aboot Packaging:
+   - Runs the SDK arelease.exe tool to package the compiled binary, standard bootloaders, 
+     partition table, and cellular data modules into a single flashable zip archive.
+   - Outputs the final package in the project's release folder:
+     %CUST_PROJ_DIR%\release\nwy_open_app.zip
+
+7. Copying the compilation database:
+   - Copies the compile_commands.json to the workspace root:
+     E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\compile_commands.json
+
+--------------------------------------------------------------------------------
+2. LANGUAGE SERVER INTEGRATION (compile_commands.json)
+--------------------------------------------------------------------------------
+In modern C/C++ editors (like VS Code/Antigravity IDE), code intelligence features 
+such as autocomplete, diagnostics, "Go to Definition", and "Go to Declaration" 
+rely on a Language Server (specifically, clangd).
+
+Because the custom code is compiled against the external Neoway SDK, clangd 
+cannot automatically find the header files (e.g., "nwy_gpio_api.h") without help.
+
+How compile_commands.json solves this:
+- The compile_commands.json file tells clangd exactly how every file in the 
+  workspace is compiled, listing the include paths (-I) and macro definitions (-D).
+- By copying compile_commands.json to E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\, 
+  clangd can read it and index all OpenCPU APIs.
+
+Forcing Clangd to reload the database:
+If "Go to Definition" or autocompletion stops working:
+1. Open the Command Palette in your editor (Ctrl + Shift + P).
+2. Run the command: "Clangd: Restart language server".
+3. Wait for clangd to index the files. Symbol navigation will be fully restored.
+
+--------------------------------------------------------------------------------
+3. GIT & PROJECT RULES
+--------------------------------------------------------------------------------
+To ensure smooth operations, the following rules have been set up:
+
+1. Windows Path Limit (MAX_PATH):
+   The SDK contains very deep directory paths that exceed Windows' default 260-character 
+   limit. To prevent Git from failing, run this command once:
+   git config core.longpaths true
+
+2. Tracking Large Assets:
+   Git LFS (Large File Storage) has been configured in the SDK repository to track 
+   large files (zip, rar, dll, exe) to prevent repository bloat and transfer timeouts.

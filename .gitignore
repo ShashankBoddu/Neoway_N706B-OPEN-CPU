@@ -1,2 +1,6 @@
 # Ignore only the large SDK zip file that exceeds GitHub's 100MB limit
 /N706B-A07-STD-OE_CN1X_ITRI-009_SDK.zip
+
+# Language server cache and compiler databases
+Code/.cache/
+Code/compile_commands.json

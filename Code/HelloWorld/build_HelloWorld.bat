@@ -31,7 +31,7 @@ cd /d "%OUTPUT%"
 
 :: Run CMake with our custom project variable
 set "NINJA_PATH=%SDK_ROOT%\prebuilts\win32\bin\ninja.exe"
-cmake "%SDK_ROOT%." -G Ninja -U BUILD_CUST_PROJ -DCMAKE_MAKE_PROGRAM="%NINJA_PATH%" -DCUST_PROJ_DIR="%CUST_PROJ_DIR%"
+cmake "%SDK_ROOT%." -G Ninja -U BUILD_CUST_PROJ -DCMAKE_MAKE_PROGRAM="%NINJA_PATH%" -DCUST_PROJ_DIR="%CUST_PROJ_DIR%" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 :: Build
 ninja
@@ -40,6 +40,11 @@ if %ERRORLEVEL% NEQ 0 (
     echo Build failed!
     pause
     exit /b %ERRORLEVEL%
+)
+
+:: Copy compile_commands.json to workspace root for Clangd
+if exist "%OUTPUT%\compile_commands.json" (
+    copy /y "%OUTPUT%\compile_commands.json" "%CUST_PROJ_DIR%\..\compile_commands.json"
 )
 
 echo ****************************************************************
