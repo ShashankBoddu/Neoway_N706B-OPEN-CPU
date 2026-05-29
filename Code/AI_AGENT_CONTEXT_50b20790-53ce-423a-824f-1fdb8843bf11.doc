@@ -1,0 +1,51 @@
+# AI Agent Handoff Context (Conversation: 50b20790-53ce-423a-824f-1fdb8843bf11)
+
+This file contains the state, achievements, and context from the AI agent session in conversation 50b20790-53ce-423a-824f-1fdb8843bf11. It serves as a direct link-up guide for the next iteration of the AI agent or for the user's manual testing.
+
+---
+
+## 1. Environment & Project Specs
+* Target Module: Neoway N706B (ASR1605 chip)
+* Code Folder: E:\projects\DevelopmentLevelCode\Neoway_N706B\Code
+* SDK Folder: E:\projects\DevelopmentLevelCode\Neoway_N706B\N706B-A07-STD-OE_CN1X_ITRI-009_SDK\N706B-A07-STD-OE_CN1X_ITRI-009_SDK
+
+---
+
+## 2. Progress Checklist & Completed Tasks
+
+### A. HelloWorld Project Verification
+* Code Analysis: main.c has been reviewed. It prints log statements to both the USB DIAG port and direct USB Serial (COM24) and implements callback echo testing on COM24.
+* GPIO Configuration: Configured `INDICATOR_GPIO_ID` to `70` in `main.c` to drive `STATUS_RING_GREEN` (which maps to physical Pin 25 `STATUS` connected to NPN transistor `Q401`). Toggling Pin 25 / GPIO 70 avoids the modem system conflicts and watchdog resets caused by attempting to hijack Pin 20 `MAIN_RI` (`GPIO 4`) which is natively managed by the Cellular Processor's protocol stack.
+* Compilation & Packaging: Run and completed the build_HelloWorld.bat script successfully.
+* Output Artifacts: 
+  * Compiled ELF/MAP files generated in SDK out/bin.
+  * Flashable firmware package generated successfully at: E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\HelloWorld\release\nwy_open_app.zip.
+
+---
+
+## 3. Current Workspace State
+* Active Project: HelloWorld (configured to toggle GPIO 70 LED indicator)
+* Output Release Package: Code\HelloWorld\release\nwy_open_app.zip
+* Status: Ready to flash and run.
+
+---
+
+## 4. Testing & Flashing Steps
+
+To begin testing the HelloWorld application:
+1. Hardware Setup:
+   * Connect the Neoway N706B development board to the PC via USB and power it on.
+2. Download Mode:
+   * Connect to the board using a serial terminal on the AT port.
+   * Send the command: AT$MYDOWNLOAD=1 to switch the board into download mode.
+3. Flashing:
+   * Open the Aboot tool located at: E:\projects\Devolapment files\Neoway\N706B-A07-STD-OE_CN1X_ITRI-009.zip\aboot-tools-2024.10.12-win-x64.exe\aboot-tools-2024.10.12-win-x64.exe\aboot-tools-2024.10.12-win-x64\aboot.exe (or your local extracted copy).
+   * Select the package: E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\HelloWorld\release\nwy_open_app.zip
+   * Click Start to flash the code onto the module.
+4. Verifying Outputs:
+   * Direct COM Output: Open a serial terminal (like PuTTY or Tera Term) and connect to the USB Serial COM port representing COM24 (or the OpenCPU COM port). You should see:
+     Hello World from Neoway N706B OpenCPU via COM24! Count: <n>, GPIO: <state>
+     toggling every 1 second.
+   * Echo Test: Send text data via the terminal to the COM24 port. The HelloWorld code is configured to echo it back to the terminal.
+   * Binary Log Output: Open CoolWatcher/Log Tool to monitor the binary debug logs (NWY_SDK_LOG_DEBUG).
+   * Version Verification: Send AT+NAPPCHECK? to check the current running version ("HelloWorld_V1.0.0").

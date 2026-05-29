@@ -1,0 +1,98 @@
+NEOWAY N706B OPENCPU SDK & FLASHING GUIDE
+
+This guide maps out the file structures of the Neoway SDKs/Tools on your PC, identifies what was missing, and provides a step-by-step walkthrough to get your drivers installed, compile HelloWorld, and flash the module.
+
+--------------------------------------------------------------------------------
+1. SDK & TOOLS DIRECTORY GUIDE
+--------------------------------------------------------------------------------
+
+Here is where all files are located on your system:
+
+- Workspace Code: E:\projects\DevelopmentLevelCode\Neoway_N706B\Code
+  Contains your code workspace, including HelloWorld and Blinky projects.
+- Active SDK Root: E:\projects\DevelopmentLevelCode\Neoway_N706B\N706B-A07-STD-OE_CN1X_ITRI-009_SDK\N706B-A07-STD-OE_CN1X_ITRI-009_SDK
+  The active compiler, headers, and build scripts.
+- SDK API Headers: E:\projects\DevelopmentLevelCode\Neoway_N706B\N706B-A07-STD-OE_CN1X_ITRI-009_SDK\N706B-A07-STD-OE_CN1X_ITRI-009_SDK\include
+  API header files (nwy_osi_api.h, nwy_log_api.h, etc.).
+- Aboot Flashing Tool: E:\projects\Devolapment files\Neoway\N706B-A07-STD-OE_CN1X_ITRI-009.zip\aboot-tools-2024.10.12-win-x64.exe\aboot-tools-2024.10.12-win-x64.exe\aboot-tools-2024.10.12-win-x64
+  Contains aboot.exe (graphic flashing utility) and adownload.exe.
+- USB Drivers (ASR): E:\projects\Devolapment files\Neoway\N706B-A07-STD-OE_CN1X_ITRI-009.zip\aboot-tools-2024.10.12-win-x64.exe\aboot-tools-2024.10.12-win-x64.exe\aboot-tools-2024.10.12-win-x64\drivers
+  Contains DrvInstaller_x64.exe and generic .inf configuration files.
+- API Documentation: E:\projects\DevelopmentLevelCode\Neoway\Neoway_OpenCPU_SDK_API_Notes (17)
+  Contains 17 PDF guides on various APIs (GPIO, FOTA, OS, MQTT, etc.).
+
+--------------------------------------------------------------------------------
+2. MISSING COMPONENT: USB DRIVERS
+--------------------------------------------------------------------------------
+
+Windows detects the hardware (VID_2949 & PID_7401), but lists them as Unknown Devices (Error code 28: Drivers not installed):
+- Mobile AT Interface (Multiple ports)
+- Mobile Diag Interface (Diagnostics port)
+- Mobile MODEM Interface (Modem data port)
+
+Because the drivers are missing, no virtual COM ports are created, which prevents us from flashing.
+
+--------------------------------------------------------------------------------
+3. STEP-BY-STEP DRIVER SETUP (WINDOWS 10 / 11)
+--------------------------------------------------------------------------------
+
+Since the Neoway N706B uses standard CDC-ACM USB endpoints, the most reliable and signature-safe way to install them under Windows 10/11 is to load Microsoft's built-in USB Serial Device driver. 
+
+Follow these steps for EACH of the failed Mobile AT Interface / Mobile Diag Interface / Mobile MODEM Interface items in Device Manager:
+
+1. Open Device Manager (Win + X -> Device Manager).
+2. Locate the failed device with the yellow warning triangle (e.g., Mobile AT Interface).
+3. Right-click it and choose Update driver.
+4. Select Browse my computer for drivers.
+5. Select Let me pick from a list of available drivers on my computer.
+6. (If prompted with categories) Select Ports (COM & LPT) and click Next.
+7. In the manufacturer list, scroll down and select Microsoft.
+8. In the model list, select USB Serial Device.
+9. Click Next and choose Yes on any warning prompt.
+10. The interface will immediately turn into a functional COM port (e.g., USB Serial Device (COM3)).
+
+--------------------------------------------------------------------------------
+4. STEP-BY-STEP COMPILE & FLASH GUIDE
+--------------------------------------------------------------------------------
+
+*** CRITICAL: SDK VERSION MISMATCH WARNING ***
+- Issue: If your board is running a system firmware version (e.g. Version: SDK_1.011.172) that does not match the compiled application's SDK version (Version: SDK_1.011.156 / A07), the board's dynamic linker/OS will fail to load your app.
+- Symptoms: The app flashes successfully in Aboot, but upon reboot, AT+NAPPCHECK? returns an empty value (+NAPPCHECK: ) and no debug logs are printed.
+- Solution: You must flash the matching base firmware (N706B-A07-STD-OE_CN1X_ITRI-009.zip) first. This downgrades/aligns the module's system/bootloader to version 1.011.156 which matches the SDK.
+
+Prerequisite: Flash the OpenCPU Base Firmware (Do this once)
+Since the module might run standard firmware or a different firmware revision, you must first flash the matching OpenCPU base firmware to the board.
+1. Run aboot.exe.
+2. Load the base firmware package: E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\N706B-A07-STD-OE_CN1X_ITRI-009.zip (approx. 4.69 MB).
+3. Send AT$MYDOWNLOAD=1 in your AT Command serial terminal (COM25).
+4. Click Start in aboot to flash the base firmware. The board will reboot with the correct base firmware.
+5. Verify on COM20 (Debug log) that it prints Version: SDK_1.011.156.
+
+Once the base firmware is updated, follow these steps to build and flash HelloWorld:
+
+Step A: Compile the Code
+1. Open a terminal in HelloWorld.
+2. Run .\build_HelloWorld.bat.
+3. Wait for the compilation to finish. It will output a ZIP file at:
+   E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\HelloWorld\release\nwy_open_app.zip
+
+Step B: Launch Aboot Flash Tool
+1. Run aboot.exe from your tools folder.
+2. Load the ZIP package: Select the compiled nwy_open_app.zip from your HelloWorld release folder.
+
+Step C: Flash the Module
+1. Open a serial terminal (e.g. SSCOM) on the AT Command COM Port (COM25).
+2. Send the AT command:
+   AT$MYDOWNLOAD=1
+   This tells the module to reboot into download mode.
+3. Click Start in the aboot flashing utility. It will automatically detect the bootloader port and flash the application binary.
+
+Step D: Verify the App & View Logs
+1. Once flashing finishes, the module will reboot automatically.
+2. In your AT Command serial terminal (COM25), run the following command to check if the OpenCPU app has loaded successfully:
+   AT+NAPPCHECK?
+   If it returns HelloWorld_V1.0.0, the app is running!
+3. Open COM24 (Neoway USB OPEN_CON) at baud 115200 in SSCOM or PuTTY. You will see:
+   Hello World from Neoway N706B OpenCPU via COM24! Count: X, GPIO: Y
+4. Since we registered a receive callback, you can also send characters to COM24 and they will be echoed back to verify bidirectional communication!
+5. The physical green status LED (STATUS_RING_GREEN), driven by GPIO 70, will toggle its state (on/off) every 1 second, synchronized with the printed logs.
