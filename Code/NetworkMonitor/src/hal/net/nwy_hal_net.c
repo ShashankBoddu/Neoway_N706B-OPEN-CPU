@@ -133,7 +133,7 @@ bool nwy_hal_net_get_ip(int sim_id, char *ip_out, int max_len) {
     nwy_data_callinfo_t call_info;
     memset(&call_info, 0, sizeof(call_info));
     if (nwy_data_call_info_get(1, &call_info) == 0) { // cid 1
-        if (strlen(call_info.ipv4_str) > 0) {
+        if (strlen(call_info.ipv4_str) > 0 && strcmp(call_info.ipv4_str, "0.0.0.0") != 0) {
             strncpy(ip_out, call_info.ipv4_str, max_len - 1);
             ip_out[max_len - 1] = '\0';
             return true;

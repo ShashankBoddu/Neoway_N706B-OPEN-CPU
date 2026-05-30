@@ -109,6 +109,8 @@ static void network_monitor_task(void *param) {
   serial_log("--- Network Monitor Started (HAL Version) ---");
   serial_log("Boot Reason: %s", nwy_hal_pm_get_boot_reason_str());
 
+  static bool s_data_call_started = false;
+
   while (1) {
     // 1. Check SIM Status
     if (nwy_hal_sim_is_ready(1)) {
@@ -147,10 +149,19 @@ static void network_monitor_task(void *param) {
               g_net_status = 2; // Data Call Connected
               serial_log("Data Call Connected! IP: %s", ip_address);
           } else {
-              // Try starting data call
-              serial_log("Data Call Not Connected. Starting Call...");
-              nwy_hal_net_start_data_call(1, my_net_callback);
+              if (g_net_status == 2) {
+                  g_net_status = 1; // Drop back to registered state if we lost IP
+              }
+              if (!s_data_call_started) {
+                  serial_log("Data Call Not Connected. Starting Call...");
+                  nwy_hal_net_start_data_call(1, my_net_callback);
+                  s_data_call_started = true;
+              } else {
+                  serial_log("Data Call Connecting/Idle...");
+              }
           }
+      } else {
+          s_data_call_started = false;
       }
 
       // 4. Check Signal Strength and Operator Info

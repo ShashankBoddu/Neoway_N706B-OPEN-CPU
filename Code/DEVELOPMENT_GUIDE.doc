@@ -38,6 +38,24 @@ D. GPIO Pin Mappings and Modem Core Conflicts (Watchdog Resets)
   * Pin 87 (GPIO_87) maps to software GPIO ID 87. (Safe General-Purpose GPIO).
 - Rule: Do not drive Pin 20 / GPIO 4 (MAIN_RI) as a custom output as it triggers CP watchdog resets. Instead, drive Pin 21 / GPIO 7 (GPIO_07) to safely control custom GPIO signals, or Pin 25 / GPIO 70 (STATUS) to control status indication.
 
+E. CMake Structure and Project Layout (ESP32-style 'main/' vs 'src/' / 'inc/')
+- Issue: Unlike ESP32, which compiles from the project folder and supports component-based local 'CMakeLists.txt' and a 'main/' directory, the Neoway SDK compiles from the SDK root. The SDK CMakeLists.txt has hardcoded assumptions that look only for '${CUST_PROJ_DIR}/src/*.c' recursively and includes '${CUST_PROJ_DIR}/inc'. A local project-level CMakeLists.txt is completely ignored.
+- Solution: Keep the default 'src/' and 'inc/' folder structure. Subfolders (e.g., 'src/hal/net/') work perfectly because the SDK uses 'GLOB_RECURSE' to find C source files recursively.
+
+F. Neoway SDK SIM Slot Index Mismatch (Off-by-One)
+- Issue: Neoway's internal SIM slot enum 'nwy_sim_id_e' is 0-indexed ('NWY_SIM_ID_SLOT_1' = 0, 'NWY_SIM_ID_SLOT_2' = 1). Directly casting a user-facing sim_id of '1' via '(nwy_sim_id_e)1' targets 'NWY_SIM_ID_SLOT_2' (Slot 2, which is empty). This leads to 'SIM Status: NOT READY' logs even though the SIM is in Slot 1.
+- Solution: Use a translator function 'get_nwy_sim_id(int sim_id)' in the HAL wrapper:
+  * 'sim_id == 1' maps to 'NWY_SIM_ID_SLOT_1' (0)
+  * 'sim_id == 2' maps to 'NWY_SIM_ID_SLOT_2' (1)
+
+G. DHCP Placeholder IP (0.0.0.0) Connection False Positive
+- Issue: Upon boot, 'nwy_data_call_info_get()' returns '"0.0.0.0"' before a connection is negotiated. A simple check for string length > 0 will mistakenly evaluate '"0.0.0.0"' as a successful connection, preventing the application from actually starting the call.
+- Solution: Add a check 'strcmp(call_info.ipv4_str, "0.0.0.0") != 0' before treating the connection as successful.
+
+H. Data Call Request Spamming
+- Issue: Continually invoking 'nwy_data_call_start()' every tick while the connection is negotiating or has failed can flood the modem core.
+- Solution: Implement a state flag (e.g., 's_data_call_started') so the connection call is requested exactly once when entering the registered-disconnected state.
+
 3. HOW TO BUILD YOUR PROJECTS
 Each project in the Code folder (e.g., HelloWorld, Blinky) has its own build_<ProjectName>.bat.
 
