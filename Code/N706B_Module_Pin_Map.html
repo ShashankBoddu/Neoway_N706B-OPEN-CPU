@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neoway N706B OpenCPU Cellular Module Pin Map & Safety Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #070a13;
+      --bg-card: rgba(13, 20, 35, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      
+      --color-safe: #10B981;
+      --color-safe-glow: rgba(16, 185, 129, 0.3);
+      
+      --color-system: #F59E0B;
+      --color-system-glow: rgba(245, 158, 11, 0.3);
+      
+      --color-danger: #EF4444;
+      --color-danger-glow: rgba(239, 68, 68, 0.3);
+      
+      --color-power: #6B7280;
+      --color-power-glow: rgba(107, 114, 128, 0.3);
+
+      --color-highlight: #6366F1;
+      --color-text-main: #f8fafc;
+      --color-text-sub: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0, transparent 50%);
+      color: var(--color-text-main);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.5rem;
+    }
+
+    .logo-section h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.75px;
+      background: linear-gradient(135deg, #ffffff 0%, var(--color-text-sub) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-section p {
+      color: var(--color-text-sub);
+      font-size: 1rem;
+      margin-top: 4px;
+    }
+
+    .model-badge {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #818cf8;
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 450px;
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 1200px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .main-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .control-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      backdrop-filter: blur(12px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      color: white;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--color-highlight);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+    }
+
+    .filter-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      color: var(--color-text-sub);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+    }
+
+    .filter-btn.active {
+      background: var(--color-highlight);
+      border-color: var(--color-highlight);
+      color: white;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+    }
+
+    /* True Hardware Visualizer Card */
+    .package-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2.5rem;
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      align-items: center;
+      position: relative;
+    }
+
+    .package-title {
+      align-self: flex-start;
+      font-weight: 600;
+      font-size: 1.3rem;
+      color: var(--color-text-main);
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+
+    /* True Physical LCC + LGA Package Layout - Unified Grid Container */
+    .mcu-chip {
+      position: relative;
+      width: 600px;
+      height: 520px;
+      background: #111827;
+      border: 3px solid #b45309; /* Gold outer line representing the shield can */
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      margin: 1rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+
+    .mcu-grid {
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      grid-template-rows: repeat(11, 1fr);
+      gap: 6px;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Universal Pad Node */
+    .pad-node {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* LCC (Border) pad style - rectangular with slight border radius */
+    .pad-lcc {
+      background: #1f2937;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 3px;
+    }
+
+    /* LGA (Center & Corners) pad style - circular pads */
+    .pad-lga {
+      border-radius: 50% !important;
+      background: #1f2937;
+      border: 1px dashed rgba(255,255,255,0.15);
+    }
+
+    /* Color classification styles */
+    .pin-safe {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+      color: white;
+      border-color: rgba(16, 185, 129, 0.4) !important;
+      box-shadow: 0 0 4px var(--color-safe-glow);
+    }
+    .pin-safe:hover, .pin-safe.active {
+      box-shadow: 0 0 12px var(--color-safe-glow);
+      transform: scale(1.15);
+      z-index: 100;
+    }
+
+    .pin-system {
+      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
+      color: white;
+      border-color: rgba(245, 158, 11, 0.4) !important;
+      box-shadow: 0 0 4px var(--color-system-glow);
+    }
+    .pin-system:hover, .pin-system.active {
+      box-shadow: 0 0 12px var(--color-system-glow);
+      transform: scale(1.15);
+      z-index: 100;
+    }
+
+    .pin-danger {
+      background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
+      color: white;
+      border-color: rgba(239, 68, 68, 0.4) !important;
+      box-shadow: 0 0 4px var(--color-danger-glow);
+    }
+    .pin-danger:hover, .pin-danger.active {
+      box-shadow: 0 0 12px var(--color-danger-glow);
+      transform: scale(1.15);
+      z-index: 100;
+    }
+
+    .pin-power {
+      background: linear-gradient(135deg, #6B7280 0%, #374151 100%) !important;
+      color: white;
+      border-color: rgba(107, 114, 128, 0.4) !important;
+      box-shadow: 0 0 4px var(--color-power-glow);
+    }
+    .pin-power:hover, .pin-power.active {
+      box-shadow: 0 0 12px var(--color-power-glow);
+      transform: scale(1.15);
+      z-index: 100;
+    }
+
+    .pad-node.faded {
+      opacity: 0.15;
+      transform: scale(0.9);
+      filter: blur(0.5px);
+    }
+
+    /* Inspector Card */
+    .inspector-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.75rem;
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      min-height: 600px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .inspector-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+    }
+
+    .inspector-header .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .badge-safe {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+
+    .badge-system {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .badge-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .badge-power {
+      background: rgba(107, 114, 128, 0.15);
+      border: 1px solid rgba(107, 114, 128, 0.3);
+      color: #9ca3af;
+    }
+
+    .inspector-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.75px;
+      margin-top: 4px;
+    }
+
+    .inspector-title span.sub {
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--color-text-sub);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .meta-item {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+
+    .meta-item label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--color-text-sub);
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+
+    .meta-item span {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-text-sub);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .explanation-panel {
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 3px solid var(--color-highlight);
+      padding: 0.75rem 1rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .explanation-panel.danger-alert {
+      border-left-color: var(--color-danger);
+      background: rgba(239, 68, 68, 0.03);
+    }
+    
+    .explanation-panel.safe-alert {
+      border-left-color: var(--color-safe);
+      background: rgba(16, 185, 129, 0.03);
+    }
+
+    .function-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .function-list li {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.02);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .function-list li span.fun-idx {
+      color: var(--color-text-sub);
+      font-size: 0.75rem;
+    }
+
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1rem;
+      width: 100%;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--color-text-sub);
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .legend-dot.safe { background: var(--color-safe); }
+    .legend-dot.system { background: var(--color-system); }
+    .legend-dot.danger { background: var(--color-danger); }
+    .legend-dot.power { background: var(--color-power); }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-section">
+      <h1>Neoway N706B OpenCPU Cellular Module Pin Map</h1>
+      <p>Interactive engineering hardware-to-software register mapping & safety guide (ASR1605S)</p>
+    </div>
+    <div class="model-badge">
+      Module: N706B-CN (ASR1605S)
+    </div>
+  </header>
+
+  <div class="dashboard">
+    <div class="main-panel">
+      <!-- Filter controls -->
+      <div class="control-bar">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search by pin number, pad name, or GPIO ID...">
+        </div>
+        <div class="filter-badges">
+          <button class="filter-btn active" data-type="all">Show All</button>
+          <button class="filter-btn" data-type="safe">Safe GPIOs</button>
+          <button class="filter-btn" data-type="danger">Avoid / Danger</button>
+          <button class="filter-btn" data-type="system">System interfaces</button>
+          <button class="filter-btn" data-type="power">Power & GND</button>
+        </div>
+      </div>
+
+      <!-- Simulated module package -->
+      <div class="package-card">
+        <div class="package-title">
+          <span>Physical LCC + LGA Cellular Module Footprint (Top View)</span>
+          <span style="font-size: 0.85rem; font-weight: 400; color: var(--color-text-sub);">Outer Border (LCC 1-80) | Inner Grid (LGA 81-109)</span>
+        </div>
+        
+        <!-- Physical Chip Container - Unified Grid -->
+        <div class="mcu-chip">
+          <div class="mcu-grid" id="mcuGrid"></div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot safe"></div>
+          <span>Safe General-Purpose GPIO (Output/Input)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot system"></div>
+          <span>System Interfaces (UART/USB/I2C/SIM - Pull-Up Configured)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot danger"></div>
+          <span>Danger / Avoid (Cellular Processor Owned, Bootstrap, JTAG)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot power"></div>
+          <span>Power & Ground reference (GND, VBAT, VDD_EXT)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inspector Panel -->
+    <div class="inspector-card" id="inspectorCard">
+      <div id="inspectorContent">
+        <p style="color: var(--color-text-sub); text-align: center; margin-top: 5rem;">
+          Select a pin on the N706B-CN LCC+LGA package grid to view its engineering specifications.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Pin definition database matching the N706B GPIO Excel sheet & newly reviewed manuals
+    const pinDatabase = [
+  {"pin": 1, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 2, "name": "ANT_GNSS", "ball": "-", "gpio": "-", "type": "system", "pull": "-", "desc": "ANT_GNSS interface pin.", "why": "GNSS antenna RF input pad. Route with 50-ohm impedance to GPS antenna.", "funcs": ["ANT_GNSS"]},
+  {"pin": 3, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 4, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 5, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 6, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 7, "name": "PWRKEY_N", "ball": "-", "gpio": "-", "type": "system", "pull": "-", "desc": "Power-on control key (active low).", "why": "Power-on control key (active low). Internally pulled up to VBAT via a 20k ohm resistor. Pull low for >1.5s to turn the module on.", "funcs": ["PWRKEY_N"]},
+  {"pin": 8, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 9, "name": "ADC2", "ball": "-", "gpio": "-", "type": "safe", "pull": "-", "desc": "ADC2 interface pin.", "why": "General purpose 12-bit ADC voltage detection channel 2. Detection range 0.1V to 1.2V. Leave open if unused.", "funcs": ["ADC2"]},
+  {"pin": 10, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 11, "name": "USIM_DATA", "ball": "-", "gpio": "-", "type": "system", "pull": "-", "desc": "Add 4.7K to pull up when using", "why": "Leave open if unused.", "funcs": ["USIM_DATA"]},
+  {"pin": 12, "name": "USIM_RST", "ball": "-", "gpio": "-", "type": "system", "pull": "-", "desc": "USIM_RST interface pin.", "why": "Leave open if unused.", "funcs": ["USIM_RST"]},
+  {"pin": 13, "name": "USIM_CLK", "ball": "-", "gpio": "-", "type": "system", "pull": "-", "desc": "USIM_CLK interface pin.", "why": "Leave open if unused.", "funcs": ["USIM_CLK"]},
+  {"pin": 14, "name": "USIM_VDD", "ball": "-", "gpio": "-", "type": "system", "pull": "-", "desc": "USIM_VDD interface pin.", "why": "Leave open if unused.", "funcs": ["USIM_VDD"]},
+  {"pin": 15, "name": "RESET_N", "ball": "-", "gpio": "-", "type": "system", "pull": "-", "desc": "Hardware reset input (active low).", "why": "Hardware reset input (active low). Internally pulled up to VBAT via a 20k ohm resistor. Pull low for >100ms to reset. Keep open or pull high in normal run.", "funcs": ["RESET_N"]},
+  {"pin": 16, "name": "NET_STATUS", "ball": "J4", "gpio": "69", "type": "system", "pull": "DOWN", "desc": "NET_STATUS interface pin.", "why": "Network status indicator. Outputs PWM signal to drive network status LED. Safe to read/write but default firmware drives it.", "funcs": ["PWM1"]},
+  {"pin": 17, "name": "MAIN_RXD", "ball": "B11", "gpio": "51", "type": "system", "pull": "UP", "desc": "MAIN_RXD interface pin.", "why": "Main UART receive pin. Main AT command port. Keep connected to MCU TX or USB-to-UART converter.", "funcs": ["CP_UART_RXD"]},
+  {"pin": 18, "name": "MAIN_TXD", "ball": "A11", "gpio": "52", "type": "system", "pull": "UP", "desc": "MAIN_TXD interface pin.", "why": "Main UART transmit pin. Main AT command port. Keep connected to MCU RX or USB-to-UART converter.", "funcs": ["CP_UART_TXD"]},
+  {"pin": 19, "name": "MAIN_DTR", "ball": "J11", "gpio": "6", "type": "system", "pull": "DOWN", "desc": "MAIN_DTR interface pin.", "why": "UART Data Terminal Ready. Used by the cellular processor (CP) for sleep and low-power state control. Keep open or handle with care.", "funcs": ["KP_MKIN[3]", "SSP1_RXD", "CP_UART_DTR", "KP_DKIN[2]"]},
+  {"pin": 20, "name": "MAIN_RI", "ball": "K12", "gpio": "4", "type": "danger", "pull": "DOWN", "desc": "MAIN_RI interface pin.", "why": "Modem Ring Indicator. Managed by the cellular processor (CP). DO NOT drive this pin as output from the AP core as it triggers register conflicts and watchdog resets. Use only as input.", "funcs": ["KP_MKIN[4]", "SSP1_SCLK", "CP_UART_RI_N", "KP_DKIN[0]"]},
+  {"pin": 21, "name": "GPIO_07", "ball": "J12", "gpio": "7", "type": "safe", "pull": "UP", "desc": "GPIO_07 interface pin.", "why": "Safe general-purpose GPIO. Can be configured as input or output. Default state is pulled UP. Net name GPIO2.", "funcs": ["KP_MKOUT[3]", "SSP1_TXD", "CP_UART_DSR", "KP_DKIN[3]"]},
+  {"pin": 22, "name": "MAIN_CTS", "ball": "C11", "gpio": "53", "type": "system", "pull": "UP", "desc": "MAIN_CTS interface pin.", "why": "Main UART Clear To Send flow control pin. Keep open if hardware flow control is not used.", "funcs": ["CP_UART_CTS_N", "UART3_RXD"]},
+  {"pin": 23, "name": "MAIN_RTS", "ball": "C9", "gpio": "54", "type": "danger", "pull": "UP", "desc": "GPIO54 cannot be multiplexed a", "why": "Main UART Request To Send flow control pin. DO NOT repurpose as GPIO as it is managed by the cellular core. Keep open if unused.", "funcs": ["CP_UART_RTS_N", "UART3_TXD", "VCXO_OUT1"]},
+  {"pin": 24, "name": "VDD_EXT", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "1.8V external power output for level translation.", "why": "1.8V external LDO output. Max current 20mA. Use only for external level translators or pull-ups. Leave open if unused.", "funcs": ["VDD_EXT"]},
+  {"pin": 25, "name": "STATUS", "ball": "G5", "gpio": "70", "type": "system", "pull": "DOWN", "desc": "STATUS interface pin.", "why": "Operating status indicator. Outputs high when module is powered on. Can be used to drive an external indicator LED.", "funcs": ["PWM2"]},
+  {"pin": 26, "name": "GPIO_05", "ball": "K11", "gpio": "5", "type": "safe", "pull": "DOWN", "desc": "I2S is not supported", "why": "Safe general-purpose GPIO. Can be configured as input or output. Default state is pulled DOWN. Net name I2S_MCLK.", "funcs": ["KP_MKOUT[4]", "SSP1_FRM", "CP_UART_DCD_N", "KP_DKIN[1]"]},
+  {"pin": 27, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 28, "name": "AUX_RXD", "ball": "J2", "gpio": "2", "type": "system", "pull": "DOWN", "desc": "Models with GNSS are not suppo", "why": "Auxiliary UART receive pin. Used for CP-side debug logging. Keep open or serial RX.", "funcs": ["KP_MKIN[1]", "UART3_RXD", "RF_GPIO[11]"]},
+  {"pin": 29, "name": "AUX_TXD", "ball": "J1", "gpio": "3", "type": "system", "pull": "DOWN", "desc": "AUX_TXD interface pin.", "why": "Auxiliary UART transmit pin. Used for CP-side debug logging. Keep open or serial TX.", "funcs": ["KP_MKOUT[1]", "UART3_TXD", "RF_GPIO[12]"]},
+  {"pin": 30, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 31, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 32, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 33, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 34, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 35, "name": "ANT_MAIN", "ball": "-", "gpio": "-", "type": "system", "pull": "-", "desc": "ANT_MAIN interface pin.", "why": "Main 4G LTE antenna RF pad. Route with 50-ohm microstrip or stripline impedance.", "funcs": ["ANT_MAIN"]},
+  {"pin": 36, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 37, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 38, "name": "DBG_RXD", "ball": "F14", "gpio": "71", "type": "system", "pull": "UP", "desc": "DBG_RXD interface pin.", "why": "Leave open if unused.", "funcs": ["AP_UART_RXD"]},
+  {"pin": 39, "name": "DBG_TXD", "ball": "D14", "gpio": "72", "type": "system", "pull": "UP", "desc": "DBG_TXD interface pin.", "why": "Leave open if unused.", "funcs": ["AP_UART_TXD"]},
+  {"pin": 40, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 41, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 42, "name": "VBAT", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "Main power supply input.", "why": "Main power supply input. Ensure stable 3.4V to 4.3V (typical 3.8V). Must be capable of delivering 2A peak current spikes during LTE transmission. Keep decoupling capacitors close to the pins.", "funcs": ["VBAT"]},
+  {"pin": 43, "name": "VBAT", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "Main power supply input.", "why": "Main power supply input. Ensure stable 3.4V to 4.3V (typical 3.8V). Must be capable of delivering 2A peak current spikes during LTE transmission. Keep decoupling capacitors close to the pins.", "funcs": ["VBAT"]},
+  {"pin": 44, "name": "GNSS_BACKUP", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "Backup power for GNSS", "why": "GNSS backup power input (1.8V, typical 100uA). Connect to button cell or keep open if GNSS is not used.", "funcs": ["GNSS_BACKUP"]},
+  {"pin": 45, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 46, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 47, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 48, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 49, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 50, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 51, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 52, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 53, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 54, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 55, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 56, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 57, "name": "I2C1_SCL", "ball": "B10", "gpio": "49", "type": "system", "pull": "UP", "desc": "Add 4.7K to pull up when using", "why": "I2C1 serial clock. Pull up to VDD_EXT with a 4.7k ohm resistor is required.", "funcs": ["CI2C_SCL"]},
+  {"pin": 58, "name": "I2C1_SDA", "ball": "B9", "gpio": "50", "type": "system", "pull": "UP", "desc": "I2C1_SDA interface pin.", "why": "I2C1 serial data. Pull up to VDD_EXT with a 4.7k ohm resistor is required.", "funcs": ["CI2C_SDA"]},
+  {"pin": 59, "name": "USB_DP", "ball": "F1", "gpio": "-", "type": "system", "pull": "-", "desc": "USB_DP interface pin.", "why": "USB 2.0 Differential Data Plus. Route with 90-ohm controlled differential impedance.", "funcs": ["USB_DP"]},
+  {"pin": 60, "name": "USB_DN", "ball": "G1", "gpio": "-", "type": "system", "pull": "-", "desc": "USB_DN interface pin.", "why": "USB 2.0 Differential Data Minus. Route with 90-ohm controlled differential impedance.", "funcs": ["USB_DN"]},
+  {"pin": 61, "name": "USB_VBUS", "ball": "G2", "gpio": "-", "type": "system", "pull": "-", "desc": "Does not support USB plug boot", "why": "USB VBUS detection input (3.0V - 5.25V, typical 5V). Must be connected to VBUS to enable USB interface.", "funcs": ["USB_VBUS"]},
+  {"pin": 62, "name": "USIM2_CLK", "ball": "C14", "gpio": "73", "type": "system", "pull": "DOWN", "desc": "USIM2 only supports 1.8V", "why": "Secondary USIM clock line.", "funcs": ["LTE_IRAT_TIME[11]", "USIM2_UCLK"]},
+  {"pin": 63, "name": "USIM2_RST", "ball": "B13", "gpio": "55", "type": "system", "pull": "DOWN", "desc": "USIM2_RST interface pin.", "why": "Secondary USIM reset line.", "funcs": ["SLAVE_RESET_OUT", "VCXO_REQ1", "USIM2_URSTn"]},
+  {"pin": 64, "name": "USIM2_DATA", "ball": "B14", "gpio": "74", "type": "system", "pull": "DOWN", "desc": "USIM2_DATA interface pin.", "why": "Secondary USIM data line. Pull up to USIM2_VDD with a 4.7k ohm resistor is required.", "funcs": ["LTE_TX_TIME[1]", "USIM2_UIO"]},
+  {"pin": 65, "name": "USIM2_VDD", "ball": "-", "gpio": "-", "type": "system", "pull": "-", "desc": "USIM2_VDD interface pin.", "why": "Secondary USIM power output (1.8V only).", "funcs": ["USIM2_VDD"]},
+  {"pin": 66, "name": "I2C2_SDA", "ball": "H13", "gpio": "11", "type": "system", "pull": "UP", "desc": "Add 4.7K to pull up when using", "why": "I2C2 serial data. Pull up to VDD_EXT with a 4.7k ohm resistor is required.", "funcs": ["I2C_2_SDA", "AP_UART_RTS_N", "UART3_TXD", "KP_DKIN[3]"]},
+  {"pin": 67, "name": "I2C2_SCL", "ball": "J13", "gpio": "10", "type": "system", "pull": "UP", "desc": "I2C2_SCL interface pin.", "why": "I2C2 serial clock. Pull up to VDD_EXT with a 4.7k ohm resistor is required.", "funcs": ["I2C_2_SCL", "AP_UART_CTS_N", "UART3_RXD", "KP_DKIN[2]"]},
+  {"pin": 68, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 69, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 70, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 71, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 72, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 73, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 74, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Keyboard not supported", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 75, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 76, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 77, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 78, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 79, "name": "SSP1_FRM", "ball": "B7", "gpio": "34", "type": "system", "pull": "DOWN", "desc": "SSP1_FRM interface pin.", "why": "SPI Chip Select. Used for external SPI flash. Do not toggle unless SPI bus is idle.", "funcs": ["SSP0_FRM", "USIM2_UIO"]},
+  {"pin": 80, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 81, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 82, "name": "USB_BOOT", "ball": "J3", "gpio": "9", "type": "danger", "pull": "UP", "desc": "USB_BOOT interface pin.", "why": "CRITICAL BOOTSTRAP PIN. If grounded during power-up, forces the module into USB emergency download mode. Must be kept open/floating for normal boot.", "funcs": ["KP_MKOUT[2]", "LTE_TX_TIME[1]", "mn_div_clk2", "RF_GPIO[14]"]},
+  {"pin": 83, "name": "GPIO_00", "ball": "K1", "gpio": "0", "type": "safe", "pull": "DOWN", "desc": "GPIO_00 interface pin.", "why": "Safe general-purpose GPIO. Can be configured as input or output. Default state is pulled DOWN.", "funcs": ["KP_MKIN[0]", "UART3_CTS_N", "RF_GPIO[9]"]},
+  {"pin": 84, "name": "GPIO_01", "ball": "K2", "gpio": "1", "type": "safe", "pull": "DOWN", "desc": "GPIO_01 interface pin.", "why": "Safe general-purpose GPIO. Can be configured as input or output. Default state is pulled DOWN.", "funcs": ["KP_MKOUT[0]", "UART3_RTS_N", "RF_GPIO[10]"]},
+  {"pin": 85, "name": "GPIO_84", "ball": "H5", "gpio": "84", "type": "safe", "pull": "DOWN", "desc": "GPIO_84 interface pin.", "why": "Safe general-purpose GPIO. Can be configured as input or output. Default state is pulled DOWN.", "funcs": ["GPIO[84]"]},
+  {"pin": 86, "name": "GPIO_57", "ball": "C13", "gpio": "57", "type": "safe", "pull": "DOWN", "desc": "GPIO_57 interface pin.", "why": "Safe general-purpose GPIO. Can be configured as input or output. Default state is pulled DOWN.", "funcs": ["MN_CLK_OUT", "GPS_STROBE", "32KHz CLK OUT"]},
+  {"pin": 87, "name": "GPIO_87", "ball": "F10", "gpio": "87", "type": "safe", "pull": "UP", "desc": "GPIO_87 interface pin.", "why": "Safe general-purpose GPIO. Can be configured as input or output. Default state is pulled UP.", "funcs": ["GPIO[87]"]},
+  {"pin": 88, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 89, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 90, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 91, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 92, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 93, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 94, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 95, "name": "GND", "ball": "-", "gpio": "-", "type": "power", "pull": "-", "desc": "System ground reference.", "why": "Connect directly to the main PCB ground plane with multiple vias to ensure good thermal dissipation and RF performance.", "funcs": ["GND"]},
+  {"pin": 96, "name": "ADC1", "ball": "-", "gpio": "-", "type": "safe", "pull": "-", "desc": "ADC1 interface pin.", "why": "General purpose 12-bit ADC voltage detection channel 1. Detection range 0.1V to 1.2V. Leave open if unused.", "funcs": ["ADC1"]},
+  {"pin": 97, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 98, "name": "ANT_WCN", "ball": "-", "gpio": "-", "type": "system", "pull": "-", "desc": "ANT_WCN interface pin.", "why": "Leave open if unused.", "funcs": ["ANT_WCN"]},
+  {"pin": 99, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 100, "name": "SSP1_TXD", "ball": "A9", "gpio": "36", "type": "system", "pull": "UP", "desc": "SSP1_TXD interface pin.", "why": "SPI Transmit Data. Used for external SPI flash.", "funcs": ["SSP0_TXD", "PWM3"]},
+  {"pin": 101, "name": "SSP1_SCLK", "ball": "A8", "gpio": "33", "type": "system", "pull": "DOWN", "desc": "4-wire data SPI is not support", "why": "SPI Serial Clock. Used for external SPI flash.", "funcs": ["SSP0_CLK", "USIM2_UCLK"]},
+  {"pin": 102, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 103, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 104, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 105, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 106, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 107, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+  {"pin": 108, "name": "SSP1_RXD", "ball": "B8", "gpio": "35", "type": "system", "pull": "UP", "desc": "SSP1_RXD interface pin.", "why": "SPI Receive Data. Used for external SPI flash.", "funcs": ["SSP0_RXD", "USIM2_URSTn"]},
+  {"pin": 109, "name": "RESERVED", "ball": "-", "gpio": "-", "type": "danger", "pull": "-", "desc": "Reserved by manufacturer for future expansion.", "why": "Reserved pin. Must be left open/floating. Do not connect to any pad, trace, or component.", "funcs": ["RESERVED"]},
+];
+
+    // Unified 15x11 grid layout representation (counter-clockwise top-view, matching N706B hardware specs)
+    const fullGrid = [
+      // Row 1 (top border): Pin 98 (corner), 35..23 (LCC), Pin 96 (corner)
+      [98, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 96],
+      // Row 2: Pin 36 (LCC), Pin 104 (LGA), empty, Pin 67..59 (LGA), empty, Pin 103 (LGA), Pin 22 (LCC)
+      [36, 104, 0, 67, 66, 65, 64, 63, 62, 61, 60, 59, 0, 103, 22],
+      // Row 3: Pin 37, Pin 105, empty, Pin 88..81 (LGA), empty, empty, Pin 102, Pin 19
+      [37, 105, 0, 88, 87, 86, 85, 84, 83, 82, 81, 0, 0, 102, 19],
+      // Row 4: Pin 38, Pin 68, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, Pin 58, Pin 20
+      [38, 68, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 20],
+      // Row 5: Pin 39, Pin 69, empty, empty, empty, empty, Pin 94..92 (GND), empty, Pin 109, empty, Pin 57, Pin 21
+      [39, 69, 0, 0, 0, 0, 94, 93, 92, 0, 109, 0, 0, 57, 21],
+      // Row 6: Pin 40, Pin 70, empty, empty, empty, empty, empty, empty, empty, empty, Pin 108, empty, Pin 56, Pin 18
+      [40, 70, 0, 0, 0, 0, 0, 0, 0, 0, 108, 0, 0, 56, 18],
+      // Row 7: Pin 41, Pin 71, empty, empty, empty, empty, Pin 89..91 (GND), empty, Pin 107, empty, Pin 55, Pin 17
+      [41, 71, 0, 0, 0, 0, 89, 90, 91, 0, 107, 0, 0, 55, 17],
+      // Row 8: Pin 42, Pin 72, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, empty, Pin 54, Pin 16
+      [42, 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 54, 16],
+      // Row 9: Pin 43, Pin 106, empty, Pin 73..80 (LGA), empty, empty, Pin 101, Pin 15
+      [43, 106, 0, 73, 74, 75, 76, 77, 78, 79, 80, 0, 0, 101, 15],
+      // Row 10: Pin 44, Pin 99, empty, Pin 45..53 (LGA), empty, Pin 100, Pin 14
+      [44, 99, 0, 45, 46, 47, 48, 49, 50, 51, 52, 53, 0, 100, 14],
+      // Row 11 (bottom border): Pin 97 (corner), 1..13 (LCC), Pin 95 (corner)
+      [97, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 95]
+    ];
+
+    const searchInput = document.getElementById("searchInput");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const inspectorCard = document.getElementById("inspectorCard");
+
+    let currentFilter = "all";
+    let currentSearch = "";
+    let activePin = null;
+
+    // Build layout utilizing a single unified grid rendering system
+    function buildLayout() {
+      const mcuGrid = document.getElementById("mcuGrid");
+      mcuGrid.innerHTML = "";
+
+      for (let r = 0; r < 11; r++) {
+        for (let c = 0; c < 15; c++) {
+          const pNum = fullGrid[r][c];
+          if (pNum === 0) {
+            const emptyCell = document.createElement("div");
+            emptyCell.className = "grid-cell empty";
+            mcuGrid.appendChild(emptyCell);
+          } else {
+            renderPad(pNum, mcuGrid, r + 1, c + 1);
+          }
+        }
+      }
+    }
+
+    function renderPad(pNum, container, r, c) {
+      const p = pinDatabase.find(x => x.pin === pNum);
+      if (!p) return;
+
+      const matchesFilter = currentFilter === "all" || p.type === currentFilter;
+      const matchesSearch = currentSearch === "" || 
+        p.pin.toString().includes(currentSearch) ||
+        p.name.toLowerCase().includes(currentSearch) ||
+        p.gpio.toLowerCase().includes(currentSearch);
+
+      const node = document.createElement("div");
+      
+      // Determine physical pad type
+      const isCorner = [95, 96, 97, 98].includes(pNum);
+      const isBorder = (r === 1 || r === 11 || c === 1 || c === 15);
+      
+      if (isBorder && !isCorner) {
+        node.className = `pad-node pad-lcc pin-${p.type}`;
+      } else {
+        node.className = `pad-node pad-lga pin-${p.type}`;
+      }
+      
+      if (!matchesFilter || !matchesSearch) {
+        node.classList.add("faded");
+      }
+
+      if (activePin && activePin.pin === p.pin) {
+        node.classList.add("active");
+      }
+
+      node.textContent = p.pin;
+      
+      // Clean and replace event listener
+      node.addEventListener("click", () => {
+        selectPin(p, node);
+      });
+      
+      container.appendChild(node);
+    }
+
+    function selectPin(pin, node) {
+      document.querySelectorAll(".pad-node").forEach(n => n.classList.remove("active"));
+      node.classList.remove("faded");
+      node.classList.add("active");
+      activePin = pin;
+
+      let badgeClass = `badge-${pin.type}`;
+      let badgeText = pin.type === "safe" ? "Safe GPIO" : 
+                      pin.type === "danger" ? "Danger / Avoid" : 
+                      pin.type === "system" ? "System Reserved" : "Power/GND";
+
+      let alertClass = pin.type === "danger" ? "danger-alert" :
+                       pin.type === "safe" ? "safe-alert" : "";
+
+      let functionsHtml = pin.funcs.map((f, i) => `
+        <li>
+          <span>${f}</span>
+          <span class="fun-idx">FUNC ${i}</span>
+        </li>
+      `).join("");
+
+      let html = `
+        <div class="inspector-header">
+          <span class="badge ${badgeClass}">${badgeText}</span>
+          <h2 class="inspector-title">
+            Pin ${pin.pin}: ${pin.name}
+            <span class="sub">Ball out pad: ${pin.ball}</span>
+          </h2>
+        </div>
+        
+        <div class="meta-grid">
+          <div class="meta-item">
+            <label>SDK GPIO ID</label>
+            <span>${pin.gpio}</span>
+          </div>
+          <div class="meta-item">
+            <label>Default Pull</label>
+            <span>${pin.pull}</span>
+          </div>
+        </div>
+
+        <div>
+          <span class="section-title">Description</span>
+          <p style="font-size: 0.95rem; line-height: 1.4; color: var(--color-text-main);">${pin.desc}</p>
+        </div>
+
+        <div>
+          <span class="section-title">Engineering Rules</span>
+          <div class="explanation-panel ${alertClass}">
+            <strong>Recommendation:</strong> ${pin.why}
+          </div>
+        </div>
+
+        <div>
+          <span class="section-title">Multiplex Pin Functions</span>
+          <ul class="function-list">
+            ${functionsHtml}
+          </ul>
+        </div>
+      `;
+      
+      document.getElementById("inspectorContent").innerHTML = html;
+    }
+
+    searchInput.addEventListener("input", (e) => {
+      currentSearch = e.target.value.toLowerCase().trim();
+      buildLayout();
+    });
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.getAttribute("data-type");
+        buildLayout();
+      });
+    });
+
+    // Initial render
+    buildLayout();
+    // Default select Pin 20 (RING/RI) to showcase the conflict details
+    const defaultPin = pinDatabase.find(p => p.pin === 20);
+    setTimeout(() => {
+      const nodes = document.querySelectorAll(".pad-node");
+      // Find the pad node text matching "20"
+      for (let n of nodes) {
+        if (n.textContent === "20") {
+          selectPin(defaultPin, n);
+          break;
+        }
+      }
+    }, 100);
+
+  </script>
+</body>
+</html>

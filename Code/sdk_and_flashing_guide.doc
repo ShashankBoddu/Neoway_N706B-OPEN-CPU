@@ -95,4 +95,50 @@ Step D: Verify the App & View Logs
 3. Open COM24 (Neoway USB OPEN_CON) at baud 115200 in SSCOM or PuTTY. You will see:
    Hello World from Neoway N706B OpenCPU via COM24! Count: X, GPIO: Y
 4. Since we registered a receive callback, you can also send characters to COM24 and they will be echoed back to verify bidirectional communication!
-5. The physical green status LED (STATUS_RING_GREEN), driven by GPIO 70, will toggle its state (on/off) every 1 second, synchronized with the printed logs.
+5. The physical general-purpose GPIO 7 (Pin 21, GPIO_07) will toggle its state (on/off) every 1 second, synchronized with the printed logs. Toggling this pin avoids Cellular Processor watchdog reset loops.
+
+--------------------------------------------------------------------------------
+5. PRODUCT DOCUMENT COMPARISON & HARDWARE INTEGRATION RULES
+--------------------------------------------------------------------------------
+
+Based on the official Neoway Hardware User Guides and web documentation, here is the hardware integration and pin mapping comparison for the N706 series:
+
+A. Physical Package Layout (N706B-CN LCC+LGA)
+The N706B-CN is an LCC+LGA module containing 109 pads. The pin layout is divided into:
+- Outermost Castellated Edge (LCC, Pins 1 to 44):
+  * Bottom Border: Pins 1 to 13 (left-to-right)
+  * Right Border: Non-sequential order 14, 15, 16, 17, 18, 21, 20, 19, 22 (bottom-to-top)
+  * Top Border: Pins 35 down to 23 (left-to-right / counter-clockwise)
+  * Left Border: Pins 36 to 44 (top-to-bottom)
+- Inner Symmetrical Surface Pads (LGA, Pins 45 to 109):
+  * Outer Row: Bottom row (45-53, LGA 99/100), Right col (54-58), Top row (59-67, LGA 103/104), Left col (68-72)
+  * Inner Row: Bottom row (73-80, LGA 101/106), Top row (81-88, LGA 102/105)
+  * Center Grid: Ground plane (89-94) and status lines (107-109)
+  * Corners: Top-Left (98), Bottom-Left (97), Top-Right (96), Bottom-Right (95)
+
+B. Series Pinout Mapping Differences
+Different versions of the N706 series use different base chipsets (e.g. ASR1601/1602 vs ASR1605S) which shifts specific hardware pin assignments. Ensure your schematic aligns with the correct sub-model:
+
+| Feature / Signal | Standard N706 (ASR1601) | N706-CB / N706-EA (ASR1602) | N706B-CN (ASR1605S) |
+|------------------|-------------------------|-----------------------------|---------------------|
+| USB_BOOT         | Pin 53                  | Pin 82                      | Pin 82 (GPIO 9)     |
+| ADC Channel 1    | Pin 9 (ADC1)            | Pin 96 (ADC1)               | Pin 96 (ADC1)       |
+| ADC Channel 2    | Pin 56 (ADC2)           | Pin 9 (ADC0)                | Pin 9 (ADC2)        |
+| Wi-Fi Scan / WCN | ANT_WLAN_2G (Pin 6)     | ANT_WIFI_SCAN (Pin 98)      | ANT_WIFI_SCAN (Pin 98) |
+
+C. Critical Hardware & Safety Integration Rules
+1. USB_BOOT (Pin 82): This is a critical bootstrap pin.
+   * Rule: Must be kept open/floating during normal power-up.
+   * Danger: If grounded during boot, it forces the module into USB emergency download (flashing) mode, preventing normal application startup.
+2. MAIN_RI (Pin 20): Ring Indicator pin (Cellular Core owned).
+   * Rule: Configure ONLY as input on the AP core.
+   * Danger: Do NOT drive high/low from the user application code. Doing so causes register conflicts with the Cellular Processor core and triggers watchdog hardware resets.
+3. MAIN_RTS (Pin 23): Hardware UART flow control.
+   * Rule: Leave open if unused; keep connected only for UART hardware flow control.
+   * Danger: Do not repurpose as general-purpose GPIO.
+4. Analog-to-Digital Converter (ADC1: Pin 96, ADC2: Pin 9):
+   * Rule: The detectable voltage range is 0.1 V to 1.2 V.
+   * Danger: Exceeding 1.2 V on these pins will damage the SoC ADC registers permanently. Use a resistor divider network if measuring higher voltages.
+5. GND Pins (24 pins):
+   * Rule: Connect all GND pins directly to the main PCB ground plane with multiple thermal vias to ensure RF signal stability and avoid overheating.
+

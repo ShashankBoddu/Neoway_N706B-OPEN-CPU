@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include "nwy_osi_api.h"
-#include "nwy_log_api.h"
 #include "nwy_gpio_api.h"
 
-#define TOGGLE_GPIO_ID 9
+#define TOGGLE_GPIO_ID 70
 #define TIMER_INTERVAL_MS 500
 
 static nwy_osi_timer_t toggle_timer = NULL;
@@ -13,8 +12,6 @@ static void timer_callback(void *ctx)
 {
     led_state = !led_state;
     nwy_gpio_value_set(TOGGLE_GPIO_ID, led_state ? PIN_LEVEL_HIGH : PIN_LEVEL_LOW);
-    
-    NWY_SDK_LOG_DEBUG("Timer Toggle: GPIO %d set to %s", TOGGLE_GPIO_ID, led_state ? "HIGH" : "LOW");
 }
 
 #ifdef FEATURE_NWY_ASR_PLAT
@@ -24,7 +21,6 @@ int appimg_enter(void *param)
 #endif
 {
     nwy_thread_sleep(5000); // Wait for system stability
-    NWY_SDK_LOG_DEBUG("Timer Toggle Application Started...");
     
     // Initialize GPIO
     nwy_gpio_direction_set(TOGGLE_GPIO_ID, PIN_DIRECTION_OUT);
@@ -41,9 +37,6 @@ int appimg_enter(void *param)
     nwy_error_e ret = nwy_sdk_timer_create(&toggle_timer, &timer_para);
     if (ret == NWY_SUCCESS && toggle_timer != NULL) {
         nwy_sdk_timer_start(toggle_timer, &timer_para);
-        NWY_SDK_LOG_DEBUG("Timer started with %dms interval", TIMER_INTERVAL_MS);
-    } else {
-        NWY_SDK_LOG_DEBUG("Failed to create timer, error: %d", ret);
     }
     
     return 0;
@@ -51,7 +44,6 @@ int appimg_enter(void *param)
 
 void appimg_exit(void)
 {
-    NWY_SDK_LOG_DEBUG("Timer Toggle Application Exited");
     if (toggle_timer != NULL) {
         nwy_sdk_timer_stop(toggle_timer);
         nwy_sdk_timer_destory(toggle_timer);

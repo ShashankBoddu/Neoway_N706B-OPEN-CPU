@@ -1,0 +1,20 @@
+Subject: Request for Missing Neoway N706B SDK Tools and Documentation
+
+Hello Neoway Support Team,
+
+We are currently developing on the Neoway N706B (OpenCPU) module and have successfully compiled and flashed our initial applications. However, we noticed that several critical tools and documents mentioned in the "Neoway N706B OpenCPU SDK Application Guide" were not included in our base SDK zip file (N706B-A07-STD-OE_CN1X_ITRI-009).
+
+Could you please provide us with the following items?
+
+1. Official Neoway USB Windows Drivers
+Our current SDK only contains the generic ASR driver (musbser.inf) which does not map the Neoway VID_2949. As a result, Windows cannot automatically install the drivers and we do not get the proper named COM ports (e.g., "Neoway USB AT", "Neoway USB DIAG"). Please provide the official signed driver installer.
+
+2. Neoway AP Log Viewer Tool / CoolWatcher
+We are currently using `NWY_SDK_LOG_DEBUG` in our OpenCPU code, which outputs binary data to the DIAG port. We need the official Log Capture Tool (often referred to as CoolWatcher or Neoway AP Log Tool) to capture and decode these binary logs.
+
+3. Missing Documentation
+According to Section 1.4 of the SDK Application Guide, we are missing the following guides:
+- Neoway_N706B_Log_Capture_Guide
+- Neoway_N706B_USB_Driver_Installation_Guide
+
+Thank you for your assistance!

@@ -23,6 +23,21 @@ C. Build Failures due to Stale Cache
 - Issue: After moving the SDK, the out folder still contained old absolute paths, causing build errors.
 - Solution: Deleted the out folder to force CMake to regenerate all paths correctly.
 
+D. GPIO Pin Mappings and Modem Core Conflicts (Watchdog Resets)
+- Issue: Physical schematic net names (e.g. net "GPIO1" on Pin 20 MAIN_RI) do not match their software GPIO IDs in the SDK. Furthermore, trying to write to modem-controlled pins like MAIN_RI (GPIO 4) causes a register contention with the Cellular Processor, triggering watchdog reset loops.
+- Solution: Cross-reference physical pins with the "N706B-CN (ASR1605S) GPIO Configuration Form" Excel sheet:
+  * Pin 21 (GPIO_07 / net GPIO2) maps to software GPIO ID 7. (Safe General-Purpose GPIO).
+  * Pin 26 (GPIO_05 / net I2S_MCLK) maps to software GPIO ID 5. (Safe General-Purpose GPIO).
+  * Pin 20 (MAIN_RI / net GPIO1) maps to software GPIO ID 4. (CP-owned, DO NOT drive as output!).
+  * Pin 25 (STATUS / net STATUS) maps to software GPIO ID 70. (Outputs status high on boot, controls STATUS LED).
+  * Pin 16 (NET_STATUS / net NET_STATUS) maps to software GPIO ID 69. (Outputs network status PWM).
+  * Pin 83 (GPIO_00) maps to software GPIO ID 0. (Safe General-Purpose GPIO).
+  * Pin 84 (GPIO_01) maps to software GPIO ID 1. (Safe General-Purpose GPIO).
+  * Pin 85 (GPIO_84) maps to software GPIO ID 84. (Safe General-Purpose GPIO).
+  * Pin 86 (GPIO_57) maps to software GPIO ID 57. (Safe General-Purpose GPIO).
+  * Pin 87 (GPIO_87) maps to software GPIO ID 87. (Safe General-Purpose GPIO).
+- Rule: Do not drive Pin 20 / GPIO 4 (MAIN_RI) as a custom output as it triggers CP watchdog resets. Instead, drive Pin 21 / GPIO 7 (GPIO_07) to safely control custom GPIO signals, or Pin 25 / GPIO 70 (STATUS) to control status indication.
+
 3. HOW TO BUILD YOUR PROJECTS
 Each project in the Code folder (e.g., HelloWorld, Blinky) has its own build_<ProjectName>.bat.
 

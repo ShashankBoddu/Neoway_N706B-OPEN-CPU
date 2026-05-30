@@ -32,7 +32,7 @@ static void hello_world_func(void *param) {
                                      state ? PIN_LEVEL_HIGH : PIN_LEVEL_LOW);
 
     // 1. Print to USB DIAG port (binary log)
-    NWY_SDK_LOG_DEBUG("->>Hello World from Neoway N706B OpenCPU! Count: %d, "
+    NWY_SDK_LOG_DEBUG("->> Hello World from Neoway N706B OpenCPU! Count: %d, "
                       "GPIO: %d, dir_ret: %d, val_ret: %d",
                       counter, state, dir_ret, val_ret);
 

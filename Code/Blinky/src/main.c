@@ -5,7 +5,7 @@
 
 // Define the GPIO pin to use. 
 // Change 9 to your specific LED/GPIO pin number.
-#define BLINK_GPIO_ID 9
+#define BLINK_GPIO_ID 7
 
 nwy_osi_thread_t blinky_thread = NULL;
 
