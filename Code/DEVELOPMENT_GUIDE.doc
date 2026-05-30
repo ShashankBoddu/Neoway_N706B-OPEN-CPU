@@ -80,13 +80,15 @@ To start a new project (e.g., "MyTracker"):
 5. PROJECT CATALOG
 - HelloWorld / Blinky: Basic GPIO and logging.
 - UartEcho: Bidirectional UART communication on physical ports.
-- NetworkMonitor: Periodic cellular registration and signal reporting.
+- NetworkMonitor: Periodic cellular registration, signal strength reporting, and SMS echo testing using the modular HAL wrappers (PM, SIM, NET, SMS).
 - TimerToggle: Non-blocking LED toggle using the OS Software Timer API.
 
 6. COMMON PITFALLS & API NOTES
 - SIM ID: Use NWY_SIM_ID_SLOT_1. Some demo materials refer to NWY_DEFAULT_SIM_ID, which is not defined in the standard headers.
 - Timers: When using nwy_sdk_timer_create, set thread_hdl to NWY_TIMER_IN_SERVICE to run callbacks in the system timer thread.
 - Blocking Code: Avoid long while(1) loops with nwy_thread_sleep for critical tasks. Use software timers for better power and resource efficiency.
+- SMS Initialization: Always wait for the SIM card status to transition to READY before calling nwy_hal_sms_init(). Initializing the SMS library prior to SIM readiness will cause option configuration failures.
+- SMS Testing: Once a data connection is established, the module transmits a one-shot boot notification SMS to '+918074638788' (Indian region). Inbound SMS messages received by the module will trigger an automatic response containing 'Echo: <received message>' sent back to the sender.
 
 7. HOW TO FLASH THE MODULE
 Based on the SDK documentation, follow these steps to upload your code:

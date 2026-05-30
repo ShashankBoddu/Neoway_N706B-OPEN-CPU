@@ -7,6 +7,7 @@
 #include "hal/pm/nwy_hal_pm.h"
 #include "hal/sim/nwy_hal_sim.h"
 #include "hal/net/nwy_hal_net.h"
+#include "hal/sms/nwy_hal_sms.h"
 #include "nwy_sms_api.h"
 #include "nwy_vir_at_api.h"
 #include "nwy_usb_serial.h"
@@ -103,6 +104,20 @@ static void my_net_callback(bool connected, const char *ip_address) {
   }
 }
 
+static void my_sms_recv_callback(const char *phone_num, const char *message, const char *timestamp) {
+  serial_log("SMS RECEIVED from %s at %s: %s", phone_num, timestamp, message);
+  
+  // Echo test: reply back with "Echo: <message>"
+  char reply[160];
+  snprintf(reply, sizeof(reply), "Echo: %s", message);
+  serial_log("Sending reply to %s...", phone_num);
+  if (nwy_hal_sms_send(1, phone_num, reply)) {
+    serial_log("SMS reply sent successfully!");
+  } else {
+    serial_log("Failed to send SMS reply!");
+  }
+}
+
 static void network_monitor_task(void *param) {
   nwy_thread_sleep(5000); // Wait for module to initialize
 
@@ -110,11 +125,27 @@ static void network_monitor_task(void *param) {
   serial_log("Boot Reason: %s", nwy_hal_pm_get_boot_reason_str());
 
   static bool s_data_call_started = false;
+  static bool s_sms_initialized = false;
 
   while (1) {
     // 1. Check SIM Status
     if (nwy_hal_sim_is_ready(1)) {
       serial_log("SIM Status: READY");
+      
+      // Initialize SMS if SIM ready
+      if (!s_sms_initialized) {
+          serial_log("Initializing SMS module...");
+          if (nwy_hal_sms_init(1)) {
+              if (nwy_hal_sms_register_recv_cb(1, my_sms_recv_callback)) {
+                  serial_log("SMS module initialized successfully!");
+                  s_sms_initialized = true;
+              } else {
+                  serial_log("Failed to register SMS receive callback!");
+              }
+          } else {
+              serial_log("Failed to initialize SMS module!");
+          }
+      }
       
       char imsi[32] = {0};
       char iccid[32] = {0};
@@ -162,6 +193,18 @@ static void network_monitor_task(void *param) {
           }
       } else {
           s_data_call_started = false;
+      }
+
+      // 3.5. Send boot-up test SMS once connected
+      static bool s_boot_sms_sent = false;
+      if (g_net_status == 2 && !s_boot_sms_sent) {
+          serial_log("Sending boot-up test SMS to +918074638788...");
+          if (nwy_hal_sms_send(1, "+918074638788", "Neoway N706B Network Monitor: System successfully booted and online!")) {
+              serial_log("Boot-up SMS sent successfully!");
+              s_boot_sms_sent = true;
+          } else {
+              serial_log("Failed to send boot-up SMS!");
+          }
       }
 
       // 4. Check Signal Strength and Operator Info
