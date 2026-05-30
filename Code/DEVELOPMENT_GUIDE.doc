@@ -56,6 +56,10 @@ H. Data Call Request Spamming
 - Issue: Continually invoking 'nwy_data_call_start()' every tick while the connection is negotiating or has failed can flood the modem core.
 - Solution: Implement a state flag (e.g., 's_data_call_started') so the connection call is requested exactly once when entering the registered-disconnected state.
 
+I. URC Thread Context Deadlocks (Watchdog Resets)
+- Issue: Executing blocking modem commands (like 'nwy_sms_msg_send()') directly inside the asynchronous URC callback context (such as the SMS receive callback) blocks the modem's notification handler thread. This results in core deadlocks that trigger watchdog resets (reboots).
+- Solution: Delegate the operation to the task context. Use an OSI semaphore ('nwy_osi_semaphore_t') to coordinate: the URC callback buffers the data and releases the semaphore, immediately waking up the background task to safely send the message.
+
 3. HOW TO BUILD YOUR PROJECTS
 Each project in the Code folder (e.g., HelloWorld, Blinky) has its own build_<ProjectName>.bat.
 

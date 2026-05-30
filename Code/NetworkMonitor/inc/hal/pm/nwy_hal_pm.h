@@ -3,33 +3,23 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "nwy_osi_api.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief Reboot the module
- */
+// Power states controls
 void nwy_hal_pm_reboot(void);
-
-/**
- * @brief Power off the module normally (syncs modem before shutting down)
- */
 void nwy_hal_pm_power_off(void);
-
-/**
- * @brief Get the battery voltage
- * @param vbat_mv Pointer to store the voltage in millivolts
- * @return true if successful
- */
 bool nwy_hal_pm_get_vbat(int *vbat_mv);
-
-/**
- * @brief Get the boot reason as a static string
- * @return String description of the boot reason
- */
 const char *nwy_hal_pm_get_boot_reason_str(void);
+
+// Calendar & Time APIs
+bool nwy_hal_pm_get_time(nwy_time_t *time_out, int *timezone_out);
+bool nwy_hal_pm_set_time(const nwy_time_t *time_in, int timezone);
+bool nwy_hal_pm_date_to_timestamp(const nwy_time_t *time_in, nwy_timeval_t *timestamp_out);
+bool nwy_hal_pm_timestamp_to_date(const nwy_timeval_t *timestamp_in, nwy_time_t *time_out);
 
 #ifdef __cplusplus
 }

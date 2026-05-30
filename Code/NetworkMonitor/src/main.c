@@ -15,8 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdlib.h>
-#include <string.h>
 
 #define GPIO_NET_STATUS 69 // NET LED
 #define GPIO_STATUS 70     // STATUS LED
@@ -25,6 +23,12 @@ volatile int g_net_status = 0;
 // 0 = Not Registered / Searching
 // 1 = Registered (Network OK)
 // 2 = Data Call Connected (IP Acquired)
+
+static nwy_osi_semaphore_t g_sms_sem = NULL;
+static volatile bool s_pending_sms_reply = false;
+static char s_pending_reply_phone[32];
+static char s_pending_reply_msg[160];
+static int s_pending_reply_sim = 1;
 
 static void led_task(void *param) {
   nwy_gpio_direction_set(GPIO_NET_STATUS, PIN_DIRECTION_OUT);
@@ -92,29 +96,33 @@ static const char *get_rat_str(int rat) {
   }
 }
 
-static void my_net_callback(bool connected, const char *ip_address) {
+static void my_net_callback(int sim_id, int profile_idx, bool connected, const char *ip_address) {
   if (connected) {
-    serial_log("DATA CALLBACK: Connected! IP: %s", ip_address ? ip_address : "Unknown");
+    serial_log("DATA CALLBACK: SIM %d (Profile %d) Connected! IP: %s", sim_id, profile_idx, ip_address ? ip_address : "Unknown");
     g_net_status = 2; // Data connected
   } else {
-    serial_log("DATA CALLBACK: Disconnected!");
+    serial_log("DATA CALLBACK: SIM %d (Profile %d) Disconnected!", sim_id, profile_idx);
     if (g_net_status == 2) {
       g_net_status = 1; // Drop back to registered state
     }
   }
 }
 
-static void my_sms_recv_callback(const char *phone_num, const char *message, const char *timestamp) {
-  serial_log("SMS RECEIVED from %s at %s: %s", phone_num, timestamp, message);
+static void my_sms_recv_callback(int sim_id, const char *phone_num, const char *message, const char *timestamp) {
+  serial_log("SMS RECEIVED on SIM %d from %s at %s: %s", sim_id, phone_num, timestamp, message);
   
-  // Echo test: reply back with "Echo: <message>"
-  char reply[160];
-  snprintf(reply, sizeof(reply), "Echo: %s", message);
-  serial_log("Sending reply to %s...", phone_num);
-  if (nwy_hal_sms_send(1, phone_num, reply)) {
-    serial_log("SMS reply sent successfully!");
-  } else {
-    serial_log("Failed to send SMS reply!");
+  if (!s_pending_sms_reply) {
+      s_pending_reply_sim = sim_id;
+      strncpy(s_pending_reply_phone, phone_num, sizeof(s_pending_reply_phone) - 1);
+      s_pending_reply_phone[sizeof(s_pending_reply_phone) - 1] = '\0';
+      
+      strncpy(s_pending_reply_msg, message, sizeof(s_pending_reply_msg) - 1);
+      s_pending_reply_msg[sizeof(s_pending_reply_msg) - 1] = '\0';
+      
+      s_pending_sms_reply = true;
+      if (g_sms_sem) {
+          nwy_semahpore_release(g_sms_sem);
+      }
   }
 }
 
@@ -128,6 +136,22 @@ static void network_monitor_task(void *param) {
   static bool s_sms_initialized = false;
 
   while (1) {
+    // 0. Process any pending SMS echo replies in task context
+    if (s_pending_sms_reply) {
+        char reply_body[160];
+        snprintf(reply_body, sizeof(reply_body), "Echo: %s", s_pending_reply_msg);
+        
+        serial_log("Processing pending SMS reply in task context...");
+        serial_log("Sending reply on SIM %d to %s...", s_pending_reply_sim, s_pending_reply_phone);
+        
+        if (nwy_hal_sms_send(s_pending_reply_sim, s_pending_reply_phone, reply_body)) {
+            serial_log("SMS reply sent successfully!");
+        } else {
+            serial_log("Failed to send SMS reply!");
+        }
+        s_pending_sms_reply = false;
+    }
+
     // 1. Check SIM Status
     if (nwy_hal_sim_is_ready(1)) {
       serial_log("SIM Status: READY");
@@ -176,7 +200,7 @@ static void network_monitor_task(void *param) {
       // 3. Handle Data Call and IP Query
       char ip_address[32] = {0};
       if (g_net_status > 0) {
-          if (nwy_hal_net_get_ip(1, ip_address, sizeof(ip_address))) {
+          if (nwy_hal_net_get_ip(1, 1, ip_address, sizeof(ip_address))) {
               g_net_status = 2; // Data Call Connected
               serial_log("Data Call Connected! IP: %s", ip_address);
           } else {
@@ -185,7 +209,7 @@ static void network_monitor_task(void *param) {
               }
               if (!s_data_call_started) {
                   serial_log("Data Call Not Connected. Starting Call...");
-                  nwy_hal_net_start_data_call(1, my_net_callback);
+                  nwy_hal_net_start_data_call(1, 1, my_net_callback);
                   s_data_call_started = true;
               } else {
                   serial_log("Data Call Connecting/Idle...");
@@ -223,7 +247,11 @@ static void network_monitor_task(void *param) {
     }
 
     serial_log("-------------------------------");
-    nwy_thread_sleep(10000); // Check every 10 seconds
+    if (g_sms_sem) {
+        nwy_semaphore_acquire(g_sms_sem, 10000); // Wake up on sem release OR 10-second timeout
+    } else {
+        nwy_thread_sleep(10000);
+    }
   }
 }
 
@@ -235,6 +263,9 @@ int appimg_enter(void *param)
 {
   nwy_thread_sleep(10 * 1000); // wait for PC to enumerate USB serial
   serial_log("Network Monitor App Entered");
+
+  // Initialize the SMS wakeup semaphore
+  nwy_semaphore_create(&g_sms_sem, 0);
 
   nwy_osi_thread_t net_thread = NULL;
   nwy_error_e ret =
