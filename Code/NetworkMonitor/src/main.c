@@ -10,7 +10,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define INDICATOR_GPIO_ID 7
+#define GPIO_NET_STATUS 69 // NET LED
+#define GPIO_STATUS     70 // STATUS LED
 
 volatile int g_net_status = 0; 
 // 0 = Not Registered / Searching
@@ -18,22 +19,28 @@ volatile int g_net_status = 0;
 // 2 = Data Call Connected (IP Acquired)
 
 static void led_task(void *param) {
-    nwy_gpio_direction_set(INDICATOR_GPIO_ID, PIN_DIRECTION_OUT);
-    int state = 0;
+    nwy_gpio_direction_set(GPIO_NET_STATUS, PIN_DIRECTION_OUT);
+    nwy_gpio_direction_set(GPIO_STATUS, PIN_DIRECTION_OUT);
+
+    // STATUS LED solid ON to indicate module is running
+    nwy_gpio_value_set(GPIO_STATUS, PIN_LEVEL_HIGH);
+
+    int toggle = 0;
     while(1) {
-        state = !state;
-        if (g_net_status == 2) {
-            // Solid ON for Data Call Active
-            nwy_gpio_value_set(INDICATOR_GPIO_ID, PIN_LEVEL_HIGH);
-            nwy_thread_sleep(1000);
-        } else if (g_net_status == 1) {
-            // Slow blink (1s) for Registered
-            nwy_gpio_value_set(INDICATOR_GPIO_ID, state ? PIN_LEVEL_HIGH : PIN_LEVEL_LOW);
-            nwy_thread_sleep(1000);
-        } else {
-            // Fast blink (200ms) for Searching / Not Ready
-            nwy_gpio_value_set(INDICATOR_GPIO_ID, state ? PIN_LEVEL_HIGH : PIN_LEVEL_LOW);
+        if (g_net_status == 0) {
+            // Searching: Blink fast (200ms)
+            toggle = !toggle;
+            nwy_gpio_value_set(GPIO_NET_STATUS, toggle ? PIN_LEVEL_HIGH : PIN_LEVEL_LOW);
             nwy_thread_sleep(200);
+        } else if (g_net_status == 1) {
+            // Registered: Blink slow (1000ms)
+            toggle = !toggle;
+            nwy_gpio_value_set(GPIO_NET_STATUS, toggle ? PIN_LEVEL_HIGH : PIN_LEVEL_LOW);
+            nwy_thread_sleep(1000);
+        } else if (g_net_status == 2) {
+            // Data Connected: Solid ON
+            nwy_gpio_value_set(GPIO_NET_STATUS, PIN_LEVEL_HIGH);
+            nwy_thread_sleep(1000);
         }
     }
 }

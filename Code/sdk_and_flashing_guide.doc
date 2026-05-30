@@ -20,7 +20,8 @@ Here is where all files are located on your system:
   Contains DrvInstaller_x64.exe and generic .inf configuration files.
 - API Documentation: E:\projects\DevelopmentLevelCode\Neoway\Neoway_OpenCPU_SDK_API_Notes (17)
   Contains 17 PDF guides on various APIs (GPIO, FOTA, OS, MQTT, etc.).
-
+- Demo: E:\projects\Devolapment files\Neoway\N706B-A07-STD-OE_CN1X_ITRI-009.zip\N706B-A07-STD-OE_CN1X_ITRI-009\N706B-A07-STD-OE_CN1X_ITRI-009\N706B-A07-STD-OE_CN1X_ITRI-009_SDK\N706B-A07-STD-OE_CN1X_ITRI-009_SDK\nwy_test_demo
+- SDK Doc: E:\projects\Devolapment files\Neoway\N706B-A07-STD-OE_CN1X_ITRI-009.zip\N706B-A07-STD-OE_CN1X_ITRI-009\N706B-A07-STD-OE_CN1X_ITRI-009\N706B-A07-STD-OE_CN1X_ITRI-009_SDK\N706B-A07-STD-OE_CN1X_ITRI-009_SDK\doc
 --------------------------------------------------------------------------------
 2. MISSING COMPONENT: USB DRIVERS
 --------------------------------------------------------------------------------
