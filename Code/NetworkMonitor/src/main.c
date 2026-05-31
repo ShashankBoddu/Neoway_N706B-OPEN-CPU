@@ -117,9 +117,10 @@ static void run_network_diagnostics_scan(void) {
 
   // 1. Check SIM Status first
   bool sim_ready = nwy_hal_sim_is_ready(target_sim);
-  LOGI("SIM Slot %d Status: %s", target_sim, sim_ready ? "READY" : "NOT READY");
   if (!sim_ready) {
-    LOGW("SIM is not ready. Network registration will fail or remain offline.");
+    LOGE("SIM STATUS: [CRITICAL] SIM card is NOT DETECTED or NOT READY. Please insert a valid SIM card!");
+  } else {
+    LOGI("SIM STATUS: [OK] SIM Card is ready and detected.");
   }
 
   // 2. Query Radio State
@@ -258,7 +259,15 @@ static void run_network_diagnostics_scan(void) {
   // 8. Query Signal Strength & Bit Error Rate
   int csq = 99, ber = 99;
   if (nwy_hal_net_get_csq(target_sim, &csq, &ber)) {
-    LOGI("Signal Strength (CSQ): %d (%d dBm), BER=%d", csq, csq_to_dbm(csq), ber);
+    if (csq == 99) {
+      LOGE("SIGNAL STATUS: [CRITICAL] NO SIGNAL DETECTED (CSQ: 99). The modem cannot see any base station. Please verify your LTE antenna connection!");
+    } else if (csq <= 9) {
+      LOGW("SIGNAL STATUS: [WARNING] LOW SIGNAL STRENGTH (CSQ: %d, %d dBm). Registration might fail or drop. Move the device to a better reception area.", csq, csq_to_dbm(csq));
+    } else if (csq <= 14) {
+      LOGI("SIGNAL STATUS: [OK] MEDIUM SIGNAL STRENGTH (CSQ: %d, %d dBm).", csq, csq_to_dbm(csq));
+    } else {
+      LOGI("SIGNAL STATUS: [OK] STRONG SIGNAL STRENGTH (CSQ: %d, %d dBm).", csq, csq_to_dbm(csq));
+    }
   } else {
     LOGE("Signal Strength (CSQ): Failed to query");
   }
@@ -385,26 +394,62 @@ static void network_monitor_task(void *param) {
   while (1) {
     nwy_hal_os_thread_sleep(10000); // Check status every 10 seconds
 
-    int cs_state = 0, ps_state = 0, rat = 0;
-    nwy_hal_net_get_registration_details(1, &cs_state, &ps_state, &rat);
+    // 1. Check SIM Status
+    bool sim_ready = nwy_hal_sim_is_ready(1);
+    if (!sim_ready) {
+      LOGE("[STATUS] SIM: NO SIM / NOT INSERTED or NOT READY!");
+    } else {
+      LOGI("[STATUS] SIM: READY");
+    }
 
+    // 2. Check Signal Strength
     int csq = 99, ber = 99;
     nwy_hal_net_get_csq(1, &csq, &ber);
+    if (csq == 99) {
+      LOGE("[STATUS] SIGNAL: NO SIGNAL DETECTED (CSQ: 99). Please check the antenna or coverage area!");
+    } else if (csq <= 9) {
+      LOGW("[STATUS] SIGNAL: LOW SIGNAL STRENGTH (CSQ: %d, %d dBm). Connection might be unstable.", csq, csq_to_dbm(csq));
+    } else if (csq <= 14) {
+      LOGI("[STATUS] SIGNAL: MEDIUM SIGNAL STRENGTH (CSQ: %d, %d dBm)", csq, csq_to_dbm(csq));
+    } else {
+      LOGI("[STATUS] SIGNAL: STRONG SIGNAL STRENGTH (CSQ: %d, %d dBm)", csq, csq_to_dbm(csq));
+    }
 
+    // 3. Check Network Registration
+    int cs_state = 0, ps_state = 0, rat = 0;
+    nwy_hal_net_get_registration_details(1, &cs_state, &ps_state, &rat);
+    
+    if (cs_state == NWY_NW_SERVICE_NONE && ps_state == NWY_NW_SERVICE_NONE) {
+      LOGW("[STATUS] REGISTRATION: OUT OF SERVICE (Searching...)");
+    } else if (cs_state == NWY_NW_SERVICE_LIMITED || ps_state == NWY_NW_SERVICE_LIMITED) {
+      LOGW("[STATUS] REGISTRATION: LIMITED SERVICE (RAT: %s)", get_rat_str(rat));
+    } else {
+      LOGI("[STATUS] REGISTRATION: REGISTERED (RAT: %s)", get_rat_str(rat));
+    }
+
+    // 4. IP/Data connection status
     char ip_address[32] = "N/A";
     bool ip_ok = nwy_hal_net_get_ip(1, 1, ip_address, sizeof(ip_address));
+    if (ip_ok) {
+      LOGI("[STATUS] INTERNET: CONNECTED (IP: %s)", ip_address);
+    } else {
+      LOGW("[STATUS] INTERNET: DISCONNECTED");
+    }
 
-    LOGI("Heartbeat - Reg: CS=%d, PS=%d | Signal: %d CSQ (%d dBm) | IP: %s | RAT: %s",
-         cs_state, ps_state, csq, csq_to_dbm(csq), ip_ok ? ip_address : "N/A", get_rat_str(rat));
+    LOGI("--------------------------------------------------");
 
     // If out of service, increment oos counter. Reset when registered.
     if (cs_state == NWY_NW_SERVICE_NONE && ps_state == NWY_NW_SERVICE_NONE) {
       oos_counter++;
       if (oos_counter >= 6) { // 60 seconds of consecutive Out of Service
-        LOGW("Modem Out of Service for 60 seconds. Toggling radio state (flight mode -> normal) to force fresh search...");
-        nwy_hal_net_set_radio_mode(NWY_NW_RADIO_FLIGHT_MODE);
-        nwy_hal_os_thread_sleep(2000);
-        nwy_hal_net_set_radio_mode(NWY_NW_RADIO_NORMAL_MODE);
+        if (csq == 99) {
+          LOGW("[STATUS] 60s Out-Of-Service timeout reached. However, CSQ is 99 (no physical signal), skipping radio cycle.");
+        } else {
+          LOGW("[STATUS] 60s Out-Of-Service timeout reached with physical signal (CSQ=%d). Toggling radio state to force fresh search...", csq);
+          nwy_hal_net_set_radio_mode(NWY_NW_RADIO_FLIGHT_MODE);
+          nwy_hal_os_thread_sleep(2000);
+          nwy_hal_net_set_radio_mode(NWY_NW_RADIO_NORMAL_MODE);
+        }
         oos_counter = 0;
       }
     } else {
@@ -412,15 +457,15 @@ static void network_monitor_task(void *param) {
     }
 
     // If registered on PS (Data) network but no GPRS call is connected, start data call dial!
-    if ((ps_state == NWY_NW_SERVICE_FULL || ps_state == NWY_NW_SERVICE_LIMITED) && !ip_ok) {
+    if (sim_ready && (ps_state == NWY_NW_SERVICE_FULL || ps_state == NWY_NW_SERVICE_LIMITED) && !ip_ok) {
       if (!data_call_dialed) {
         LOGI("Network registered. Launching GPRS PDP Context Activation...");
         bool dial_ok = nwy_hal_net_start_data_call(1, 1, test_data_call_cb);
         LOGI("GPRS Activation request sent: %s", dial_ok ? "SUCCESS" : "FAILED");
         data_call_dialed = true;
       }
-    } else if (ps_state == NWY_NW_SERVICE_NONE) {
-      data_call_dialed = false; // Reset dialing flag if we drop off network
+    } else if (ps_state == NWY_NW_SERVICE_NONE || !sim_ready) {
+      data_call_dialed = false; // Reset dialing flag if we drop off network or SIM removed
     }
   }
 }

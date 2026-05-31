@@ -700,7 +700,7 @@ nwy_bin_header  0x7e040800        0xc
                 0x7e040800        0xc ../build/nwy_open_stub.a(nwy_open_stub.o)
                 0x7e040800                nwy_open_app_bin_header
 
-.text           0x7e04080c     0x9cb8
+.text           0x7e04080c     0x9d90
  *(nwy_open_asm)
  nwy_open_asm   0x7e04080c     0x1830 ../build/nwy_open_stub.a(nwy_open.o)
                 0x7e04080c                nwy_sdk_log_printf
@@ -1192,897 +1192,897 @@ nwy_bin_header  0x7e040800        0xc
  .text.test_data_call_cb
                 0x7e0425cc       0x44 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
  .text.run_network_diagnostics_scan
-                0x7e042610      0x868 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                0x7e042610      0x878 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
  .text.network_monitor_task
-                0x7e042e78      0x1fc CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                0x7e042e88      0x2c0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
  .text.nwy_open_app_entry
-                0x7e043074       0x6c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
-                0x7e043074                nwy_open_app_entry
- .text.abs      0x7e0430e0        0x8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-abs.o)
-                0x7e0430e0                abs
- .text          0x7e0430e8       0xec ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-memcpy.o)
-                0x7e0430e8                memcpy
- .text.memset   0x7e0431d4       0xa4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-memset.o)
-                0x7e0431d4                memset
+                0x7e043148       0x6c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                0x7e043148                nwy_open_app_entry
+ .text.abs      0x7e0431b4        0x8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-abs.o)
+                0x7e0431b4                abs
+ .text          0x7e0431bc       0xec ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-memcpy.o)
+                0x7e0431bc                memcpy
+ .text.memset   0x7e0432a8       0xa4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-memset.o)
+                0x7e0432a8                memset
  .text.snprintf
-                0x7e043278       0x8c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-snprintf.o)
-                0x7e043278                snprintf
- .text          0x7e043304      0x1bc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-strcmp.o)
-                0x7e043304                strcmp
- .text.strlen   0x7e0434c0       0x5c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-strlen-stub.o)
-                0x7e0434c0                strlen
- .text.strncpy  0x7e04351c       0x70 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-strncpy.o)
-                0x7e04351c                strncpy
+                0x7e04334c       0x8c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-snprintf.o)
+                0x7e04334c                snprintf
+ .text          0x7e0433d8      0x1bc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-strcmp.o)
+                0x7e0433d8                strcmp
+ .text.strlen   0x7e043594       0x5c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-strlen-stub.o)
+                0x7e043594                strlen
+ .text.strncpy  0x7e0435f0       0x70 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-strncpy.o)
+                0x7e0435f0                strncpy
  .text._svfprintf_r
-                0x7e04358c     0x1aac ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-svfprintf.o)
-                0x7e04358c                _svfprintf_r
+                0x7e043660     0x1aac ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-svfprintf.o)
+                0x7e043660                _svfprintf_r
  .text.vsnprintf
-                0x7e045038       0x78 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vsnprintf.o)
-                0x7e045038                vsnprintf
- .text.quorem   0x7e0450b0      0x130 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-dtoa.o)
- .text._dtoa_r  0x7e0451e0      0xf44 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-dtoa.o)
-                0x7e0451e0                _dtoa_r
+                0x7e04510c       0x78 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vsnprintf.o)
+                0x7e04510c                vsnprintf
+ .text.quorem   0x7e045184      0x130 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-dtoa.o)
+ *fill*         0x7e0452b4        0x4 
+ .text._dtoa_r  0x7e0452b8      0xf44 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-dtoa.o)
+                0x7e0452b8                _dtoa_r
  .text._malloc_trim_r
-                0x7e046124       0xac ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-freer.o)
-                0x7e046124                _malloc_trim_r
- .text._free_r  0x7e0461d0      0x21c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-freer.o)
-                0x7e0461d0                _free_r
+                0x7e0461fc       0xac ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-freer.o)
+                0x7e0461fc                _malloc_trim_r
+ .text._free_r  0x7e0462a8      0x21c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-freer.o)
+                0x7e0462a8                _free_r
  .text._localeconv_r
-                0x7e0463ec        0x8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-localeconv.o)
-                0x7e0463ec                _localeconv_r
+                0x7e0464c4        0x8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-localeconv.o)
+                0x7e0464c4                _localeconv_r
  .text._malloc_r
-                0x7e0463f4      0x558 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
-                0x7e0463f4                _malloc_r
- .text.memchr   0x7e04694c       0x90 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-memchr-stub.o)
-                0x7e04694c                memchr
+                0x7e0464cc      0x558 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
+                0x7e0464cc                _malloc_r
+ .text.memchr   0x7e046a24       0x90 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-memchr-stub.o)
+                0x7e046a24                memchr
  .text.__malloc_lock
-                0x7e0469dc        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mlock.o)
-                0x7e0469dc                __malloc_lock
+                0x7e046ab4        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mlock.o)
+                0x7e046ab4                __malloc_lock
  .text.__malloc_unlock
-                0x7e0469e8        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mlock.o)
-                0x7e0469e8                __malloc_unlock
- .text._Balloc  0x7e0469f4       0x4c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e0469f4                _Balloc
- .text._Bfree   0x7e046a40       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e046a40                _Bfree
+                0x7e046ac0        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mlock.o)
+                0x7e046ac0                __malloc_unlock
+ .text._Balloc  0x7e046acc       0x4c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e046acc                _Balloc
+ .text._Bfree   0x7e046b18       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e046b18                _Bfree
  .text.__multadd
-                0x7e046a54       0xa8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e046a54                __multadd
+                0x7e046b2c       0xa8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e046b2c                __multadd
  .text.__hi0bits
-                0x7e046afc       0x40 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e046afc                __hi0bits
+                0x7e046bd4       0x40 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e046bd4                __hi0bits
  .text.__lo0bits
-                0x7e046b3c       0x54 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e046b3c                __lo0bits
- .text.__i2b    0x7e046b90       0x60 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e046b90                __i2b
+                0x7e046c14       0x54 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e046c14                __lo0bits
+ .text.__i2b    0x7e046c68       0x60 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e046c68                __i2b
  .text.__multiply
-                0x7e046bf0      0x170 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e046bf0                __multiply
+                0x7e046cc8      0x170 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e046cc8                __multiply
  .text.__pow5mult
-                0x7e046d60       0xc4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e046d60                __pow5mult
+                0x7e046e38       0xc4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e046e38                __pow5mult
  .text.__lshift
-                0x7e046e24       0xec ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e046e24                __lshift
- .text.__mcmp   0x7e046f10       0x40 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e046f10                __mcmp
- .text.__mdiff  0x7e046f50      0x160 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e046f50                __mdiff
- .text.__d2b    0x7e0470b0       0xc4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e0470b0                __d2b
- .text.frexp    0x7e047174       0x70 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-s_frexp.o)
-                0x7e047174                frexp
- .text._sbrk_r  0x7e0471e4       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-sbrkr.o)
-                0x7e0471e4                _sbrk_r
+                0x7e046efc       0xec ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e046efc                __lshift
+ .text.__mcmp   0x7e046fe8       0x40 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e046fe8                __mcmp
+ .text.__mdiff  0x7e047028      0x160 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e047028                __mdiff
+ .text.__d2b    0x7e047188       0xc4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e047188                __d2b
+ .text.frexp    0x7e04724c       0x70 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-s_frexp.o)
+                0x7e04724c                frexp
+ .text._sbrk_r  0x7e0472bc       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-sbrkr.o)
+                0x7e0472bc                _sbrk_r
  .text.__ssprint_r
-                0x7e04720c      0x100 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-svfiprintf.o)
-                0x7e04720c                __ssprint_r
+                0x7e0472e4      0x100 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-svfiprintf.o)
+                0x7e0472e4                __ssprint_r
  .text.__assert_func
-                0x7e04730c       0x44 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-assert.o)
-                0x7e04730c                __assert_func
+                0x7e0473e4       0x44 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-assert.o)
+                0x7e0473e4                __assert_func
  .text._calloc_r
-                0x7e047350       0x64 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-callocr.o)
-                0x7e047350                _calloc_r
+                0x7e047428       0x64 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-callocr.o)
+                0x7e047428                _calloc_r
  .text.fiprintf
-                0x7e0473b4       0x2c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fiprintf.o)
-                0x7e0473b4                fiprintf
+                0x7e04748c       0x2c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fiprintf.o)
+                0x7e04748c                fiprintf
  .text.__locale_mb_cur_max
-                0x7e0473e0       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-locale.o)
-                0x7e0473e0                __locale_mb_cur_max
+                0x7e0474b8       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-locale.o)
+                0x7e0474b8                __locale_mb_cur_max
  .text.__retarget_lock_init_recursive
-                0x7e0473f0        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
-                0x7e0473f0                __retarget_lock_init_recursive
+                0x7e0474c8        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
+                0x7e0474c8                __retarget_lock_init_recursive
  .text.__retarget_lock_close_recursive
-                0x7e0473f4        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
-                0x7e0473f4                __retarget_lock_close_recursive
+                0x7e0474cc        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
+                0x7e0474cc                __retarget_lock_close_recursive
  .text.__retarget_lock_acquire_recursive
-                0x7e0473f8        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
-                0x7e0473f8                __retarget_lock_acquire_recursive
+                0x7e0474d0        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
+                0x7e0474d0                __retarget_lock_acquire_recursive
  .text.__retarget_lock_release_recursive
-                0x7e0473fc        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
-                0x7e0473fc                __retarget_lock_release_recursive
+                0x7e0474d4        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
+                0x7e0474d4                __retarget_lock_release_recursive
  .text.__ascii_mbtowc
-                0x7e047400       0x24 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mbtowc_r.o)
-                0x7e047400                __ascii_mbtowc
- .text.memmove  0x7e047424       0xf8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-memmove.o)
-                0x7e047424                memmove
+                0x7e0474d8       0x24 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mbtowc_r.o)
+                0x7e0474d8                __ascii_mbtowc
+ .text.memmove  0x7e0474fc       0xf8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-memmove.o)
+                0x7e0474fc                memmove
  .text._realloc_r
-                0x7e04751c      0x40c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-reallocr.o)
-                0x7e04751c                _realloc_r
+                0x7e0475f4      0x40c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-reallocr.o)
+                0x7e0475f4                _realloc_r
  .text.__sprint_r.part.0
-                0x7e047928       0x74 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
+                0x7e047a00       0x74 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
  .text._vfiprintf_r
-                0x7e04799c      0xd68 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
-                0x7e04799c                _vfiprintf_r
+                0x7e047a74      0xd68 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
+                0x7e047a74                _vfiprintf_r
  .text.__sbprintf
-                0x7e048704       0x80 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
+                0x7e0487dc       0x80 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
  .text.__ascii_wctomb
-                0x7e048784       0x1c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-wctomb_r.o)
-                0x7e048784                __ascii_wctomb
+                0x7e04885c       0x1c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-wctomb_r.o)
+                0x7e04885c                __ascii_wctomb
  .text.__swsetup_r
-                0x7e0487a0       0xd0 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-wsetup.o)
-                0x7e0487a0                __swsetup_r
- .text.abort    0x7e048870       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-abort.o)
-                0x7e048870                abort
+                0x7e048878       0xd0 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-wsetup.o)
+                0x7e048878                __swsetup_r
+ .text.abort    0x7e048948       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-abort.o)
+                0x7e048948                abort
  .text.__sflush_r
-                0x7e048880      0x148 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fflush.o)
-                0x7e048880                __sflush_r
+                0x7e048958      0x148 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fflush.o)
+                0x7e048958                __sflush_r
  .text._fflush_r
-                0x7e0489c8       0x5c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fflush.o)
-                0x7e0489c8                _fflush_r
+                0x7e048aa0       0x5c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fflush.o)
+                0x7e048aa0                _fflush_r
  .text._cleanup_r
-                0x7e048a24        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-findfp.o)
-                0x7e048a24                _cleanup_r
- .text.__sinit  0x7e048a30      0x11c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-findfp.o)
-                0x7e048a30                __sinit
+                0x7e048afc        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-findfp.o)
+                0x7e048afc                _cleanup_r
+ .text.__sinit  0x7e048b08      0x11c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-findfp.o)
+                0x7e048b08                __sinit
  .text.__sfp_lock_acquire
-                0x7e048b4c        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-findfp.o)
-                0x7e048b4c                __sfp_lock_acquire
+                0x7e048c24        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-findfp.o)
+                0x7e048c24                __sfp_lock_acquire
  .text.__sfp_lock_release
-                0x7e048b58        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-findfp.o)
-                0x7e048b58                __sfp_lock_release
+                0x7e048c30        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-findfp.o)
+                0x7e048c30                __sfp_lock_release
  .text.__fputwc
-                0x7e048b64       0xb4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fputwc.o)
-                0x7e048b64                __fputwc
+                0x7e048c3c       0xb4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fputwc.o)
+                0x7e048c3c                __fputwc
  .text._fputwc_r
-                0x7e048c18       0x6c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fputwc.o)
-                0x7e048c18                _fputwc_r
+                0x7e048cf0       0x6c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fputwc.o)
+                0x7e048cf0                _fputwc_r
  .text.__sfvwrite_r
-                0x7e048c84      0x2f4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fvwrite.o)
-                0x7e048c84                __sfvwrite_r
+                0x7e048d5c      0x2f4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fvwrite.o)
+                0x7e048d5c                __sfvwrite_r
  .text._fwalk_reent
-                0x7e048f78       0x40 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fwalk.o)
-                0x7e048f78                _fwalk_reent
+                0x7e049050       0x40 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fwalk.o)
+                0x7e049050                _fwalk_reent
  .text.__smakebuf_r
-                0x7e048fb8       0xe4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-makebuf.o)
-                0x7e048fb8                __smakebuf_r
- .text.raise    0x7e04909c       0x5c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-signal.o)
-                0x7e04909c                raise
- .text._kill_r  0x7e0490f8       0x2c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-signalr.o)
-                0x7e0490f8                _kill_r
+                0x7e049090       0xe4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-makebuf.o)
+                0x7e049090                __smakebuf_r
+ .text.raise    0x7e049174       0x5c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-signal.o)
+                0x7e049174                raise
+ .text._kill_r  0x7e0491d0       0x2c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-signalr.o)
+                0x7e0491d0                _kill_r
  .text._getpid_r
-                0x7e049124        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-signalr.o)
-                0x7e049124                _getpid_r
- .text.__sread  0x7e049128       0x24 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-stdio.o)
-                0x7e049128                __sread
+                0x7e0491fc        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-signalr.o)
+                0x7e0491fc                _getpid_r
+ .text.__sread  0x7e049200       0x24 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-stdio.o)
+                0x7e049200                __sread
  .text.__swrite
-                0x7e04914c       0x40 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-stdio.o)
-                0x7e04914c                __swrite
- .text.__sseek  0x7e04918c       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-stdio.o)
-                0x7e04918c                __sseek
+                0x7e049224       0x40 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-stdio.o)
+                0x7e049224                __swrite
+ .text.__sseek  0x7e049264       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-stdio.o)
+                0x7e049264                __sseek
  .text.__sclose
-                0x7e0491ac        0x8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-stdio.o)
-                0x7e0491ac                __sclose
+                0x7e049284        0x8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-stdio.o)
+                0x7e049284                __sclose
  .text.__swbuf_r
-                0x7e0491b4       0xb0 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-wbuf.o)
-                0x7e0491b4                __swbuf_r
+                0x7e04928c       0xb0 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-wbuf.o)
+                0x7e04928c                __swbuf_r
  .text._wcrtomb_r
-                0x7e049264       0x3c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-wcrtomb.o)
-                0x7e049264                _wcrtomb_r
+                0x7e04933c       0x3c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-wcrtomb.o)
+                0x7e04933c                _wcrtomb_r
  .text._write_r
-                0x7e0492a0       0x30 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-writer.o)
-                0x7e0492a0                _write_r
+                0x7e049378       0x30 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-writer.o)
+                0x7e049378                _write_r
  .text._close_r
-                0x7e0492d0       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-closer.o)
-                0x7e0492d0                _close_r
+                0x7e0493a8       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-closer.o)
+                0x7e0493a8                _close_r
  .text._fclose_r
-                0x7e0492f8       0xcc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fclose.o)
-                0x7e0492f8                _fclose_r
+                0x7e0493d0       0xcc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fclose.o)
+                0x7e0493d0                _fclose_r
  .text._fstat_r
-                0x7e0493c4       0x2c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fstatr.o)
-                0x7e0493c4                _fstat_r
+                0x7e04949c       0x2c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-fstatr.o)
+                0x7e04949c                _fstat_r
  .text._isatty_r
-                0x7e0493f0       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-isattyr.o)
-                0x7e0493f0                _isatty_r
+                0x7e0494c8       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-isattyr.o)
+                0x7e0494c8                _isatty_r
  .text._lseek_r
-                0x7e049418       0x30 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lseekr.o)
-                0x7e049418                _lseek_r
- .text._read_r  0x7e049448       0x30 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-readr.o)
-                0x7e049448                _read_r
- .text._close   0x7e049478       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(close.o)
-                0x7e049478                _close
- .text._fstat   0x7e04948c       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(fstat.o)
-                0x7e04948c                _fstat
- .text._getpid  0x7e0494a0       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(getpid.o)
-                0x7e0494a0                _getpid
- .text._isatty  0x7e0494b4       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(isatty.o)
-                0x7e0494b4                _isatty
- .text._kill    0x7e0494c4       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(kill.o)
-                0x7e0494c4                _kill
- .text._lseek   0x7e0494d8       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(lseek.o)
-                0x7e0494d8                _lseek
- .text._read    0x7e0494ec       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(read.o)
-                0x7e0494ec                _read
- .text._sbrk    0x7e049500       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(sbrk.o)
-                0x7e049500                _sbrk
- .text._write   0x7e049520       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(write.o)
-                0x7e049520                _write
- .text._exit    0x7e049534        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(_exit.o)
-                0x7e049534                _exit
- .text          0x7e049538      0x278 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivsi3.o)
-                0x7e049538                __aeabi_uidiv
-                0x7e049538                __udivsi3
-                0x7e049794                __aeabi_uidivmod
- .text          0x7e0497b0      0x2b0 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_divsi3.o)
-                0x7e0497b0                __divsi3
-                0x7e0497b0                __aeabi_idiv
-                0x7e049a44                __aeabi_idivmod
- .text          0x7e049a60        0x4 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_dvmd_tls.o)
-                0x7e049a60                __aeabi_idiv0
-                0x7e049a60                __aeabi_ldiv0
- .text          0x7e049a64      0x378 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_addsubdf3.o)
-                0x7e049a64                __aeabi_drsub
-                0x7e049a6c                __aeabi_dsub
-                0x7e049a6c                __subdf3
-                0x7e049a70                __aeabi_dadd
-                0x7e049a70                __adddf3
-                0x7e049ce8                __floatunsidf
-                0x7e049ce8                __aeabi_ui2d
-                0x7e049d08                __floatsidf
-                0x7e049d08                __aeabi_i2d
-                0x7e049d2c                __aeabi_f2d
-                0x7e049d2c                __extendsfdf2
-                0x7e049d70                __floatundidf
-                0x7e049d70                __aeabi_ul2d
-                0x7e049d80                __floatdidf
-                0x7e049d80                __aeabi_l2d
- .text          0x7e049ddc      0x424 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_muldivdf3.o)
-                0x7e049ddc                __aeabi_dmul
-                0x7e049ddc                __muldf3
-                0x7e04a030                __divdf3
-                0x7e04a030                __aeabi_ddiv
- .text          0x7e04a200      0x110 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_cmpdf2.o)
-                0x7e04a200                __gtdf2
-                0x7e04a200                __gedf2
-                0x7e04a208                __ltdf2
-                0x7e04a208                __ledf2
-                0x7e04a210                __nedf2
-                0x7e04a210                __eqdf2
-                0x7e04a210                __cmpdf2
-                0x7e04a28c                __aeabi_cdrcmple
-                0x7e04a29c                __aeabi_cdcmpeq
-                0x7e04a29c                __aeabi_cdcmple
-                0x7e04a2ac                __aeabi_dcmpeq
-                0x7e04a2c0                __aeabi_dcmplt
-                0x7e04a2d4                __aeabi_dcmple
-                0x7e04a2e8                __aeabi_dcmpge
-                0x7e04a2fc                __aeabi_dcmpgt
- .text          0x7e04a310       0x2c ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_unorddf2.o)
-                0x7e04a310                __unorddf2
-                0x7e04a310                __aeabi_dcmpun
- .text          0x7e04a33c       0x50 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_fixdfsi.o)
-                0x7e04a33c                __aeabi_d2iz
-                0x7e04a33c                __fixdfsi
- .text          0x7e04a38c       0x30 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_aeabi_uldivmod.o)
-                0x7e04a38c                __aeabi_uldivmod
- .text          0x7e04a3bc      0x108 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivmoddi4.o)
-                0x7e04a3bc                __udivmoddi4
+                0x7e0494f0       0x30 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lseekr.o)
+                0x7e0494f0                _lseek_r
+ .text._read_r  0x7e049520       0x30 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-readr.o)
+                0x7e049520                _read_r
+ .text._close   0x7e049550       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(close.o)
+                0x7e049550                _close
+ .text._fstat   0x7e049564       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(fstat.o)
+                0x7e049564                _fstat
+ .text._getpid  0x7e049578       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(getpid.o)
+                0x7e049578                _getpid
+ .text._isatty  0x7e04958c       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(isatty.o)
+                0x7e04958c                _isatty
+ .text._kill    0x7e04959c       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(kill.o)
+                0x7e04959c                _kill
+ .text._lseek   0x7e0495b0       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(lseek.o)
+                0x7e0495b0                _lseek
+ .text._read    0x7e0495c4       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(read.o)
+                0x7e0495c4                _read
+ .text._sbrk    0x7e0495d8       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(sbrk.o)
+                0x7e0495d8                _sbrk
+ .text._write   0x7e0495f8       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(write.o)
+                0x7e0495f8                _write
+ .text._exit    0x7e04960c        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(_exit.o)
+                0x7e04960c                _exit
+ .text          0x7e049610      0x278 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivsi3.o)
+                0x7e049610                __aeabi_uidiv
+                0x7e049610                __udivsi3
+                0x7e04986c                __aeabi_uidivmod
+ .text          0x7e049888      0x2b0 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_divsi3.o)
+                0x7e049888                __divsi3
+                0x7e049888                __aeabi_idiv
+                0x7e049b1c                __aeabi_idivmod
+ .text          0x7e049b38        0x4 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_dvmd_tls.o)
+                0x7e049b38                __aeabi_idiv0
+                0x7e049b38                __aeabi_ldiv0
+ .text          0x7e049b3c      0x378 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_addsubdf3.o)
+                0x7e049b3c                __aeabi_drsub
+                0x7e049b44                __aeabi_dsub
+                0x7e049b44                __subdf3
+                0x7e049b48                __aeabi_dadd
+                0x7e049b48                __adddf3
+                0x7e049dc0                __floatunsidf
+                0x7e049dc0                __aeabi_ui2d
+                0x7e049de0                __floatsidf
+                0x7e049de0                __aeabi_i2d
+                0x7e049e04                __aeabi_f2d
+                0x7e049e04                __extendsfdf2
+                0x7e049e48                __floatundidf
+                0x7e049e48                __aeabi_ul2d
+                0x7e049e58                __floatdidf
+                0x7e049e58                __aeabi_l2d
+ .text          0x7e049eb4      0x424 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_muldivdf3.o)
+                0x7e049eb4                __aeabi_dmul
+                0x7e049eb4                __muldf3
+                0x7e04a108                __divdf3
+                0x7e04a108                __aeabi_ddiv
+ .text          0x7e04a2d8      0x110 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_cmpdf2.o)
+                0x7e04a2d8                __gtdf2
+                0x7e04a2d8                __gedf2
+                0x7e04a2e0                __ltdf2
+                0x7e04a2e0                __ledf2
+                0x7e04a2e8                __nedf2
+                0x7e04a2e8                __eqdf2
+                0x7e04a2e8                __cmpdf2
+                0x7e04a364                __aeabi_cdrcmple
+                0x7e04a374                __aeabi_cdcmpeq
+                0x7e04a374                __aeabi_cdcmple
+                0x7e04a384                __aeabi_dcmpeq
+                0x7e04a398                __aeabi_dcmplt
+                0x7e04a3ac                __aeabi_dcmple
+                0x7e04a3c0                __aeabi_dcmpge
+                0x7e04a3d4                __aeabi_dcmpgt
+ .text          0x7e04a3e8       0x2c ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_unorddf2.o)
+                0x7e04a3e8                __unorddf2
+                0x7e04a3e8                __aeabi_dcmpun
+ .text          0x7e04a414       0x50 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_fixdfsi.o)
+                0x7e04a414                __aeabi_d2iz
+                0x7e04a414                __fixdfsi
+ .text          0x7e04a464       0x30 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_aeabi_uldivmod.o)
+                0x7e04a464                __aeabi_uldivmod
+ .text          0x7e04a494      0x108 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivmoddi4.o)
+                0x7e04a494                __udivmoddi4
 
-.glue_7         0x7e04a4c4        0x0
- .glue_7        0x7e04a4c4        0x0 linker stubs
+.glue_7         0x7e04a59c        0x0
+ .glue_7        0x7e04a59c        0x0 linker stubs
 
-.glue_7t        0x7e04a4c4        0x0
- .glue_7t       0x7e04a4c4        0x0 linker stubs
+.glue_7t        0x7e04a59c        0x0
+ .glue_7t       0x7e04a59c        0x0 linker stubs
 
-.vfp11_veneer   0x7e04a4c4        0x0
- .vfp11_veneer  0x7e04a4c4        0x0 linker stubs
+.vfp11_veneer   0x7e04a59c        0x0
+ .vfp11_veneer  0x7e04a59c        0x0 linker stubs
 
-.v4_bx          0x7e04a4c4        0x0
- .v4_bx         0x7e04a4c4        0x0 linker stubs
+.v4_bx          0x7e04a59c        0x0
+ .v4_bx         0x7e04a59c        0x0 linker stubs
 
-.iplt           0x7e04a4c4        0x0
- .iplt          0x7e04a4c4        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
+.iplt           0x7e04a59c        0x0
+ .iplt          0x7e04a59c        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
 
 i.nwy_open_app_env_init
-                0x7e04a4c4       0x1c
+                0x7e04a59c       0x1c
  i.nwy_open_app_env_init
-                0x7e04a4c4       0x1c ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x7e04a59c       0x1c ../build/nwy_open_stub.a(nwy_open_stub.o)
 
-i.nwy_strncmp   0x7e04a4e0       0x2c
- i.nwy_strncmp  0x7e04a4e0       0x2c ../build/nwy_open_stub.a(nwy_open_stub.o)
+i.nwy_strncmp   0x7e04a5b8       0x2c
+ i.nwy_strncmp  0x7e04a5b8       0x2c ../build/nwy_open_stub.a(nwy_open_stub.o)
 
 i.nwy_open_app_sdk_load
-                0x7e04a50c       0x7c
+                0x7e04a5e4       0x7c
  i.nwy_open_app_sdk_load
-                0x7e04a50c       0x7c ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x7e04a5e4       0x7c ../build/nwy_open_stub.a(nwy_open_stub.o)
 
 i.__nwy_open_app_entry
-                0x7e04a588       0x1e
+                0x7e04a660       0x1e
  i.__nwy_open_app_entry
-                0x7e04a588       0x1e ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x7e04a660       0x1e ../build/nwy_open_stub.a(nwy_open_stub.o)
 
-.rodata         0x7e04a5a8     0x1325
+.rodata         0x7e04a680     0x1755
  *(.rodata*)
  .rodata.nwy_hal_net_get_operator_name.str1.1
-                0x7e04a5a8        0xf CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
+                0x7e04a680        0xf CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
  .rodata.nwy_hal_net_get_ip.str1.1
-                0x7e04a5b7        0x8 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
+                0x7e04a68f        0x8 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
  .rodata.uart_log_format.str1.1
-                0x7e04a5bf        0xe CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj
+                0x7e04a697        0xe CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj
  .rodata.test_sim_urc_cb.str1.1
-                0x7e04a5cd       0x3c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                0x7e04a6a5       0x3c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
  .rodata.test_data_call_cb.str1.1
-                0x7e04a609       0x61 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                0x7e04a6e1       0x61 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
  .rodata.run_network_diagnostics_scan.str1.1
-                0x7e04a66a      0xaa6 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
-                                0xae4 (size before relaxing)
+                0x7e04a742      0xc38 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                                0xc70 (size before relaxing)
  .rodata.network_monitor_task.str1.1
-                0x7e04b110      0x292 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                0x7e04b37a      0x536 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
  .rodata.nwy_open_app_entry.str1.1
-                0x7e04b3a2       0x5a CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                0x7e04b8b0       0x5a CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
  .rodata.str1.1
-                0x7e04b3fc       0x7a CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                0x7e04b90a       0x7a CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
                                  0x7f (size before relaxing)
- *fill*         0x7e04b476        0x2 
- .rodata.CSWTCH.77
-                0x7e04b478        0xc CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
- .rodata.CSWTCH.79
-                0x7e04b484       0x28 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+ .rodata.CSWTCH.93
+                0x7e04b984        0xc CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+ .rodata.CSWTCH.95
+                0x7e04b990       0x28 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
  .rodata.__func__.1
-                0x7e04b4ac       0x15 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                0x7e04b9b8       0x15 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
  .rodata.__func__.2
-                0x7e04b4c1       0x13 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+                0x7e04b9cd       0x13 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
  .rodata._svfprintf_r.str1.4
-                0x7e04b4d4       0x42 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-svfprintf.o)
- *fill*         0x7e04b516        0x2 
+                0x7e04b9e0       0x42 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-svfprintf.o)
+ *fill*         0x7e04ba22        0x2 
  .rodata.blanks.1
-                0x7e04b518       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-svfprintf.o)
+                0x7e04ba24       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-svfprintf.o)
  .rodata.zeroes.0
-                0x7e04b528       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-svfprintf.o)
+                0x7e04ba34       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-svfprintf.o)
  .rodata._dtoa_r.str1.4
-                0x7e04b538       0xa1 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-dtoa.o)
+                0x7e04ba44       0xa1 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-dtoa.o)
                                  0xa5 (size before relaxing)
- *fill*         0x7e04b5d9        0x3 
+ *fill*         0x7e04bae5        0x3 
  .rodata.__multadd.str1.4
-                0x7e04b5dc       0x7e ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e04bae8       0x7e ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
                                  0x92 (size before relaxing)
- *fill*         0x7e04b65a        0x6 
+ *fill*         0x7e04bb66        0x2 
  .rodata.__mprec_bigtens
-                0x7e04b660       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e04b660                __mprec_bigtens
+                0x7e04bb68       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e04bb68                __mprec_bigtens
  .rodata.__mprec_tens
-                0x7e04b688       0xc8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
-                0x7e04b688                __mprec_tens
- .rodata.p05.0  0x7e04b750        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e04bb90       0xc8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
+                0x7e04bb90                __mprec_tens
+ .rodata.p05.0  0x7e04bc58        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mprec.o)
  .rodata.__assert_func.str1.4
-                0x7e04b75c       0x3f ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-assert.o)
+                0x7e04bc64       0x3f ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-assert.o)
                                  0x43 (size before relaxing)
- *fill*         0x7e04b79b        0x1 
+ *fill*         0x7e04bca3        0x1 
  .rodata._setlocale_r.str1.4
-                0x7e04b79c        0xa ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-locale.o)
+                0x7e04bca4        0xa ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-locale.o)
                                   0xd (size before relaxing)
- *fill*         0x7e04b7a6        0x2 
+ *fill*         0x7e04bcae        0x2 
  .rodata.str1.4
-                0x7e04b7a8        0x2 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-locale.o)
+                0x7e04bcb0        0x2 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-locale.o)
  .rodata._vfiprintf_r.str1.4
-                0x7e04b7aa       0x2f ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
- *fill*         0x7e04b7aa        0x2 
+                0x7e04bcb2       0x2f ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
+ *fill*         0x7e04bcb2        0x2 
  .rodata.blanks.1
-                0x7e04b7ac       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
+                0x7e04bcb4       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
  .rodata.zeroes.0
-                0x7e04b7bc       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
+                0x7e04bcc4       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-vfiprintf.o)
  .rodata._ctype_
-                0x7e04b7cc      0x101 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-ctype_.o)
-                0x7e04b7cc                _ctype_
+                0x7e04bcd4      0x101 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-ctype_.o)
+                0x7e04bcd4                _ctype_
 
-.conststrlit    0x7e04b8cd     0x1de3
- .conststrlit   0x7e04b8cd     0x1de3 ../build/nwy_open_stub.a(nwy_open_stub.o)
+.conststrlit    0x7e04bdd5     0x1de3
+ .conststrlit   0x7e04bdd5     0x1de3 ../build/nwy_open_stub.a(nwy_open_stub.o)
 
-.ARM.exidx      0x7e04d6b0        0x8
- .ARM.exidx     0x7e04d6b0        0x8 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivmoddi4.o)
+.ARM.exidx      0x7e04dbb8        0x8
+ .ARM.exidx     0x7e04dbb8        0x8 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivmoddi4.o)
 
-.rel.dyn        0x7e04d6b8        0x0
- .rel.iplt      0x7e04d6b8        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
+.rel.dyn        0x7e04dbc0        0x0
+ .rel.iplt      0x7e04dbc0        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
 
 nwy_open_api_import
-                0x7e04d6b8      0xc18
-                0x7e04d6b8                PROVIDE (nwy_open_api_import$$Base = .)
+                0x7e04dbc0      0xc18
+                0x7e04dbc0                PROVIDE (nwy_open_api_import$$Base = .)
  *(nwy_open_api_import)
  nwy_open_api_import
-                0x7e04d6b8      0xc18 ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x7e04dbc0      0xc18 ../build/nwy_open_stub.a(nwy_open_stub.o)
                 [!provide]                PROVIDE (nwy_open_api_import$$End = .)
                 0x00000c18                nwy_open_api_import$$Length = SIZEOF (nwy_open_api_import)
 
-.data           0x7e04e2d0      0xfbc
+.data           0x7e04e7d8      0xfbc
  *(.data*)
  .data.g_log_fd
-                0x7e04e2d0        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj
+                0x7e04e7d8        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj
  .data.g_uart_fd
-                0x7e04e2d4        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
- .data          0x7e04e2d8      0x60c ../build/nwy_open_stub.a(nwy_open_stub.o)
-                0x7e04e2d8                nwy_sdk_log_printf_ptr
-                0x7e04e2dc                nwy_thread_create_ptr
-                0x7e04e2e0                nwy_thread_get_current_ptr
-                0x7e04e2e4                nwy_thread_set_priority_ptr
-                0x7e04e2e8                nwy_thread_get_priority_ptr
-                0x7e04e2ec                nwy_thread_suspend_ptr
-                0x7e04e2f0                nwy_thread_resume_ptr
-                0x7e04e2f4                nwy_thread_exit_ptr
-                0x7e04e2f8                nwy_thread_sleep_ptr
-                0x7e04e2fc                nwy_thread_usleep_ptr
-                0x7e04e300                nwy_thread_event_send_ptr
-                0x7e04e304                nwy_thread_event_front_send_ptr
-                0x7e04e308                nwy_thread_event_wait_ptr
-                0x7e04e30c                nwy_thread_pendingevt_num_get_ptr
-                0x7e04e310                nwy_thread_spaceevt_cnt_get_ptr
-                0x7e04e314                nwy_thread_info_get_ptr
-                0x7e04e318                nwy_thread_list_get_ptr
-                0x7e04e31c                nwy_thread_runtime_stats_get_ptr
-                0x7e04e320                nwy_msg_queue_create_ptr
-                0x7e04e324                nwy_msg_queue_delete_ptr
-                0x7e04e328                nwy_msg_queue_send_ptr
-                0x7e04e32c                nwy_msg_queue_front_send_ptr
-                0x7e04e330                nwy_msg_queue_recv_ptr
-                0x7e04e334                nwy_msg_queue_pending_num_get_ptr
-                0x7e04e338                nwy_msg_queue_space_num_get_ptr
-                0x7e04e33c                nwy_sdk_mutex_create_ptr
-                0x7e04e340                nwy_sdk_mutex_lock_ptr
-                0x7e04e344                nwy_sdk_mutex_unlock_ptr
-                0x7e04e348                nwy_sdk_mutex_delete_ptr
-                0x7e04e34c                nwy_semaphore_create_ptr
-                0x7e04e350                nwy_semaphore_acquire_ptr
-                0x7e04e354                nwy_semahpore_release_ptr
-                0x7e04e358                nwy_semahpore_delete_ptr
-                0x7e04e35c                nwy_semahpore_count_get_ptr
-                0x7e04e360                nwy_sdk_timer_create_ptr
-                0x7e04e364                nwy_sdk_timer_destory_ptr
-                0x7e04e368                nwy_sdk_timer_start_ptr
-                0x7e04e36c                nwy_sdk_timer_status_get_ptr
-                0x7e04e370                nwy_sdk_timer_stop_ptr
-                0x7e04e374                nwy_uptime_get_ptr
-                0x7e04e378                nwy_date_set_ptr
-                0x7e04e37c                nwy_date_get_ptr
-                0x7e04e380                nwy_sys_timestamp_set_ptr
-                0x7e04e384                nwy_sys_timestamp_get_ptr
-                0x7e04e388                nwy_sys_timezone_set_ptr
-                0x7e04e38c                nwy_timestamp_to_date_ptr
-                0x7e04e390                nwy_date_to_timestamp_ptr
-                0x7e04e394                nwy_socket_errno_ptr
-                0x7e04e398                nwy_socket_open_ptr
-                0x7e04e39c                nwy_socket_send_ptr
-                0x7e04e3a0                nwy_socket_recv_ptr
-                0x7e04e3a4                nwy_socket_sendto_ptr
-                0x7e04e3a8                nwy_socket_recvfrom_ptr
-                0x7e04e3ac                nwy_socket_setsockopt_ptr
-                0x7e04e3b0                nwy_socket_getsockopt_ptr
-                0x7e04e3b4                nwy_socket_gethost_by_name_ptr
-                0x7e04e3b8                nwy_socket_close_ptr
-                0x7e04e3bc                nwy_socket_shutdown_ptr
-                0x7e04e3c0                nwy_socket_connect_ptr
-                0x7e04e3c4                nwy_socket_lport_bind_ptr
-                0x7e04e3c8                nwy_socket_bind_ptr
-                0x7e04e3cc                nwy_socket_listen_ptr
-                0x7e04e3d0                nwy_socket_accept_ptr
-                0x7e04e3d4                nwy_socket_get_state_ptr
-                0x7e04e3d8                nwy_socket_select_ptr
-                0x7e04e3dc                nwy_socket_set_nonblock_ptr
-                0x7e04e3e0                nwy_socket_set_reuseaddr_ptr
-                0x7e04e3e4                nwy_socket_set_nodelay_ptr
-                0x7e04e3e8                nwy_socket_set_keepalive_ptr
-                0x7e04e3ec                nwy_socket_set_linger_ptr
-                0x7e04e3f0                nwy_socket_get_ack_ptr
-                0x7e04e3f4                nwy_socket_get_sent_ptr
-                0x7e04e3f8                nwy_socket_inet_ntop_ptr
-                0x7e04e3fc                nwy_socket_inet_pton_ptr
-                0x7e04e400                nwy_socket_htons_ptr
-                0x7e04e404                nwy_socket_ntohs_ptr
-                0x7e04e408                nwy_socket_htonl_ptr
-                0x7e04e40c                nwy_socket_ntohl_ptr
-                0x7e04e410                nwy_usb_serial_send_ptr
-                0x7e04e414                nwy_usb_serial_reg_recv_cb_ptr
-                0x7e04e418                malloc_ptr
-                0x7e04e41c                calloc_ptr
-                0x7e04e420                realloc_ptr
-                0x7e04e424                free_ptr
-                0x7e04e428                nwy_file_open_ptr
-                0x7e04e42c                nwy_file_read_ptr
-                0x7e04e430                nwy_file_write_ptr
-                0x7e04e434                nwy_file_tell_ptr
-                0x7e04e438                nwy_file_seek_ptr
-                0x7e04e43c                nwy_file_path_size_ptr
-                0x7e04e440                nwy_file_fd_size_ptr
-                0x7e04e444                nwy_file_exist_ptr
-                0x7e04e448                nwy_file_remove_ptr
-                0x7e04e44c                nwy_file_rename_ptr
-                0x7e04e450                nwy_file_sync_ptr
-                0x7e04e454                nwy_file_fd_trunc_ptr
-                0x7e04e458                nwy_file_path_trunc_ptr
-                0x7e04e45c                nwy_file_path_stat_get_ptr
-                0x7e04e460                nwy_file_fd_stat_get_ptr
-                0x7e04e464                nwy_file_close_ptr
-                0x7e04e468                nwy_dir_mk_ptr
-                0x7e04e46c                nwy_dir_rm_ptr
-                0x7e04e470                nwy_dir_recursive_rm_ptr
-                0x7e04e474                nwy_dir_open_ptr
-                0x7e04e478                nwy_dir_close_ptr
-                0x7e04e47c                nwy_dir_read_ptr
-                0x7e04e480                nwy_dir_tell_ptr
-                0x7e04e484                nwy_dir_seek_ptr
-                0x7e04e488                nwy_dir_rewind_ptr
-                0x7e04e48c                nwy_vfs_free_size_get_ptr
-                0x7e04e490                nwy_dm_dev_model_get_ptr
-                0x7e04e494                nwy_dm_inner_version_get_ptr
-                0x7e04e498                nwy_dm_open_sdk_version_get_ptr
-                0x7e04e49c                nwy_dm_hw_version_get_ptr
-                0x7e04e4a0                nwy_dm_rftemperature_get_ptr
-                0x7e04e4a4                nwy_dm_sn_get_ptr
-                0x7e04e4a8                nwy_dm_imei_get_ptr
-                0x7e04e4ac                nwy_dm_app_version_set_ptr
-                0x7e04e4b0                nwy_dm_imei_set_ptr
-                0x7e04e4b4                nwy_dm_heapinfo_ptr
-                0x7e04e4b8                nwy_dm_nvinfo_get_ptr
-                0x7e04e4bc                nwy_ftp_login_ptr
-                0x7e04e4c0                nwy_ftp_logout_ptr
-                0x7e04e4c4                nwy_ftp_get_ptr
-                0x7e04e4c8                nwy_ftp_put_ptr
-                0x7e04e4cc                nwy_ftp_get_filesize_ptr
-                0x7e04e4d0                nwy_ftp_del_file_ptr
-                0x7e04e4d4                nwy_http_setup_ptr
-                0x7e04e4d8                nwy_http_get_ptr
-                0x7e04e4dc                nwy_http_head_ptr
-                0x7e04e4e0                nwy_http_post_ptr
-                0x7e04e4e4                nwy_http_put_ptr
-                0x7e04e4e8                nwy_http_open_mode_ptr
-                0x7e04e4ec                nwy_http_close_ptr
-                0x7e04e4f0                nwy_sntp_get_time_ptr
-                0x7e04e4f4                nwy_sim_imsi_get_ptr
-                0x7e04e4f8                nwy_sim_iccid_get_ptr
-                0x7e04e4fc                nwy_sim_status_get_ptr
-                0x7e04e500                nwy_sim_pin_verify_ptr
-                0x7e04e504                nwy_sim_pin_unlock_ptr
-                0x7e04e508                nwy_sim_pin_mode_get_ptr
-                0x7e04e50c                nwy_sim_pin_enable_ptr
-                0x7e04e510                nwy_sim_pin_disable_ptr
-                0x7e04e514                nwy_sim_pin_change_ptr
-                0x7e04e518                nwy_sim_pin_times_get_ptr
-                0x7e04e51c                nwy_sim_msisdn_get_ptr
-                0x7e04e520                nwy_sim_slot_set_ptr
-                0x7e04e524                nwy_sim_slot_get_ptr
-                0x7e04e528                nwy_sim_reset_ptr
-                0x7e04e52c                nwy_sim_power_set_ptr
-                0x7e04e530                nwy_sim_detect_set_ptr
-                0x7e04e534                nwy_sim_csim_ptr
-                0x7e04e538                nwy_sim_urc_reg_ptr
-                0x7e04e53c                nwy_sim_urc_unreg_ptr
-                0x7e04e540                nwy_pm_ctrl_ptr
-                0x7e04e544                nwy_pm_state_set_ptr
-                0x7e04e548                nwy_bootup_alarm_set_ptr
-                0x7e04e54c                nwy_bootup_alarm_del_ptr
-                0x7e04e550                nwy_power_state_ptr
-                0x7e04e554                nwy_pm_boot_res_ptr
-                0x7e04e558                nwy_loc_navigation_start_ptr
-                0x7e04e55c                nwy_loc_navigation_stop_ptr
-                0x7e04e560                nwy_loc_navigation_reset_ptr
-                0x7e04e564                nwy_loc_recv_cb_reg_ptr
-                0x7e04e568                nwy_loc_mode_set_ptr
-                0x7e04e56c                nwy_loc_startup_set_ptr
-                0x7e04e570                nwy_loc_rate_set_ptr
-                0x7e04e574                nwy_loc_cfg_nmea_type_ptr
-                0x7e04e578                nwy_loc_nmea_get_ptr
-                0x7e04e57c                nwy_loc_nmea_parse_ptr
-                0x7e04e580                nwy_loc_agnss_start_ptr
-                0x7e04e584                nwy_loc_param_set_ptr
-                0x7e04e588                nwy_loc_param_get_ptr
-                0x7e04e58c                nwy_data_reg_cb_ptr
-                0x7e04e590                nwy_data_unreg_cb_ptr
-                0x7e04e594                nwy_data_call_start_ptr
-                0x7e04e598                nwy_data_call_stop_ptr
-                0x7e04e59c                nwy_data_profile_get_ptr
-                0x7e04e5a0                nwy_data_profile_set_ptr
-                0x7e04e5a4                nwy_data_auto_connect_set_ptr
-                0x7e04e5a8                nwy_data_call_info_get_ptr
-                0x7e04e5ac                nwy_data_flow_info_get_ptr
-                0x7e04e5b0                nwy_data_eps_dyn_apn_get_ptr
-                0x7e04e5b4                nwy_data_dhcp_get_ptr
-                0x7e04e5b8                nwy_data_dhcp_set_ptr
-                0x7e04e5bc                nwy_data_dns_info_get_ptr
-                0x7e04e5c0                nwy_data_get_capability_ptr
-                0x7e04e5c4                mbedtls_ssl_conf_max_version_ptr
-                0x7e04e5c8                mbedtls_ssl_conf_min_version_ptr
-                0x7e04e5cc                mbedtls_ssl_conf_authmode_ptr
-                0x7e04e5d0                mbedtls_ssl_conf_ca_chain_ptr
-                0x7e04e5d4                mbedtls_ssl_conf_own_cert_ptr
-                0x7e04e5d8                mbedtls_ssl_conf_rng_ptr
-                0x7e04e5dc                mbedtls_ssl_conf_dbg_ptr
-                0x7e04e5e0                mbedtls_ssl_setup_ptr
-                0x7e04e5e4                mbedtls_ssl_set_hostname_ptr
-                0x7e04e5e8                mbedtls_ssl_set_bio_ptr
-                0x7e04e5ec                mbedtls_ssl_handshake_ptr
-                0x7e04e5f0                mbedtls_ssl_get_verify_result_ptr
-                0x7e04e5f4                mbedtls_net_connect_ptr
-                0x7e04e5f8                mbedtls_net_init_ptr
-                0x7e04e5fc                mbedtls_net_bind_ptr
-                0x7e04e600                mbedtls_net_accept_ptr
-                0x7e04e604                mbedtls_net_poll_ptr
-                0x7e04e608                mbedtls_net_set_block_ptr
-                0x7e04e60c                mbedtls_net_set_nonblock_ptr
-                0x7e04e610                mbedtls_net_usleep_ptr
-                0x7e04e614                mbedtls_net_recv_ptr
-                0x7e04e618                mbedtls_net_send_ptr
-                0x7e04e61c                mbedtls_net_recv_timeout_ptr
-                0x7e04e620                mbedtls_net_free_ptr
-                0x7e04e624                mbedtls_pk_init_ptr
-                0x7e04e628                mbedtls_pk_free_ptr
-                0x7e04e62c                mbedtls_ssl_init_ptr
-                0x7e04e630                mbedtls_ssl_read_ptr
-                0x7e04e634                mbedtls_ssl_write_ptr
-                0x7e04e638                mbedtls_ssl_send_alert_message_ptr
-                0x7e04e63c                mbedtls_ssl_close_notify_ptr
-                0x7e04e640                mbedtls_ssl_free_ptr
-                0x7e04e644                mbedtls_ssl_config_init_ptr
-                0x7e04e648                mbedtls_ssl_config_defaults_ptr
-                0x7e04e64c                mbedtls_ssl_config_free_ptr
-                0x7e04e650                mbedtls_ssl_session_init_ptr
-                0x7e04e654                mbedtls_ssl_session_free_ptr
-                0x7e04e658                mbedtls_ssl_conf_read_timeout_ptr
-                0x7e04e65c                mbedtls_ssl_set_timer_cb_ptr
-                0x7e04e660                mbedtls_platform_set_calloc_free_ptr
-                0x7e04e664                mbedtls_x509_crt_parse_der_ptr
-                0x7e04e668                mbedtls_x509_crt_parse_ptr
-                0x7e04e66c                mbedtls_x509_crt_info_ptr
-                0x7e04e670                mbedtls_x509_crt_verify_info_ptr
-                0x7e04e674                mbedtls_x509_crt_verify_ptr
-                0x7e04e678                mbedtls_x509_crt_verify_with_profile_ptr
-                0x7e04e67c                mbedtls_x509_crt_verify_restartable_ptr
-                0x7e04e680                mbedtls_x509_crt_init_ptr
-                0x7e04e684                mbedtls_x509_crt_free_ptr
-                0x7e04e688                mbedtls_pk_parse_key_ptr
-                0x7e04e68c                mbedtls_entropy_free_ptr
-                0x7e04e690                mbedtls_entropy_init_ptr
-                0x7e04e694                mbedtls_entropy_func_ptr
-                0x7e04e698                mbedtls_ctr_drbg_random_ptr
-                0x7e04e69c                mbedtls_ctr_drbg_free_ptr
-                0x7e04e6a0                mbedtls_ctr_drbg_seed_ptr
-                0x7e04e6a4                mbedtls_ctr_drbg_init_ptr
-                0x7e04e6a8                mbedtls_ssl_get_bytes_avail_ptr
-                0x7e04e6ac                mbedtls_ssl_conf_ciphersuites_ptr
-                0x7e04e6b0                mbedtls_sha1_init_ptr
-                0x7e04e6b4                mbedtls_sha1_update_ptr
-                0x7e04e6b8                mbedtls_sha1_finish_ptr
-                0x7e04e6bc                mbedtls_base64_encode_ptr
-                0x7e04e6c0                mbedtls_ssl_session_reset_ptr
-                0x7e04e6c4                mbedtls_pk_get_type_ptr
-                0x7e04e6c8                mbedtls_ssl_conf_renegotiation_ptr
-                0x7e04e6cc                mbedtls_ssl_set_session_ptr
-                0x7e04e6d0                mbedtls_aes_init_ptr
-                0x7e04e6d4                mbedtls_aes_free_ptr
-                0x7e04e6d8                mbedtls_aes_xts_init_ptr
-                0x7e04e6dc                mbedtls_aes_xts_free_ptr
-                0x7e04e6e0                mbedtls_aes_setkey_enc_ptr
-                0x7e04e6e4                mbedtls_aes_setkey_dec_ptr
-                0x7e04e6e8                mbedtls_aes_xts_setkey_enc_ptr
-                0x7e04e6ec                mbedtls_aes_xts_setkey_dec_ptr
-                0x7e04e6f0                mbedtls_aes_crypt_ecb_ptr
-                0x7e04e6f4                mbedtls_aes_crypt_cbc_ptr
-                0x7e04e6f8                mbedtls_aes_crypt_xts_ptr
-                0x7e04e6fc                mbedtls_aes_crypt_cfb128_ptr
-                0x7e04e700                mbedtls_aes_crypt_cfb8_ptr
-                0x7e04e704                mbedtls_aes_crypt_ofb_ptr
-                0x7e04e708                mbedtls_aes_crypt_ctr_ptr
-                0x7e04e70c                nwy_ssl_version_info_get_ptr
-                0x7e04e710                mbedtls_internal_aes_encrypt_ptr
-                0x7e04e714                mbedtls_internal_aes_decrypt_ptr
-                0x7e04e718                psa_crypto_init_ptr
-                0x7e04e71c                nwy_usb_net_mode_set_ptr
-                0x7e04e720                nwy_usb_net_mode_get_ptr
-                0x7e04e724                nwy_i2c_init_ptr
-                0x7e04e728                nwy_i2c_read_ptr
-                0x7e04e72c                nwy_i2c_write_ptr
-                0x7e04e730                nwy_i2c_deinit_ptr
-                0x7e04e734                nwy_i2c_raw_get_byte_ptr
-                0x7e04e738                nwy_i2c_raw_put_byte_ptr
-                0x7e04e73c                nwy_spi_init_ptr
-                0x7e04e740                nwy_spi_cs_cfg_ptr
-                0x7e04e744                nwy_spi_transfer_ptr
-                0x7e04e748                nwy_spi_deinit_ptr
-                0x7e04e74c                nwy_spi_read_ptr
-                0x7e04e750                nwy_spi_write_ptr
-                0x7e04e754                nwy_sms_option_init_ptr
-                0x7e04e758                nwy_sms_storage_set_ptr
-                0x7e04e75c                nwy_sms_storage_get_ptr
-                0x7e04e760                nwy_sms_report_set_ptr
-                0x7e04e764                nwy_sms_sca_set_ptr
-                0x7e04e768                nwy_sms_sca_get_ptr
-                0x7e04e76c                nwy_sms_msg_send_ptr
-                0x7e04e770                nwy_sms_recv_cb_reg_ptr
-                0x7e04e774                nwy_sms_recv_cb_unreg_ptr
-                0x7e04e778                nwy_sms_msg_del_ptr
-                0x7e04e77c                nwy_sms_msg_read_ptr
-                0x7e04e780                nwy_sms_msg_del_ext_ptr
-                0x7e04e784                nwy_sms_msg_list_read_ptr
-                0x7e04e788                nwy_nw_mode_get_ptr
-                0x7e04e78c                nwy_nw_mode_set_ptr
-                0x7e04e790                nwy_nw_priband_get_ptr
-                0x7e04e794                nwy_nw_priband_set_ptr
-                0x7e04e798                nwy_nw_ims_get_ptr
-                0x7e04e79c                nwy_nw_ims_set_ptr
-                0x7e04e7a0                nwy_nw_radio_get_ptr
-                0x7e04e7a4                nwy_nw_radio_set_ptr
-                0x7e04e7a8                nwy_nw_config_get_ptr
-                0x7e04e7ac                nwy_nw_config_set_ptr
-                0x7e04e7b0                nwy_nw_operator_get_ptr
-                0x7e04e7b4                nwy_nw_csq_get_ptr
-                0x7e04e7b8                nwy_nw_signal_get_ptr
-                0x7e04e7bc                nwy_nw_regstatus_get_ptr
-                0x7e04e7c0                nwy_nw_cellinfo_get_ptr
-                0x7e04e7c4                nwy_nw_lock_set_ptr
-                0x7e04e7c8                nwy_nw_lock_get_ptr
-                0x7e04e7cc                nwy_nw_manual_select_ptr
-                0x7e04e7d0                nwy_nw_scan_ptr
-                0x7e04e7d4                nwy_nw_psm_get_ptr
-                0x7e04e7d8                nwy_nw_psm_set_ptr
-                0x7e04e7dc                nwy_nw_get_forbidden_plmn_ptr
-                0x7e04e7e0                nwy_nw_reg_cb_ptr
-                0x7e04e7e4                nwy_nw_unreg_cb_ptr
-                0x7e04e7e8                nwy_get_time_zone_switch_ptr
-                0x7e04e7ec                nwy_set_time_zone_switch_ptr
-                0x7e04e7f0                nwy_dm_nwcfg_get_ptr
-                0x7e04e7f4                nwy_dm_nwcfg_set_ptr
-                0x7e04e7f8                nwy_virt_at_parameter_init_ptr
-                0x7e04e7fc                nwy_virt_at_cmd_send_ptr
-                0x7e04e800                nwy_virt_at_unsolicited_cb_reg_ptr
-                0x7e04e804                nwy_virt_at_get_original_rsp_cb_ptr
-                0x7e04e808                nwy_virt_at_forward_cb_ptr
-                0x7e04e80c                nwy_virt_at_forward_send_ptr
-                0x7e04e810                nwy_pm_vbat_voltage_get_ptr
-                0x7e04e814                nwy_ping_start_ptr
-                0x7e04e818                NetworkInit_ptr
-                0x7e04e81c                NetworkConnect_ptr
-                0x7e04e820                NetworkDisconnect_ptr
-                0x7e04e824                MQTTClientInit_ptr
-                0x7e04e828                MQTTConnect_ptr
-                0x7e04e82c                MQTTPublish_ptr
-                0x7e04e830                MQTTSetMessageHandler_ptr
-                0x7e04e834                MQTTSubscribe_ptr
-                0x7e04e838                MQTTUnsubscribe_ptr
-                0x7e04e83c                MQTTDisconnect_ptr
-                0x7e04e840                MQTTYield_ptr
-                0x7e04e844                MQTTIsConnected_ptr
-                0x7e04e848                nwy_gpio_direction_get_ptr
-                0x7e04e84c                nwy_gpio_direction_set_ptr
-                0x7e04e850                nwy_gpio_value_get_ptr
-                0x7e04e854                nwy_gpio_value_set_ptr
-                0x7e04e858                nwy_gpio_pull_get_ptr
-                0x7e04e85c                nwy_gpio_pull_set_ptr
-                0x7e04e860                nwy_gpio_irq_register_ptr
-                0x7e04e864                nwy_gpio_irq_enable_ptr
-                0x7e04e868                nwy_gpio_irq_disable_ptr
-                0x7e04e86c                nwy_gpio_irq_wakeup_enable_ptr
-                0x7e04e870                nwy_gpio_irq_wakeup_disable_ptr
-                0x7e04e874                nwy_gpio_close_ptr
-                0x7e04e878                nwy_uart_open_ptr
-                0x7e04e87c                nwy_uart_read_ptr
-                0x7e04e880                nwy_uart_write_ptr
-                0x7e04e884                nwy_uart_dcb_set_ptr
-                0x7e04e888                nwy_uart_dcb_get_ptr
-                0x7e04e88c                nwy_uart_close_ptr
-                0x7e04e890                nwy_uart_rx_cb_register_ptr
-                0x7e04e894                nwy_uart_tx_cb_register_ptr
-                0x7e04e898                nwy_uart_rx_frame_timeout_set_ptr
-                0x7e04e89c                nwy_adc_get_ptr
-                0x7e04e8a0                nwy_dev_name_list_get_ptr
-                0x7e04e8a4                nwy_sat_set_on_off_ptr
-                0x7e04e8a8                nwy_sat_get_on_off_ptr
-                0x7e04e8ac                nwy_sat_terminal_response_ptr
-                0x7e04e8b0                nwy_sat_envelope_command_ptr
-                0x7e04e8b4                nwy_sat_set_profile_ptr
-                0x7e04e8b8                nwy_sat_get_profile_ptr
-                0x7e04e8bc                nwy_sat_recv_data_ptr
-                0x7e04e8c0                nwy_fota_write_ptr
-                0x7e04e8c4                nwy_fota_update_ptr
-                0x7e04e8c8                nwy_fota_result_get_ptr
-                0x7e04e8cc                nwy_fota_base_ver_update_ptr
-                0x7e04e8d0                nwy_vfs_logical_block_device_create_ptr
-                0x7e04e8d4                nwy_vfs_mount_ptr
-                0x7e04e8d8                nwy_vfs_unmount_ptr
-                0x7e04e8dc                nwy_vfs_mkfs_ptr
-                0x7e04e8e0                nwy_dm_soc_model_get_ptr
+                0x7e04e7dc        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+ .data          0x7e04e7e0      0x60c ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x7e04e7e0                nwy_sdk_log_printf_ptr
+                0x7e04e7e4                nwy_thread_create_ptr
+                0x7e04e7e8                nwy_thread_get_current_ptr
+                0x7e04e7ec                nwy_thread_set_priority_ptr
+                0x7e04e7f0                nwy_thread_get_priority_ptr
+                0x7e04e7f4                nwy_thread_suspend_ptr
+                0x7e04e7f8                nwy_thread_resume_ptr
+                0x7e04e7fc                nwy_thread_exit_ptr
+                0x7e04e800                nwy_thread_sleep_ptr
+                0x7e04e804                nwy_thread_usleep_ptr
+                0x7e04e808                nwy_thread_event_send_ptr
+                0x7e04e80c                nwy_thread_event_front_send_ptr
+                0x7e04e810                nwy_thread_event_wait_ptr
+                0x7e04e814                nwy_thread_pendingevt_num_get_ptr
+                0x7e04e818                nwy_thread_spaceevt_cnt_get_ptr
+                0x7e04e81c                nwy_thread_info_get_ptr
+                0x7e04e820                nwy_thread_list_get_ptr
+                0x7e04e824                nwy_thread_runtime_stats_get_ptr
+                0x7e04e828                nwy_msg_queue_create_ptr
+                0x7e04e82c                nwy_msg_queue_delete_ptr
+                0x7e04e830                nwy_msg_queue_send_ptr
+                0x7e04e834                nwy_msg_queue_front_send_ptr
+                0x7e04e838                nwy_msg_queue_recv_ptr
+                0x7e04e83c                nwy_msg_queue_pending_num_get_ptr
+                0x7e04e840                nwy_msg_queue_space_num_get_ptr
+                0x7e04e844                nwy_sdk_mutex_create_ptr
+                0x7e04e848                nwy_sdk_mutex_lock_ptr
+                0x7e04e84c                nwy_sdk_mutex_unlock_ptr
+                0x7e04e850                nwy_sdk_mutex_delete_ptr
+                0x7e04e854                nwy_semaphore_create_ptr
+                0x7e04e858                nwy_semaphore_acquire_ptr
+                0x7e04e85c                nwy_semahpore_release_ptr
+                0x7e04e860                nwy_semahpore_delete_ptr
+                0x7e04e864                nwy_semahpore_count_get_ptr
+                0x7e04e868                nwy_sdk_timer_create_ptr
+                0x7e04e86c                nwy_sdk_timer_destory_ptr
+                0x7e04e870                nwy_sdk_timer_start_ptr
+                0x7e04e874                nwy_sdk_timer_status_get_ptr
+                0x7e04e878                nwy_sdk_timer_stop_ptr
+                0x7e04e87c                nwy_uptime_get_ptr
+                0x7e04e880                nwy_date_set_ptr
+                0x7e04e884                nwy_date_get_ptr
+                0x7e04e888                nwy_sys_timestamp_set_ptr
+                0x7e04e88c                nwy_sys_timestamp_get_ptr
+                0x7e04e890                nwy_sys_timezone_set_ptr
+                0x7e04e894                nwy_timestamp_to_date_ptr
+                0x7e04e898                nwy_date_to_timestamp_ptr
+                0x7e04e89c                nwy_socket_errno_ptr
+                0x7e04e8a0                nwy_socket_open_ptr
+                0x7e04e8a4                nwy_socket_send_ptr
+                0x7e04e8a8                nwy_socket_recv_ptr
+                0x7e04e8ac                nwy_socket_sendto_ptr
+                0x7e04e8b0                nwy_socket_recvfrom_ptr
+                0x7e04e8b4                nwy_socket_setsockopt_ptr
+                0x7e04e8b8                nwy_socket_getsockopt_ptr
+                0x7e04e8bc                nwy_socket_gethost_by_name_ptr
+                0x7e04e8c0                nwy_socket_close_ptr
+                0x7e04e8c4                nwy_socket_shutdown_ptr
+                0x7e04e8c8                nwy_socket_connect_ptr
+                0x7e04e8cc                nwy_socket_lport_bind_ptr
+                0x7e04e8d0                nwy_socket_bind_ptr
+                0x7e04e8d4                nwy_socket_listen_ptr
+                0x7e04e8d8                nwy_socket_accept_ptr
+                0x7e04e8dc                nwy_socket_get_state_ptr
+                0x7e04e8e0                nwy_socket_select_ptr
+                0x7e04e8e4                nwy_socket_set_nonblock_ptr
+                0x7e04e8e8                nwy_socket_set_reuseaddr_ptr
+                0x7e04e8ec                nwy_socket_set_nodelay_ptr
+                0x7e04e8f0                nwy_socket_set_keepalive_ptr
+                0x7e04e8f4                nwy_socket_set_linger_ptr
+                0x7e04e8f8                nwy_socket_get_ack_ptr
+                0x7e04e8fc                nwy_socket_get_sent_ptr
+                0x7e04e900                nwy_socket_inet_ntop_ptr
+                0x7e04e904                nwy_socket_inet_pton_ptr
+                0x7e04e908                nwy_socket_htons_ptr
+                0x7e04e90c                nwy_socket_ntohs_ptr
+                0x7e04e910                nwy_socket_htonl_ptr
+                0x7e04e914                nwy_socket_ntohl_ptr
+                0x7e04e918                nwy_usb_serial_send_ptr
+                0x7e04e91c                nwy_usb_serial_reg_recv_cb_ptr
+                0x7e04e920                malloc_ptr
+                0x7e04e924                calloc_ptr
+                0x7e04e928                realloc_ptr
+                0x7e04e92c                free_ptr
+                0x7e04e930                nwy_file_open_ptr
+                0x7e04e934                nwy_file_read_ptr
+                0x7e04e938                nwy_file_write_ptr
+                0x7e04e93c                nwy_file_tell_ptr
+                0x7e04e940                nwy_file_seek_ptr
+                0x7e04e944                nwy_file_path_size_ptr
+                0x7e04e948                nwy_file_fd_size_ptr
+                0x7e04e94c                nwy_file_exist_ptr
+                0x7e04e950                nwy_file_remove_ptr
+                0x7e04e954                nwy_file_rename_ptr
+                0x7e04e958                nwy_file_sync_ptr
+                0x7e04e95c                nwy_file_fd_trunc_ptr
+                0x7e04e960                nwy_file_path_trunc_ptr
+                0x7e04e964                nwy_file_path_stat_get_ptr
+                0x7e04e968                nwy_file_fd_stat_get_ptr
+                0x7e04e96c                nwy_file_close_ptr
+                0x7e04e970                nwy_dir_mk_ptr
+                0x7e04e974                nwy_dir_rm_ptr
+                0x7e04e978                nwy_dir_recursive_rm_ptr
+                0x7e04e97c                nwy_dir_open_ptr
+                0x7e04e980                nwy_dir_close_ptr
+                0x7e04e984                nwy_dir_read_ptr
+                0x7e04e988                nwy_dir_tell_ptr
+                0x7e04e98c                nwy_dir_seek_ptr
+                0x7e04e990                nwy_dir_rewind_ptr
+                0x7e04e994                nwy_vfs_free_size_get_ptr
+                0x7e04e998                nwy_dm_dev_model_get_ptr
+                0x7e04e99c                nwy_dm_inner_version_get_ptr
+                0x7e04e9a0                nwy_dm_open_sdk_version_get_ptr
+                0x7e04e9a4                nwy_dm_hw_version_get_ptr
+                0x7e04e9a8                nwy_dm_rftemperature_get_ptr
+                0x7e04e9ac                nwy_dm_sn_get_ptr
+                0x7e04e9b0                nwy_dm_imei_get_ptr
+                0x7e04e9b4                nwy_dm_app_version_set_ptr
+                0x7e04e9b8                nwy_dm_imei_set_ptr
+                0x7e04e9bc                nwy_dm_heapinfo_ptr
+                0x7e04e9c0                nwy_dm_nvinfo_get_ptr
+                0x7e04e9c4                nwy_ftp_login_ptr
+                0x7e04e9c8                nwy_ftp_logout_ptr
+                0x7e04e9cc                nwy_ftp_get_ptr
+                0x7e04e9d0                nwy_ftp_put_ptr
+                0x7e04e9d4                nwy_ftp_get_filesize_ptr
+                0x7e04e9d8                nwy_ftp_del_file_ptr
+                0x7e04e9dc                nwy_http_setup_ptr
+                0x7e04e9e0                nwy_http_get_ptr
+                0x7e04e9e4                nwy_http_head_ptr
+                0x7e04e9e8                nwy_http_post_ptr
+                0x7e04e9ec                nwy_http_put_ptr
+                0x7e04e9f0                nwy_http_open_mode_ptr
+                0x7e04e9f4                nwy_http_close_ptr
+                0x7e04e9f8                nwy_sntp_get_time_ptr
+                0x7e04e9fc                nwy_sim_imsi_get_ptr
+                0x7e04ea00                nwy_sim_iccid_get_ptr
+                0x7e04ea04                nwy_sim_status_get_ptr
+                0x7e04ea08                nwy_sim_pin_verify_ptr
+                0x7e04ea0c                nwy_sim_pin_unlock_ptr
+                0x7e04ea10                nwy_sim_pin_mode_get_ptr
+                0x7e04ea14                nwy_sim_pin_enable_ptr
+                0x7e04ea18                nwy_sim_pin_disable_ptr
+                0x7e04ea1c                nwy_sim_pin_change_ptr
+                0x7e04ea20                nwy_sim_pin_times_get_ptr
+                0x7e04ea24                nwy_sim_msisdn_get_ptr
+                0x7e04ea28                nwy_sim_slot_set_ptr
+                0x7e04ea2c                nwy_sim_slot_get_ptr
+                0x7e04ea30                nwy_sim_reset_ptr
+                0x7e04ea34                nwy_sim_power_set_ptr
+                0x7e04ea38                nwy_sim_detect_set_ptr
+                0x7e04ea3c                nwy_sim_csim_ptr
+                0x7e04ea40                nwy_sim_urc_reg_ptr
+                0x7e04ea44                nwy_sim_urc_unreg_ptr
+                0x7e04ea48                nwy_pm_ctrl_ptr
+                0x7e04ea4c                nwy_pm_state_set_ptr
+                0x7e04ea50                nwy_bootup_alarm_set_ptr
+                0x7e04ea54                nwy_bootup_alarm_del_ptr
+                0x7e04ea58                nwy_power_state_ptr
+                0x7e04ea5c                nwy_pm_boot_res_ptr
+                0x7e04ea60                nwy_loc_navigation_start_ptr
+                0x7e04ea64                nwy_loc_navigation_stop_ptr
+                0x7e04ea68                nwy_loc_navigation_reset_ptr
+                0x7e04ea6c                nwy_loc_recv_cb_reg_ptr
+                0x7e04ea70                nwy_loc_mode_set_ptr
+                0x7e04ea74                nwy_loc_startup_set_ptr
+                0x7e04ea78                nwy_loc_rate_set_ptr
+                0x7e04ea7c                nwy_loc_cfg_nmea_type_ptr
+                0x7e04ea80                nwy_loc_nmea_get_ptr
+                0x7e04ea84                nwy_loc_nmea_parse_ptr
+                0x7e04ea88                nwy_loc_agnss_start_ptr
+                0x7e04ea8c                nwy_loc_param_set_ptr
+                0x7e04ea90                nwy_loc_param_get_ptr
+                0x7e04ea94                nwy_data_reg_cb_ptr
+                0x7e04ea98                nwy_data_unreg_cb_ptr
+                0x7e04ea9c                nwy_data_call_start_ptr
+                0x7e04eaa0                nwy_data_call_stop_ptr
+                0x7e04eaa4                nwy_data_profile_get_ptr
+                0x7e04eaa8                nwy_data_profile_set_ptr
+                0x7e04eaac                nwy_data_auto_connect_set_ptr
+                0x7e04eab0                nwy_data_call_info_get_ptr
+                0x7e04eab4                nwy_data_flow_info_get_ptr
+                0x7e04eab8                nwy_data_eps_dyn_apn_get_ptr
+                0x7e04eabc                nwy_data_dhcp_get_ptr
+                0x7e04eac0                nwy_data_dhcp_set_ptr
+                0x7e04eac4                nwy_data_dns_info_get_ptr
+                0x7e04eac8                nwy_data_get_capability_ptr
+                0x7e04eacc                mbedtls_ssl_conf_max_version_ptr
+                0x7e04ead0                mbedtls_ssl_conf_min_version_ptr
+                0x7e04ead4                mbedtls_ssl_conf_authmode_ptr
+                0x7e04ead8                mbedtls_ssl_conf_ca_chain_ptr
+                0x7e04eadc                mbedtls_ssl_conf_own_cert_ptr
+                0x7e04eae0                mbedtls_ssl_conf_rng_ptr
+                0x7e04eae4                mbedtls_ssl_conf_dbg_ptr
+                0x7e04eae8                mbedtls_ssl_setup_ptr
+                0x7e04eaec                mbedtls_ssl_set_hostname_ptr
+                0x7e04eaf0                mbedtls_ssl_set_bio_ptr
+                0x7e04eaf4                mbedtls_ssl_handshake_ptr
+                0x7e04eaf8                mbedtls_ssl_get_verify_result_ptr
+                0x7e04eafc                mbedtls_net_connect_ptr
+                0x7e04eb00                mbedtls_net_init_ptr
+                0x7e04eb04                mbedtls_net_bind_ptr
+                0x7e04eb08                mbedtls_net_accept_ptr
+                0x7e04eb0c                mbedtls_net_poll_ptr
+                0x7e04eb10                mbedtls_net_set_block_ptr
+                0x7e04eb14                mbedtls_net_set_nonblock_ptr
+                0x7e04eb18                mbedtls_net_usleep_ptr
+                0x7e04eb1c                mbedtls_net_recv_ptr
+                0x7e04eb20                mbedtls_net_send_ptr
+                0x7e04eb24                mbedtls_net_recv_timeout_ptr
+                0x7e04eb28                mbedtls_net_free_ptr
+                0x7e04eb2c                mbedtls_pk_init_ptr
+                0x7e04eb30                mbedtls_pk_free_ptr
+                0x7e04eb34                mbedtls_ssl_init_ptr
+                0x7e04eb38                mbedtls_ssl_read_ptr
+                0x7e04eb3c                mbedtls_ssl_write_ptr
+                0x7e04eb40                mbedtls_ssl_send_alert_message_ptr
+                0x7e04eb44                mbedtls_ssl_close_notify_ptr
+                0x7e04eb48                mbedtls_ssl_free_ptr
+                0x7e04eb4c                mbedtls_ssl_config_init_ptr
+                0x7e04eb50                mbedtls_ssl_config_defaults_ptr
+                0x7e04eb54                mbedtls_ssl_config_free_ptr
+                0x7e04eb58                mbedtls_ssl_session_init_ptr
+                0x7e04eb5c                mbedtls_ssl_session_free_ptr
+                0x7e04eb60                mbedtls_ssl_conf_read_timeout_ptr
+                0x7e04eb64                mbedtls_ssl_set_timer_cb_ptr
+                0x7e04eb68                mbedtls_platform_set_calloc_free_ptr
+                0x7e04eb6c                mbedtls_x509_crt_parse_der_ptr
+                0x7e04eb70                mbedtls_x509_crt_parse_ptr
+                0x7e04eb74                mbedtls_x509_crt_info_ptr
+                0x7e04eb78                mbedtls_x509_crt_verify_info_ptr
+                0x7e04eb7c                mbedtls_x509_crt_verify_ptr
+                0x7e04eb80                mbedtls_x509_crt_verify_with_profile_ptr
+                0x7e04eb84                mbedtls_x509_crt_verify_restartable_ptr
+                0x7e04eb88                mbedtls_x509_crt_init_ptr
+                0x7e04eb8c                mbedtls_x509_crt_free_ptr
+                0x7e04eb90                mbedtls_pk_parse_key_ptr
+                0x7e04eb94                mbedtls_entropy_free_ptr
+                0x7e04eb98                mbedtls_entropy_init_ptr
+                0x7e04eb9c                mbedtls_entropy_func_ptr
+                0x7e04eba0                mbedtls_ctr_drbg_random_ptr
+                0x7e04eba4                mbedtls_ctr_drbg_free_ptr
+                0x7e04eba8                mbedtls_ctr_drbg_seed_ptr
+                0x7e04ebac                mbedtls_ctr_drbg_init_ptr
+                0x7e04ebb0                mbedtls_ssl_get_bytes_avail_ptr
+                0x7e04ebb4                mbedtls_ssl_conf_ciphersuites_ptr
+                0x7e04ebb8                mbedtls_sha1_init_ptr
+                0x7e04ebbc                mbedtls_sha1_update_ptr
+                0x7e04ebc0                mbedtls_sha1_finish_ptr
+                0x7e04ebc4                mbedtls_base64_encode_ptr
+                0x7e04ebc8                mbedtls_ssl_session_reset_ptr
+                0x7e04ebcc                mbedtls_pk_get_type_ptr
+                0x7e04ebd0                mbedtls_ssl_conf_renegotiation_ptr
+                0x7e04ebd4                mbedtls_ssl_set_session_ptr
+                0x7e04ebd8                mbedtls_aes_init_ptr
+                0x7e04ebdc                mbedtls_aes_free_ptr
+                0x7e04ebe0                mbedtls_aes_xts_init_ptr
+                0x7e04ebe4                mbedtls_aes_xts_free_ptr
+                0x7e04ebe8                mbedtls_aes_setkey_enc_ptr
+                0x7e04ebec                mbedtls_aes_setkey_dec_ptr
+                0x7e04ebf0                mbedtls_aes_xts_setkey_enc_ptr
+                0x7e04ebf4                mbedtls_aes_xts_setkey_dec_ptr
+                0x7e04ebf8                mbedtls_aes_crypt_ecb_ptr
+                0x7e04ebfc                mbedtls_aes_crypt_cbc_ptr
+                0x7e04ec00                mbedtls_aes_crypt_xts_ptr
+                0x7e04ec04                mbedtls_aes_crypt_cfb128_ptr
+                0x7e04ec08                mbedtls_aes_crypt_cfb8_ptr
+                0x7e04ec0c                mbedtls_aes_crypt_ofb_ptr
+                0x7e04ec10                mbedtls_aes_crypt_ctr_ptr
+                0x7e04ec14                nwy_ssl_version_info_get_ptr
+                0x7e04ec18                mbedtls_internal_aes_encrypt_ptr
+                0x7e04ec1c                mbedtls_internal_aes_decrypt_ptr
+                0x7e04ec20                psa_crypto_init_ptr
+                0x7e04ec24                nwy_usb_net_mode_set_ptr
+                0x7e04ec28                nwy_usb_net_mode_get_ptr
+                0x7e04ec2c                nwy_i2c_init_ptr
+                0x7e04ec30                nwy_i2c_read_ptr
+                0x7e04ec34                nwy_i2c_write_ptr
+                0x7e04ec38                nwy_i2c_deinit_ptr
+                0x7e04ec3c                nwy_i2c_raw_get_byte_ptr
+                0x7e04ec40                nwy_i2c_raw_put_byte_ptr
+                0x7e04ec44                nwy_spi_init_ptr
+                0x7e04ec48                nwy_spi_cs_cfg_ptr
+                0x7e04ec4c                nwy_spi_transfer_ptr
+                0x7e04ec50                nwy_spi_deinit_ptr
+                0x7e04ec54                nwy_spi_read_ptr
+                0x7e04ec58                nwy_spi_write_ptr
+                0x7e04ec5c                nwy_sms_option_init_ptr
+                0x7e04ec60                nwy_sms_storage_set_ptr
+                0x7e04ec64                nwy_sms_storage_get_ptr
+                0x7e04ec68                nwy_sms_report_set_ptr
+                0x7e04ec6c                nwy_sms_sca_set_ptr
+                0x7e04ec70                nwy_sms_sca_get_ptr
+                0x7e04ec74                nwy_sms_msg_send_ptr
+                0x7e04ec78                nwy_sms_recv_cb_reg_ptr
+                0x7e04ec7c                nwy_sms_recv_cb_unreg_ptr
+                0x7e04ec80                nwy_sms_msg_del_ptr
+                0x7e04ec84                nwy_sms_msg_read_ptr
+                0x7e04ec88                nwy_sms_msg_del_ext_ptr
+                0x7e04ec8c                nwy_sms_msg_list_read_ptr
+                0x7e04ec90                nwy_nw_mode_get_ptr
+                0x7e04ec94                nwy_nw_mode_set_ptr
+                0x7e04ec98                nwy_nw_priband_get_ptr
+                0x7e04ec9c                nwy_nw_priband_set_ptr
+                0x7e04eca0                nwy_nw_ims_get_ptr
+                0x7e04eca4                nwy_nw_ims_set_ptr
+                0x7e04eca8                nwy_nw_radio_get_ptr
+                0x7e04ecac                nwy_nw_radio_set_ptr
+                0x7e04ecb0                nwy_nw_config_get_ptr
+                0x7e04ecb4                nwy_nw_config_set_ptr
+                0x7e04ecb8                nwy_nw_operator_get_ptr
+                0x7e04ecbc                nwy_nw_csq_get_ptr
+                0x7e04ecc0                nwy_nw_signal_get_ptr
+                0x7e04ecc4                nwy_nw_regstatus_get_ptr
+                0x7e04ecc8                nwy_nw_cellinfo_get_ptr
+                0x7e04eccc                nwy_nw_lock_set_ptr
+                0x7e04ecd0                nwy_nw_lock_get_ptr
+                0x7e04ecd4                nwy_nw_manual_select_ptr
+                0x7e04ecd8                nwy_nw_scan_ptr
+                0x7e04ecdc                nwy_nw_psm_get_ptr
+                0x7e04ece0                nwy_nw_psm_set_ptr
+                0x7e04ece4                nwy_nw_get_forbidden_plmn_ptr
+                0x7e04ece8                nwy_nw_reg_cb_ptr
+                0x7e04ecec                nwy_nw_unreg_cb_ptr
+                0x7e04ecf0                nwy_get_time_zone_switch_ptr
+                0x7e04ecf4                nwy_set_time_zone_switch_ptr
+                0x7e04ecf8                nwy_dm_nwcfg_get_ptr
+                0x7e04ecfc                nwy_dm_nwcfg_set_ptr
+                0x7e04ed00                nwy_virt_at_parameter_init_ptr
+                0x7e04ed04                nwy_virt_at_cmd_send_ptr
+                0x7e04ed08                nwy_virt_at_unsolicited_cb_reg_ptr
+                0x7e04ed0c                nwy_virt_at_get_original_rsp_cb_ptr
+                0x7e04ed10                nwy_virt_at_forward_cb_ptr
+                0x7e04ed14                nwy_virt_at_forward_send_ptr
+                0x7e04ed18                nwy_pm_vbat_voltage_get_ptr
+                0x7e04ed1c                nwy_ping_start_ptr
+                0x7e04ed20                NetworkInit_ptr
+                0x7e04ed24                NetworkConnect_ptr
+                0x7e04ed28                NetworkDisconnect_ptr
+                0x7e04ed2c                MQTTClientInit_ptr
+                0x7e04ed30                MQTTConnect_ptr
+                0x7e04ed34                MQTTPublish_ptr
+                0x7e04ed38                MQTTSetMessageHandler_ptr
+                0x7e04ed3c                MQTTSubscribe_ptr
+                0x7e04ed40                MQTTUnsubscribe_ptr
+                0x7e04ed44                MQTTDisconnect_ptr
+                0x7e04ed48                MQTTYield_ptr
+                0x7e04ed4c                MQTTIsConnected_ptr
+                0x7e04ed50                nwy_gpio_direction_get_ptr
+                0x7e04ed54                nwy_gpio_direction_set_ptr
+                0x7e04ed58                nwy_gpio_value_get_ptr
+                0x7e04ed5c                nwy_gpio_value_set_ptr
+                0x7e04ed60                nwy_gpio_pull_get_ptr
+                0x7e04ed64                nwy_gpio_pull_set_ptr
+                0x7e04ed68                nwy_gpio_irq_register_ptr
+                0x7e04ed6c                nwy_gpio_irq_enable_ptr
+                0x7e04ed70                nwy_gpio_irq_disable_ptr
+                0x7e04ed74                nwy_gpio_irq_wakeup_enable_ptr
+                0x7e04ed78                nwy_gpio_irq_wakeup_disable_ptr
+                0x7e04ed7c                nwy_gpio_close_ptr
+                0x7e04ed80                nwy_uart_open_ptr
+                0x7e04ed84                nwy_uart_read_ptr
+                0x7e04ed88                nwy_uart_write_ptr
+                0x7e04ed8c                nwy_uart_dcb_set_ptr
+                0x7e04ed90                nwy_uart_dcb_get_ptr
+                0x7e04ed94                nwy_uart_close_ptr
+                0x7e04ed98                nwy_uart_rx_cb_register_ptr
+                0x7e04ed9c                nwy_uart_tx_cb_register_ptr
+                0x7e04eda0                nwy_uart_rx_frame_timeout_set_ptr
+                0x7e04eda4                nwy_adc_get_ptr
+                0x7e04eda8                nwy_dev_name_list_get_ptr
+                0x7e04edac                nwy_sat_set_on_off_ptr
+                0x7e04edb0                nwy_sat_get_on_off_ptr
+                0x7e04edb4                nwy_sat_terminal_response_ptr
+                0x7e04edb8                nwy_sat_envelope_command_ptr
+                0x7e04edbc                nwy_sat_set_profile_ptr
+                0x7e04edc0                nwy_sat_get_profile_ptr
+                0x7e04edc4                nwy_sat_recv_data_ptr
+                0x7e04edc8                nwy_fota_write_ptr
+                0x7e04edcc                nwy_fota_update_ptr
+                0x7e04edd0                nwy_fota_result_get_ptr
+                0x7e04edd4                nwy_fota_base_ver_update_ptr
+                0x7e04edd8                nwy_vfs_logical_block_device_create_ptr
+                0x7e04eddc                nwy_vfs_mount_ptr
+                0x7e04ede0                nwy_vfs_unmount_ptr
+                0x7e04ede4                nwy_vfs_mkfs_ptr
+                0x7e04ede8                nwy_dm_soc_model_get_ptr
  .data._impure_ptr
-                0x7e04e8e4        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-impure.o)
-                0x7e04e8e4                _impure_ptr
+                0x7e04edec        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-impure.o)
+                0x7e04edec                _impure_ptr
  .data.impure_data
-                0x7e04e8e8      0x428 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-impure.o)
+                0x7e04edf0      0x428 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-impure.o)
  .data.__malloc_av_
-                0x7e04ed10      0x408 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
-                0x7e04ed10                __malloc_av_
+                0x7e04f218      0x408 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
+                0x7e04f218                __malloc_av_
  .data.__malloc_sbrk_base
-                0x7e04f118        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
-                0x7e04f118                __malloc_sbrk_base
+                0x7e04f620        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
+                0x7e04f620                __malloc_sbrk_base
  .data.__malloc_trim_threshold
-                0x7e04f11c        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
-                0x7e04f11c                __malloc_trim_threshold
+                0x7e04f624        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
+                0x7e04f624                __malloc_trim_threshold
  .data.__global_locale
-                0x7e04f120      0x16c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-locale.o)
-                0x7e04f120                __global_locale
+                0x7e04f628      0x16c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-locale.o)
+                0x7e04f628                __global_locale
 
-.igot.plt       0x7e04f28c        0x0
- .igot.plt      0x7e04f28c        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
+.igot.plt       0x7e04f794        0x0
+ .igot.plt      0x7e04f794        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
 
-.bss            0x7e04f28c       0x88
-                0x7e04f28c                __bss_start = .
+.bss            0x7e04f794       0x88
+                0x7e04f794                __bss_start = .
  *(.bss*)
  .bss.g_user_net_cb
-                0x7e04f28c       0x38 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
+                0x7e04f794       0x38 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
  .bss.g_user_sim_cb
-                0x7e04f2c4        0x8 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sim/nwy_hal_sim.obj
+                0x7e04f7cc        0x8 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sim/nwy_hal_sim.obj
  .bss.__malloc_current_mallinfo
-                0x7e04f2cc       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
-                0x7e04f2cc                __malloc_current_mallinfo
+                0x7e04f7d4       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
+                0x7e04f7d4                __malloc_current_mallinfo
  .bss.__malloc_max_sbrked_mem
-                0x7e04f2f4        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
-                0x7e04f2f4                __malloc_max_sbrked_mem
+                0x7e04f7fc        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
+                0x7e04f7fc                __malloc_max_sbrked_mem
  .bss.__malloc_max_total_mem
-                0x7e04f2f8        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
-                0x7e04f2f8                __malloc_max_total_mem
+                0x7e04f800        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
+                0x7e04f800                __malloc_max_total_mem
  .bss.__malloc_top_pad
-                0x7e04f2fc        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
-                0x7e04f2fc                __malloc_top_pad
+                0x7e04f804        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-mallocr.o)
+                0x7e04f804                __malloc_top_pad
  .bss.__lock___malloc_recursive_mutex
-                0x7e04f300        0x1 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
-                0x7e04f300                __lock___malloc_recursive_mutex
- *fill*         0x7e04f301        0x3 
+                0x7e04f808        0x1 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
+                0x7e04f808                __lock___malloc_recursive_mutex
+ *fill*         0x7e04f809        0x3 
  .bss.__lock___sfp_recursive_mutex
-                0x7e04f304        0x1 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
-                0x7e04f304                __lock___sfp_recursive_mutex
- *fill*         0x7e04f305        0x3 
+                0x7e04f80c        0x1 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
+                0x7e04f80c                __lock___sfp_recursive_mutex
+ *fill*         0x7e04f80d        0x3 
  .bss.__lock___sinit_recursive_mutex
-                0x7e04f308        0x1 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
-                0x7e04f308                __lock___sinit_recursive_mutex
- *fill*         0x7e04f309        0x3 
- .bss.errno     0x7e04f30c        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-reent.o)
-                0x7e04f30c                errno
+                0x7e04f810        0x1 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-lock.o)
+                0x7e04f810                __lock___sinit_recursive_mutex
+ *fill*         0x7e04f811        0x3 
+ .bss.errno     0x7e04f814        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a(lib_a-reent.o)
+                0x7e04f814                errno
  .bss.heap_end.0
-                0x7e04f310        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(sbrk.o)
-                0x7e04f314                __bss_end = .
-                0x7e04f314                end = .
+                0x7e04f818        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(sbrk.o)
+                0x7e04f81c                __bss_end = .
+                0x7e04f81c                end = .
 OUTPUT(bin\nwy_open_app.elf elf32-littlearm)
 LOAD linker stubs
 
-.debug_info     0x00000000    0x10d90
+.debug_info     0x00000000    0x10ee3
  .debug_info    0x00000000     0x2fd9 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
  .debug_info    0x00002fd9      0xa14 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/os/nwy_hal_os.obj
  .debug_info    0x000039ed      0xd86 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sim/nwy_hal_sim.obj
  .debug_info    0x00004773      0x8c1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj
- .debug_info    0x00005034     0x3615 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
- .debug_info    0x00008649       0xb4 ../build/nwy_open_stub.a(nwy_open_stub.o)
-                0x00008649                __ARM_grp_.debug_info$nwy_baseline_version.h$2_Av0000_HXqOM2RX$S1_200000
-                0x00008649                __ARM_cc.nwy_baseline_version.h.2_Av0000_HXqOM2RX$S1_200000
- .debug_info    0x000086fd       0xa2 ../build/nwy_open_stub.a(nwy_open_stub.o)
-                0x000086fd                __ARM_grp_.debug_info$nwy_cust.h$2_eB0000_mKnPuo88TC0_200000
-                0x000086fd                __ARM_cc.nwy_cust.h.2_eB0000_mKnPuo88TC0_200000
- .debug_info    0x0000879f       0xb7 ../build/nwy_open_stub.a(nwy_open_stub.o)
-                0x0000879f                __ARM_cc.nwy_open_api_list.h.2_Hq0000_dmwXULy$i1a_200000
-                0x0000879f                __ARM_grp_.debug_info$nwy_open_api_list.h$2_Hq0000_dmwXULy$i1a_200000
- .debug_info    0x00008856      0x20d ../build/nwy_open_stub.a(nwy_open_stub.o)
-                0x00008856                __ARM_grp_.debug_info$nwy_open_stub.c$2_8x1000_hcpD5Ok4GX9_700000
-                0x00008856                __ARM_cc.nwy_open_stub.c.2_8x1000_hcpD5Ok4GX9_700000
- .debug_info    0x00008a63       0xa5 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_info    0x00008b08     0x7d9f ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_info    0x000108a7       0xff ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_info    0x000109a6      0x14d ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_info    0x00010af3      0x162 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_info    0x00010c55      0x13b ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_info    0x00005034     0x3768 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+ .debug_info    0x0000879c       0xb4 ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x0000879c                __ARM_grp_.debug_info$nwy_baseline_version.h$2_Av0000_HXqOM2RX$S1_200000
+                0x0000879c                __ARM_cc.nwy_baseline_version.h.2_Av0000_HXqOM2RX$S1_200000
+ .debug_info    0x00008850       0xa2 ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x00008850                __ARM_grp_.debug_info$nwy_cust.h$2_eB0000_mKnPuo88TC0_200000
+                0x00008850                __ARM_cc.nwy_cust.h.2_eB0000_mKnPuo88TC0_200000
+ .debug_info    0x000088f2       0xb7 ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x000088f2                __ARM_cc.nwy_open_api_list.h.2_Hq0000_dmwXULy$i1a_200000
+                0x000088f2                __ARM_grp_.debug_info$nwy_open_api_list.h$2_Hq0000_dmwXULy$i1a_200000
+ .debug_info    0x000089a9      0x20d ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x000089a9                __ARM_grp_.debug_info$nwy_open_stub.c$2_8x1000_hcpD5Ok4GX9_700000
+                0x000089a9                __ARM_cc.nwy_open_stub.c.2_8x1000_hcpD5Ok4GX9_700000
+ .debug_info    0x00008bb6       0xa5 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_info    0x00008c5b     0x7d9f ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_info    0x000109fa       0xff ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_info    0x00010af9      0x14d ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_info    0x00010c46      0x162 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_info    0x00010da8      0x13b ../build/nwy_open_stub.a(nwy_open_stub.o)
 
 .debug_abbrev   0x00000000     0x1290
  .debug_abbrev  0x00000000      0x340 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
@@ -2095,16 +2095,16 @@ LOAD linker stubs
  .debug_abbrev  0x00000cdc      0x5b4 ../build/nwy_open_stub.a(nwy_open_stub.o)
                 0x00000cdc                __ARM_cc..debug_abbrev.group.2_Qm0000_67g8QvEltX8_000000
 
-.debug_loc      0x00000000     0x2c28
+.debug_loc      0x00000000     0x2c6d
  .debug_loc     0x00000000      0xed4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
  .debug_loc     0x00000ed4      0x57a CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/os/nwy_hal_os.obj
  .debug_loc     0x0000144e      0xb59 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sim/nwy_hal_sim.obj
  .debug_loc     0x00001fa7      0x4b0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj
- .debug_loc     0x00002457      0x68e CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
- .debug_loc     0x00002ae5       0x14 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_loc     0x00002af9       0x77 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_loc     0x00002b70       0x5c ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_loc     0x00002bcc       0x5c ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_loc     0x00002457      0x6d3 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+ .debug_loc     0x00002b2a       0x14 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_loc     0x00002b3e       0x77 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_loc     0x00002bb5       0x5c ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_loc     0x00002c11       0x5c ../build/nwy_open_stub.a(nwy_open_stub.o)
 
 .debug_aranges  0x00000000      0x368
  .debug_aranges
@@ -2126,29 +2126,29 @@ LOAD linker stubs
  .debug_aranges
                 0x00000348       0x20 ../build/nwy_open_stub.a(nwy_open_stub.o)
 
-.debug_ranges   0x00000000      0x380
+.debug_ranges   0x00000000      0x3a8
  .debug_ranges  0x00000000      0x100 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
  .debug_ranges  0x00000100       0x78 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/os/nwy_hal_os.obj
  .debug_ranges  0x00000178       0xc0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sim/nwy_hal_sim.obj
  .debug_ranges  0x00000238       0x60 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj
- .debug_ranges  0x00000298       0xe8 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+ .debug_ranges  0x00000298      0x110 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
 
-.debug_line     0x00000000     0x2d82
+.debug_line     0x00000000     0x2e80
  .debug_line    0x00000000      0xae8 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
  .debug_line    0x00000ae8      0x5ce CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/os/nwy_hal_os.obj
  .debug_line    0x000010b6      0x6e5 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sim/nwy_hal_sim.obj
  .debug_line    0x0000179b      0x685 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj
- .debug_line    0x00001e20      0xb2e CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
- .debug_line    0x0000294e       0x5a ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_line    0x000029a8       0x82 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_line    0x00002a2a       0x20 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_line    0x00002a4a       0xa1 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_line    0x00002aeb       0x4a ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_line    0x00002b35       0x20 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_line    0x00002b55       0x70 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_line    0x00002bc5       0x94 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_line    0x00002c59       0xb5 ../build/nwy_open_stub.a(nwy_open_stub.o)
- .debug_line    0x00002d0e       0x74 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_line    0x00001e20      0xc2c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj
+ .debug_line    0x00002a4c       0x5a ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_line    0x00002aa6       0x82 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_line    0x00002b28       0x20 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_line    0x00002b48       0xa1 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_line    0x00002be9       0x4a ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_line    0x00002c33       0x20 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_line    0x00002c53       0x70 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_line    0x00002cc3       0x94 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_line    0x00002d57       0xb5 ../build/nwy_open_stub.a(nwy_open_stub.o)
+ .debug_line    0x00002e0c       0x74 ../build/nwy_open_stub.a(nwy_open_stub.o)
 
 .debug_str      0x00000000     0x3b9b
  .debug_str     0x00000000     0x26f7 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj
