@@ -49,18 +49,37 @@ static const char *get_rat_str(int rat) {
   }
 }
 
-static const char *get_netinfo_mode_str(int mode) {
-  switch (mode) {
-    case NWY_NW_NETINFO_AUTO:       return "AUTO (1)";
-    case NWY_NW_NETINFO_2G:         return "2G ONLY (2)";
-    case NWY_NW_NETINFO_3G:         return "3G ONLY (3)";
-    case NWY_NW_NETINFO_4G:         return "4G ONLY (4)";
-    case NWY_NW_NETINFO_2G_3G:      return "2G + 3G (5)";
-    case NWY_NW_NETINFO_2G_4G:      return "2G + 4G (6)";
-    case NWY_NW_NETINFO_3G_4G:      return "3G + 4G (7)";
-    case NWY_NW_NETINFO_2G_3G_4G:   return "2G + 3G + 4G (8)";
-    case NWY_NW_NETINFO_5G:         return "5G ONLY (9)";
-    default:                        return "UNKNOWN";
+static void get_net_mode_str(int mode, char *buf, int max_len) {
+  if (mode == NWY_NW_MODE_MASK_AUTO) {
+    snprintf(buf, max_len, "AUTO (unlocked)");
+    return;
+  }
+  buf[0] = '\0';
+  int len = 0;
+  if (mode & NWY_NW_MODE_MASK_GSM) {
+    len += snprintf(buf + len, max_len - len, "GSM ");
+  }
+  if (mode & NWY_NW_MODE_MASK_WCDMA) {
+    len += snprintf(buf + len, max_len - len, "WCDMA ");
+  }
+  if (mode & NWY_NW_MODE_MASK_LTE) {
+    len += snprintf(buf + len, max_len - len, "LTE ");
+  }
+  if (mode & NWY_NW_MODE_MASK_SA) {
+    len += snprintf(buf + len, max_len - len, "SA ");
+  }
+  if (mode & NWY_NW_MODE_MASK_CATM) {
+    len += snprintf(buf + len, max_len - len, "CATM ");
+  }
+  if (mode & NWY_NW_MODE_MASK_NB) {
+    len += snprintf(buf + len, max_len - len, "NB ");
+  }
+  if (len == 0) {
+    snprintf(buf, max_len, "OTHER (0x%X)", mode);
+  } else {
+    if (len > 0 && buf[len - 1] == ' ') {
+      buf[len - 1] = '\0';
+    }
   }
 }
 
@@ -94,6 +113,7 @@ static void run_network_diagnostics_scan(void) {
   printf("==================================================\r\n");
 
   int target_sim = 1; // Default Slot 1
+  bool radio_restart_needed = false;
 
   // 1. Check SIM Status first
   bool sim_ready = nwy_hal_sim_is_ready(target_sim);
@@ -113,21 +133,87 @@ static void run_network_diagnostics_scan(void) {
     LOGE("Radio State: Failed to query");
   }
 
-  // 3. Query Network Mode settings
+  // 3. Query Network Mode settings & Lock to LTE for reliability
   int net_mode = 0;
   if (nwy_hal_net_get_mode(target_sim, &net_mode)) {
-    LOGI("Preferred Network RAT Mode: %s", get_netinfo_mode_str(net_mode));
+    char net_mode_buf[64];
+    get_net_mode_str(net_mode, net_mode_buf, sizeof(net_mode_buf));
+    LOGI("Preferred Network RAT Mode: %s (0x%X)", net_mode_buf, net_mode);
+    
+    // Lock to LTE (0x10) to match the known working configuration for 4G carriers like Jio
+    if (net_mode != NWY_NW_MODE_MASK_LTE) {
+      LOGW("Network Mode is locked to 0x%X. Locking to LTE (0x10) for faster 4G registration...", net_mode);
+      if (nwy_hal_net_set_mode(target_sim, NWY_NW_MODE_MASK_LTE)) {
+        LOGI("Network Mode locked to LTE successfully.");
+        radio_restart_needed = true;
+      } else {
+        LOGE("Failed to lock Network Mode to LTE.");
+      }
+    }
   } else {
     LOGE("Preferred Network RAT Mode: Failed to query");
   }
 
-  // 4. Query VoLTE IMS setting
+  // 4. Query VoLTE IMS setting & Enable if disabled
   uint8_t ims_mode = 0xFF;
   if (nwy_hal_net_get_ims_mode(target_sim, &ims_mode)) {
     LOGI("VoLTE / IMS Mode: %s (%d)", 
          ims_mode == 0 ? "DISABLED" : (ims_mode == 1 ? "ENABLED" : "AUTO"), (int)ims_mode);
+    if (ims_mode == 0) {
+      LOGW("VoLTE is disabled. Enabling VoLTE/IMS (critical for LTE-only carriers like Jio)...");
+      if (nwy_hal_net_set_ims_mode(target_sim, 1)) {
+        LOGI("VoLTE / IMS enabled successfully.");
+        radio_restart_needed = true;
+      } else {
+        LOGE("Failed to enable VoLTE / IMS.");
+      }
+    }
   } else {
     LOGE("VoLTE / IMS Mode: Failed to query");
+  }
+
+  // 4.5. Query custom configs (NetAuto, UE Mode, Data-Only)
+  nwy_nw_config_info_u cfg_info;
+  memset(&cfg_info, 0, sizeof(cfg_info));
+  if (nwy_hal_net_get_custom_cfg(target_sim, NWY_NW_CONFIG_RW_NETAUTO, &cfg_info)) {
+    LOGI("NetAuto Config: %s, scan timer: %d min", 
+         cfg_info.netauto.onoff == 1 ? "ENABLED" : "DISABLED", cfg_info.netauto.timer);
+    if (cfg_info.netauto.onoff == 0) {
+      LOGW("NetAuto is disabled. Attempting to enable NetAuto...");
+      cfg_info.netauto.onoff = 1;
+      cfg_info.netauto.timer = 3;
+      int ret = nwy_nw_config_set(nwy_hal_get_sim_id_enum(target_sim), NWY_NW_CONFIG_RW_NETAUTO, &cfg_info);
+      if (ret == 0) {
+        LOGI("NetAuto enabled successfully.");
+      } else if (ret == NWY_GEN_E_PLAT_NOT_SUPPORT) {
+        LOGI("NetAuto configuration is not supported on this platform (ASR1605). Skipping.");
+      } else {
+        LOGE("Failed to enable NetAuto, error=%d.", ret);
+      }
+    }
+  } else {
+    LOGI("NetAuto Config: Not supported or query failed");
+  }
+
+  memset(&cfg_info, 0, sizeof(cfg_info));
+  if (nwy_hal_net_get_custom_cfg(target_sim, NWY_NW_CONFIG_RW_UEMODE, &cfg_info)) {
+    LOGI("UE Mode Configuration: %s (%d)", 
+         cfg_info.uemode == NWY_NW_PS_MODE_II ? "PS ONLY (Data Centric)" :
+         (cfg_info.uemode == NWY_NW_CS_PS_MODE_I ? "CS + PS (Voice Centric)" :
+          (cfg_info.uemode == NWY_NW_CS_PS_MODI_II ? "CS + PS (Data Centric)" :
+           (cfg_info.uemode == NWY_NW_PS_MODE_I ? "PS ONLY (Voice Centric)" : "UNKNOWN"))),
+         (int)cfg_info.uemode);
+  } else {
+    LOGE("UE Mode Configuration: Failed to query");
+  }
+
+  memset(&cfg_info, 0, sizeof(cfg_info));
+  if (nwy_hal_net_get_custom_cfg(target_sim, NWY_NW_CONFIG_RW_DATAONLY, &cfg_info)) {
+    LOGI("Data-Only Configuration: %s (%d)", 
+         cfg_info.dataonly == NWY_NW_CFG_ENABLE ? "ENABLED" : "DISABLED",
+         (int)cfg_info.dataonly);
+  } else {
+    LOGE("Data-Only Configuration: Failed to query");
   }
 
   // 5. Query PSM settings
@@ -253,6 +339,14 @@ static void run_network_diagnostics_scan(void) {
   }
 
   printf("==================================================\r\n");
+
+  if (radio_restart_needed) {
+    LOGW("Configuration updated. Performing instant radio power cycle (flight mode toggle) to apply settings...");
+    nwy_hal_net_set_radio_mode(NWY_NW_RADIO_FLIGHT_MODE);
+    nwy_hal_os_thread_sleep(2000);
+    nwy_hal_net_set_radio_mode(NWY_NW_RADIO_NORMAL_MODE);
+    LOGI("Radio power cycle completed.");
+  }
 }
 
 // Background Network Monitor Thread loop
@@ -276,6 +370,9 @@ static void network_monitor_task(void *param) {
   printf("==================================================\r\n");
   printf("Port: UART4 (Debug) | Baudrate: 115200\r\n");
 
+  // Enable SIM hotplug hardware detection (critical for slot activity detection)
+  nwy_hal_sim_set_detect(1, 1, 0);
+
   // Register SIM event handler
   nwy_hal_sim_register_urc_cb(1, test_sim_urc_cb);
 
@@ -283,6 +380,7 @@ static void network_monitor_task(void *param) {
   run_network_diagnostics_scan();
 
   bool data_call_dialed = false;
+  int oos_counter = 0;
 
   while (1) {
     nwy_hal_os_thread_sleep(10000); // Check status every 10 seconds
@@ -298,6 +396,20 @@ static void network_monitor_task(void *param) {
 
     LOGI("Heartbeat - Reg: CS=%d, PS=%d | Signal: %d CSQ (%d dBm) | IP: %s | RAT: %s",
          cs_state, ps_state, csq, csq_to_dbm(csq), ip_ok ? ip_address : "N/A", get_rat_str(rat));
+
+    // If out of service, increment oos counter. Reset when registered.
+    if (cs_state == NWY_NW_SERVICE_NONE && ps_state == NWY_NW_SERVICE_NONE) {
+      oos_counter++;
+      if (oos_counter >= 6) { // 60 seconds of consecutive Out of Service
+        LOGW("Modem Out of Service for 60 seconds. Toggling radio state (flight mode -> normal) to force fresh search...");
+        nwy_hal_net_set_radio_mode(NWY_NW_RADIO_FLIGHT_MODE);
+        nwy_hal_os_thread_sleep(2000);
+        nwy_hal_net_set_radio_mode(NWY_NW_RADIO_NORMAL_MODE);
+        oos_counter = 0;
+      }
+    } else {
+      oos_counter = 0;
+    }
 
     // If registered on PS (Data) network but no GPRS call is connected, start data call dial!
     if ((ps_state == NWY_NW_SERVICE_FULL || ps_state == NWY_NW_SERVICE_LIMITED) && !ip_ok) {

@@ -28,7 +28,7 @@ bool nwy_hal_net_get_operator_details(int sim_id, nwy_nw_operator_t *oper_info);
 
 // Network Mode Configuration
 bool nwy_hal_net_get_mode(int sim_id, int *network_mode);
-bool nwy_hal_net_set_mode(int sim_id, nwy_nw_rat_type_e mode);
+bool nwy_hal_net_set_mode(int sim_id, int mode);
 
 // RF Band Configuration
 bool nwy_hal_net_get_priband(int sim_id, nwy_nw_priband_t *priband);

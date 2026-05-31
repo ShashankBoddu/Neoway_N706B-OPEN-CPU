@@ -97,9 +97,9 @@ bool nwy_hal_net_get_registration_details(int sim_id, int *cs_state, int *ps_sta
         if (cs_state) *cs_state = reg_status.cs_regs_valid ? reg_status.cs_regs.regs_state : NWY_NW_SERVICE_NONE;
         if (ps_state) *ps_state = reg_status.ps_regs_valid ? reg_status.ps_regs.regs_state : NWY_NW_SERVICE_NONE;
         if (rat) {
-            if (reg_status.ps_regs_valid && reg_status.ps_regs.regs_state == NWY_NW_SERVICE_FULL) {
+            if (reg_status.ps_regs_valid && (reg_status.ps_regs.regs_state == NWY_NW_SERVICE_FULL || reg_status.ps_regs.regs_state == NWY_NW_SERVICE_LIMITED)) {
                 *rat = reg_status.ps_regs.rat_type;
-            } else if (reg_status.cs_regs_valid && reg_status.cs_regs.regs_state == NWY_NW_SERVICE_FULL) {
+            } else if (reg_status.cs_regs_valid && (reg_status.cs_regs.regs_state == NWY_NW_SERVICE_FULL || reg_status.cs_regs.regs_state == NWY_NW_SERVICE_LIMITED)) {
                 *rat = reg_status.cs_regs.rat_type;
             } else {
                 *rat = NWY_NW_RAT_NONE;
@@ -120,7 +120,7 @@ bool nwy_hal_net_get_mode(int sim_id, int *network_mode) {
     return (nwy_nw_mode_get(nwy_hal_get_sim_id_enum(sim_id), network_mode) == 0);
 }
 
-bool nwy_hal_net_set_mode(int sim_id, nwy_nw_rat_type_e mode) {
+bool nwy_hal_net_set_mode(int sim_id, int mode) {
     return (nwy_nw_mode_set(nwy_hal_get_sim_id_enum(sim_id), mode) == 0);
 }
 

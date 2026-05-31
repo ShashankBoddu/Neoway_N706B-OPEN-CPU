@@ -1,0 +1,411 @@
+================================================================================
+NEOWAY N706B OPENCPU SDK DEMO GUIDE
+================================================================================
+This document catalogs and explains every single source file, header file, and
+function within the Neoway N706B OpenCPU SDK test demos.
+--------------------------------------------------------------------------------
+1. NWY_TEST_CLI - COMMON HELPER FILES (nwy_test_cli/comm/)
+--------------------------------------------------------------------------------
+These files establish the CLI terminal menu, command parsing, and input/output interfaces.
+### 1. nwy_test_cli_adpt.c / nwy_test_cli_adpt.h
+* **Purpose**: Communication adapter layer between the OpenCPU task queue and the serial interface (UART/USB).
+* **Functions**:
+* `nwy_test_cli_input_gets(const char *prompt)`: Blocks and prompts the user on the serial console, returning the inputted line string.
+* `nwy_test_cli_echo(const char *fmt, ...)`: Thread-safe, formatted printing wrapper that outputs text directly to the active serial interface.
+### 2. nwy_test_cli_menu.c
+* **Purpose**: Implements the main interactive terminal menu. It maps typed numbers/commands to corresponding testing functions.
+* **Functions**:
+* `nwy_test_cli_menu_show()`: Prints the hierarchical list of testing options (SIM, Network, OS, PM, TCP/IP, SMS, drivers, etc.).
+* `nwy_test_cli_menu_parse(char *cmd)`: Compares user console inputs and routes execution to the registered test modules.
+### 3. nwy_test_cli_utils.c / nwy_test_cli_utils.h
+* **Purpose**: General utility helpers for CLI console operations, including text formatting, string conversion, and argument checking.
+* **Functions**:
+* `nwy_test_cli_hex_to_bin(const char *hex, uint8_t *bin, int max_len)`: Parses hex strings into raw binary buffers.
+* `nwy_test_cli_bin_to_hex(const uint8_t *bin, int len, char *hex_out)`: Converts raw binary buffers back into readable hexadecimal string representation.
+--------------------------------------------------------------------------------
+2. NWY_TEST_CLI - MODULE IMPLEMENTATIONS (nwy_test_cli/modules/)
+--------------------------------------------------------------------------------
+These files contain interactive test functions that invoke the actual Neoway OpenCPU APIs.
+### 1. nwy_test_cli_network.c
+* **Purpose**: Cellular registration, CSQ, network mode setting, and operator details interface testing.
+* **Functions**:
+* `NwyErrorToString(nwy_error_e code)`: Translates SDK network error codes into human-readable strings.
+* `nwy_test_cli_nw_get_mode()`: Prompts for `sim_id` and queries the active network mode (Auto, GSM, LTE).
+* `nwy_test_cli_nw_set_mode()`: Configures the radio network mode for the selected SIM slot.
+* `nwy_test_cli_nw_get_priband()`: Gets the active primary RF band configurations for a selected RAT.
+* `nwy_test_cli_nw_set_priband()`: Sets or locks specific RF bands for GSM or LTE.
+* `nwy_test_cli_nw_get_ims_mode()`: Queries IMS/VoLTE status (enabled/disabled) on the modem.
+* `nwy_test_cli_nw_set_ims_mode()`: Enables or disables VoLTE functionality.
+* `nwy_test_cli_nw_get_radio_mode()`: Queries standard radio power states (normal, flight mode, low power).
+* `nwy_test_cli_nw_set_radio_mode()`: Puts the RF module into flight mode or normal mode.
+* `nwy_test_cli_nw_get_edrx_info()` / `nwy_test_cli_nw_set_edrx_info()`: Queries or configures eDRX low-power settings (not supported on all platforms).
+* `nwy_test_cli_nw_get_psm_info()`: Queries Power Saving Mode (PSM) settings, including T3412 and T3324 timers.
+* `nwy_test_cli_nw_set_psm_info()`: Sets Power Saving Mode active states and requested timers.
+* `nwy_test_cli_nw_get_custom_cfg()`: Queries customized modem features (e.g. netauto, uemode, dataonly, bandcap, NITZ).
+* `nwy_test_cli_nw_set_custom_cfg()`: Writes changes to custom configs.
+* `nwy_test_cli_nw_get_oper_info()`: Queries MCC, MNC, EONS (Operator name), and SPN values.
+* `nwy_test_cli_nw_get_csq()`: Queries CSQ level (0-31, 99) and bit error rate.
+* `nwy_test_cli_nw_get_signal_info()`: Returns detailed network signal info (RSCP, RSRP, RSRQ, RSSI, SINR) depending on the active RAT.
+* `nwy_test_cli_nw_reg_info()`: Prints detailed PS/CS registration states and rejection causes.
+* `nwy_test_cli_nw_get_cellinfo()`: Scan and retrieve information for serving cell and neighboring cells (earfcn, cellid, rsrp, etc.).
+### 2. nwy_test_cli_sim.c
+* **Purpose**: SIM card interaction, status checks, ICCID/IMSI retrieval, PIN/PUK unlocking, and slot switching.
+* **Functions**:
+* `nwy_test_cli_get_sim_status()`: Queries SIM card state (READY, PIN Required, absent, busy).
+* `nwy_test_cli_verify_pin()`: Unlocks the SIM card using a user-inputted PIN.
+* `nwy_test_cli_get_pin_mode()`: Queries SIM PIN lock lock/unlock status.
+* `nwy_test_cli_set_pin_mode()`: Enables or disables PIN lock protection.
+* `nwy_test_cli_change_pin()`: Replaces the old SIM PIN with a new PIN.
+* `nwy_test_cli_verify_puk()`: Unlocks a blocked SIM card using the PUK.
+* `nwy_test_cli_get_imsi()`: Queries the International Mobile Subscriber Identity (IMSI).
+* `nwy_test_cli_get_iccid()`: Queries the SIM Integrated Circuit Card Identifier (ICCID).
+* `nwy_test_cli_get_msisdn()`: Queries the MSISDN (Mobile Station International Subscriber Directory Number).
+* `nwy_test_cli_set_msisdn()`: Sets the MSISDN (Not supported on N706B).
+* `nwy_test_cli_get_pin_puk_times()`: Queries the remaining retry attempts for PIN and PUK entries.
+* `nwy_test_cli_get_sim_slot()`: Queries which physical SIM slot is active.
+* `nwy_test_cli_set_sim_slot()`: Switches the active physical SIM slot.
+* `nwy_test_cli_set_sim_detect()`: Configures SIM insertion detection hardware pins.
+* `nwy_test_cli_set_csim()`: Issues a CSIM raw APDU command to the smart card.
+* `nwy_test_cli_set_sim_power_mode()`: Powers up, powers down, or resets the SIM card slot.
+* `nwy_test_cli_sim_recv_cb()`: Internal event callback for SIM card insertion and extraction events.
+* `nwy_test_cli_sim_reg()`: Registers/unregisters for SIM URC card events.
+### 3. nwy_test_cli_sms.c
+* **Purpose**: Messaging configuration, list, read, send, and deletion.
+* **Functions**:
+* `nwy_test_cli_sms_init()`: Initializes SMS settings on the selected SIM.
+* `nwy_test_cli_sms_send()`: Prompts for phone number, format (GSM7, 8BIT, UCS2), and message context, then sends it.
+* `nwy_test_cli_sms_del()`: Deletes an SMS message from storage via its slot index.
+* `nwy_test_cli_sms_get_sca()`: Queries the Service Center Address (SCA).
+* `nwy_test_cli_sms_set_sca()`: Configures the SMS Service Center Address.
+* `nwy_test_cli_sms_set_storage()`: Switches SMS storage between UIM (SIM) and ME (flash).
+* `nwy_test_cli_sms_get_storage()`: Queries active storage.
+* `nwy_test_cli_sms_set_report_md()`: Configures online transfer/storage behaviors for new messages.
+* `nwy_test_cli_sms_read()`: Reads the body, timestamp, and sender details of a specific SMS index.
+* `nwy_test_cli_sms_list()`: Scans storage and prints a list of active message indices.
+* `nwy_test_cli_sms_del_type()`: Deletes messages by category filter (e.g. delete read, delete sent).
+* `nwy_sms_test_recv_cb()`: Internal URC callback that prints notifications when a new SMS arrives.
+* `nwy_test_cli_sms_reg()`: Registers/unregisters the SMS receipt callback.
+### 4. nwy_test_cli_os.c
+* **Purpose**: Real-Time Operating System APIs, thread scheduling, timers, virtual AT, and diagnostic info.
+* **Functions**:
+* `nwy_cli_data_valid_check(nwy_time_t *time, int timezone)`: Validates calendar date parameters.
+* `nwy_test_cli_isr_timer_cb(nwy_timer_cb_para_t ctx)`: Low-level interrupt service timer callback.
+* `nwy_test_cli_service_timer_cb(nwy_timer_cb_para_t ctx)`: System timer service thread callback.
+* `nwy_test_cli_user_timer_cb(nwy_timer_cb_para_t ctx)`: User task-context timer callback.
+* `nwy_test_cli_user_thread_cb(void *ctx)`: Task entry that handles user-configured timer events.
+* `nwy_test_cli_timer_cb(nwy_timer_cb_para_t ctx)`: Standard legacy timer handler.
+* `nwy_cli_semaphore_taskA_proc(void *ctx)` / `nwy_cli_semaphore_taskB_proc(void *ctx)`: Mutually locks resources to demonstrate semaphore behaviors.
+* `nwy_cli_virtual_at_test()`: Prompts and writes a virtual AT command to the CP.
+* `nwy_at_cmd_process_callback(void *handle, char *atcmd, ...)`: Handles incoming custom virtual AT parameters.
+* `nwy_cli_unsol_at_cb(uint8 *data, int len)`: Displays unsolicited AT notifications.
+* `nwy_cli_tcpsetup_cb()`, `nwy_cli_tcprecvs_cb()`, `nwy_cli_tcp_close_cb()`, `nwy_cli_tcprecv_cb()`, `nwy_cli_acpt_close_cb()`, `nwy_cli_udprecv_cb()`, `nwy_cli_client_acpt_cb()`, `nwy_cli_gprs_disconnect_cb()`, `nwy_cli_sms_list_resp_cb()`: Common callback routers printing network, sockets, and SMS events.
+* `nwy_test_cli_get_model()`: Returns the device hardware model.
+* `nwy_test_cli_get_imei()`: Returns the SIM slot 1 IMEI number.
+* `nwy_test_cli_set_app_version()`: Sets the local application version string.
+* `nwy_test_cli_get_open_sdk_ver_string()`: Displays the OpenCPU SDK release version.
+* `nwy_test_cli_get_sw_ver()` / `nwy_test_cli_get_hw_ver()`: Returns internal software build and hardware schematic versions.
+* `nwy_test_cli_get_heap_info()`: Displays system heap start, size, and remaining block memory.
+* `nwy_test_cli_get_cpu_temp()`: Reads RF and CPU internal temperatures.
+* `nwy_test_cli_start_timer()`: Spawns the standard OS timer.
+* `nwy_test_cli_start_isr_timer()` / `nwy_test_cli_start_service_timer()` / `nwy_test_cli_start_user_timer()`: Launches individual timer modes.
+* `nwy_test_cli_start_all_timers()`: Simultaneously launches all three timer modes.
+* `nwy_test_cli_stop_timer()` / `nwy_test_cli_stop_all_timers()`: Stops and cleans up active timers.
+* `nwy_test_cli_get_time()` / `nwy_test_cli_set_time()`: Reads or updates calendar values.
+* `nwy_test_cli_test_semp()`: Creates tasks and tests semaphore locks.
+* `nwy_test_cli_virt_at_init()`: Initializes the virtual AT parser.
+* `nwy_test_cli_reg_at_unsolicited()`: Registers URC notifications.
+* `nwy_test_cli_send_virt_at()`: Executes virtual AT commands.
+* `nwy_test_cli_reg_at_fwd()`: Forwards AT commands.
+* `priority_test_callback(void *param)`: Thread checking priority alterations.
+* `nwy_test_cli_thread_priority_test()`: Starts priority test thread.
+* `event_receiver_thread(void *ctx)`: Receives thread events and logs statistics.
+* `event_sender_thread(void *ctx)`: Sends performance-test events to receiver.
+* `nwy_test_cli_event_wait_performance()`: Main event performance verification entry.
+* `nwy_test_cli_date_timestamp()`: Converts calendars to epoch timestamps and vice versa.
+### 5. nwy_test_cli_pm.c
+* **Purpose**: Power management reset and shutdown command verification.
+* **Functions**:
+* `nwy_test_cli_pm_pwr_off()`: Triggers Reset, Power Down Normal, or Power Down Quick options.
+### 6. nwy_test_cli_data.c
+* **Purpose**: Manages GPRS network profiles (PDP contexts), dialing actions, and DHCP/DNS queries.
+* **Functions**:
+* `nwy_test_cli_get_profile()`: Queries PDP context profiles (APN, PDP Type, auth protocol, and credentials) for a specific SIM ID and profile.
+* `nwy_test_cli_set_profile()`: Configures target APN, auth mode, usernames, passwords, and IP types on a profile slot.
+* `nwy_test_cli_auto_connect_set()`: Enables/disables automated PDP connection establishment.
+* `nwy_test_cli_data_start()` / `nwy_test_cli_data_stop()`: Activates (dials) or deactivates GPRS data connection.
+* `nwy_test_cli_data_info()`: Prints IP addresses, connection state, and settings for active GPRS contexts.
+* `nwy_test_cli_get_dhcp_info()` / `nwy_test_cli_set_dhcp_info()`: Reads or configures DHCP allocation options.
+* `nwy_test_cli_get_folw_info()`: Obtains GPRS flow statistics (bytes transmitted/received).
+* `nwy_test_cli_get_eps_apn()`: Retrieves standard APN configurations configured for LTE EPS network attachment.
+* `nwy_test_cli_get_dns_info()`: Queries network-assigned DNS servers.
+### 7. nwy_test_cli_driver.c
+* **Purpose**: Comprehensive test wrapper exercising peripheral hardware drivers (UART, GPIO, SPI, I2C, ADC, RTC, PM, USB).
+* **Functions**:
+* `nwy_test_cli_uart_open()` / `nwy_test_cli_uart_close()`: Opens/closes a hardware UART serial port.
+* `nwy_test_cli_uart_read()` / `nwy_test_cli_uart_write()`: Performs read and write tests on the UART bus.
+* `nwy_test_cli_uart_dcb_set()` / `nwy_test_cli_uart_dcb_get()`: Sets or retrieves UART Device Control Block (baud, flow control, etc.) parameters.
+* `nwy_test_cli_uart_rx_cb_register()` / `nwy_test_cli_uart_tx_cb_register()`: Registers event hooks for serial Rx/Tx.
+* `nwy_test_cli_uart_rx_frame_timeout_set()`: Sets timeout interval to finalize a packet frame receipt.
+* `nwy_test_cli_gpio_direction_get()` / `nwy_test_cli_gpio_direction_set()`: Manages logic pin directions (Input vs. Output).
+* `nwy_test_cli_gpio_value_get()` / `nwy_test_cli_gpio_value_set()`: Reads or sets output levels (High/Low) of specific GPIOs.
+* `nwy_test_cli_gpio_pull_get()` / `nwy_test_cli_gpio_pull_set()`: Configures pin bias configurations (Pull Up, Pull Down, High-Z).
+* `nwy_test_cli_gpio_irq_register()` / `nwy_test_cli_gpio_irq_enable()` / `nwy_test_cli_gpio_irq_disable()`: Configures and toggles external pin interrupts callbacks.
+* `nwy_test_cli_gpio_irq_wakeup_enable()` / `nwy_test_cli_gpio_irq_wakeup_disable()`: Controls if external pin interrupts wake system from deep sleep.
+* `nwy_test_cli_gpio_close()`: Releases configurations for the target GPIO pin.
+* `nwy_test_cli_spi_init()` / `nwy_test_cli_spi_deinit()`: Sets up or disables SPI interface parameters (bus speed, clock polarity, etc.).
+* `nwy_test_cli_spi_transfer()`: Performs synchronous data exchanges over SPI.
+* `nwy_test_cli_i2c_init()` / `nwy_test_cli_i2c_deinit()`: Configures or closes standard I2C bus speeds and target slave configurations.
+* `nwy_test_cli_i2c_read()` / `nwy_test_cli_i2c_write()`: Transmits command/registers bytes over the I2C interface.
+* `nwy_test_cli_adc_get()`: Reads voltage readings from hardware ADC channels.
+* `nwy_test_cli_boot_alarm_set()` / `nwy_test_cli_boot_alarm_del()`: Configures or deletes RTC calendar alarms capable of booting up the module.
+* `nwy_test_cli_power_state()` / `nwy_test_cli_power_voltage()`: Queries system voltage rails and charger statuses.
+* `nwy_test_cli_usb_net_switch()` / `nwy_test_cli_usb_net_get()`: Toggles or queries USB CDC network drivers profile (ECM, RNDIS, etc.).
+### 8. nwy_test_cli_fota.c
+* **Purpose**: Over-The-Air (OTA) firmware upgrade methods using local streaming or remote servers.
+* **Functions**:
+* `nwy_test_cli_fota_trans_proc(const char *data, int length)`: Blocks and writes raw incoming firmware packet chunks into the flash update partition.
+* `nwy_test_cli_fota_local_update()`: Direct firmware updates via packages sent over the serial terminal.
+* `nwy_test_cli_ftp_fota_update()`: Downloads a firmware upgrade file from a designated remote FTP server and flashes it.
+* `nwy_test_cli_fota_result()`: Verifies if the previous FOTA upgrade succeeded or failed during boot up.
+* `nwy_test_cli_fota_base_update()`: Triggers upgrades from package files already stored on the local filesystem.
+### 9. nwy_test_cli_ftp.c
+* **Purpose**: File Transfer Protocol (FTP) client transactions.
+* **Functions**:
+* `nwy_test_cli_ftp_param()`: Configures host credentials, target file paths, GPRS context IDs, and transfer modes.
+* `nwy_test_cli_ftp_login()` / `nwy_test_cli_ftp_logout()`: Authenticates with or disconnects from remote FTP servers.
+* `nwy_test_cli_ftp_get()` / `nwy_test_cli_ftp_put()`: Downloads or uploads files between remote storage and local flash memory.
+* `nwy_test_cli_ftp_filesize()`: Queries file size info on the remote server.
+* `nwy_test_cli_ftp_list()`: Queries folders list contents of remote FTP directories.
+* `nwy_test_cli_ftp_mkdir()` / `nwy_test_cli_ftp_rmdir()`: Creates or deletes folders on remote FTP server.
+* `nwy_test_cli_ftp_delete()`: Removes a file on the remote FTP file system.
+### 10. nwy_test_cli_func_def.h
+* **Purpose**: Shared declaration header cataloging all interactive CLI testing function prototypes.
+* **Functions**: None (declaration header).
+### 11. nwy_test_cli_gpio.c
+* **Purpose**: Modular implementation of GPIO pin input/output and interrupt configurations.
+* **Functions**:
+* `nwy_test_cli_gpio_direction_get()` / `nwy_test_cli_gpio_direction_set()`: Configures pin data directions.
+* `nwy_test_cli_gpio_value_get()` / `nwy_test_cli_gpio_value_set()`: Toggles logic levels (0/1).
+* `nwy_test_cli_gpio_pull_get()` / `nwy_test_cli_gpio_pull_set()` / `nwy_test_cli_gpio_pull()`: Manages logic pull-up/pull-down/floating states.
+* `nwy_test_cli_gpio_irq_register()`: Registers an interrupt callback routine for the pin.
+* `nwy_test_cli_gpio_irq_enable()` / `nwy_test_cli_gpio_irq_disable()`: Toggles GPIO interrupt service routine triggers.
+* `nwy_test_cli_gpio_irq_wakeup_enable()` / `nwy_test_cli_gpio_irq_wakeup_disable()`: Configures if pin interrupts can wake module from sleep.
+### 12. nwy_test_cli_http.c
+* **Purpose**: HTTP and HTTPS network requests client interface.
+* **Functions**:
+* `nwy_test_cli_http_setup()`: Configures url, headers, GPRS contexts, and optional SSL options.
+* `nwy_test_cli_http_get()`: Sends an HTTP GET request to download resources.
+* `nwy_test_cli_http_head()`: Sends an HTTP HEAD request to read metadata headers.
+* `nwy_test_cli_http_post()`: Submits payload data using an HTTP POST request.
+* `nwy_test_cli_http_put()`: Uploads resource data via an HTTP PUT request.
+* `nwy_test_cli_http_open_mode()`: Configures read modes (stream vs. chunked) for HTTP responses.
+* `nwy_test_cli_http_close()`: Disconnects HTTP socket session and cleans up context allocations.
+### 13. nwy_test_cli_iot.c
+* **Purpose**: MQTT stack client testing (using Paho) and Alibaba Cloud IoT Platform (alimqtt) integrations.
+* **Functions**:
+* `nwy_test_cli_alimqtt_connect()` / `nwy_test_cli_alimqtt_disconnect()`: Authenticates with or disconnects from Alibaba Cloud IoT.
+* `nwy_test_cli_alimqtt_pub()` / `nwy_test_cli_alimqtt_sub()` / `nwy_test_cli_alimqtt_unsub()`: Publish/Subscribe transactions under Alibaba topics.
+* `nwy_test_cli_alimqtt_state()`: Queries Alibaba IoT link status.
+* `nwy_test_cli_alimqtt_del_kv()`: Deletes property KV element allocations on Alibaba cloud.
+* `nwy_test_cli_mqtt_connect()` / `nwy_test_cli_mqtt_disconnect()`: Sets up standard TCP or SSL MQTT client sessions.
+* `nwy_test_cli_mqtt_pub()` / `nwy_test_cli_mqtt_sub()` / `nwy_test_cli_mqtt_unsub()`: Manages standard MQTT subscriptions and publications.
+* `nwy_test_cli_mqtt_state()`: Queries connection status.
+* `nwy_test_cli_mqtt_pub_test()`: Launches continuous message publication loop tests.
+### 14. nwy_test_cli_lbs.c
+* **Purpose**: Location-Based Services (LBS), GNSS configurations, hot/cold starts, and WiFi cell triangulation scans.
+* **Functions**:
+* `nwy_test_cli_gnss_open()` / `nwy_test_cli_gnss_close()`: Enables or disables the satellite receiver (GPS/BeiDou/GLONASS).
+* `nwy_test_cli_gnss_set_position_md()`: Selects active satellite systems constellations.
+* `nwy_test_cli_gnss_output_format()`: Filters NMEA output sentence types.
+* `nwy_test_cli_gnss_delete_aiding_data()`: Deletes aiding data cache to force Cold Starts.
+* `nwy_test_cli_gnss_nmea_info_parse()`: Decodes sentence attributes into latitude, longitude, and precision metrics.
+* `nwy_test_cli_gnss_nmea_data()` / `nwy_test_cli_gnss_nmea_specific_data()`: Starts or filters NMEA output streams.
+* `nwy_test_cli_gnss_set_priority()`: Sets relative radio sharing priority between LTE and GNSS.
+* `nwy_test_cli_gnss_open_resume()`: Restores previous GNSS session parameters.
+* `nwy_test_cli_gnss_set_server()` / `nwy_test_cli_gnss_open_assisted()`: Sets up AGPS server coordinates and starts assisted fixes.
+* `nwy_test_cli_wifi_open_base()`: Scans nearby WiFi hotspots for base station triangulation.
+* `nwy_test_cli_gnss_open_base()`: Core bootstrap initializer for GPS systems.
+### 15. nwy_test_cli_loc.c
+* **Purpose**: Cellular-assisted positioning, GNSS navigation, and AGPS trackers.
+* **Functions**:
+* `nwy_test_cli_navigation_start()` / `nwy_test_cli_navigation_stop()`: Toggles the background navigation track recorder.
+* `nwy_test_cli_loc_mode_set()`: Configures coordinate tracking accuracy modes.
+* `nwy_test_cli_startup_mode_set()`: Sets GNSS startup modes (Hot, Warm, Cold).
+* `nwy_test_cli_loc_rate_set()`: Sets the refresh rate interval for GNSS position updates.
+* `nwy_test_cli_nmea_data_get()`: Reads raw NMEA sentence buffers from the GNSS module.
+* `nwy_test_cli_nmea_data_report_reg()`: Registers a user callback function to receive periodic GNSS positional updates.
+* `nwy_test_cli_nmea_data_parse()`: Decodes sentence arrays.
+* `nwy_test_cli_agnss_start()`: Executes AGNSS aiding downloads.
+### 16. nwy_test_cli_mbedtls_aes.c
+* **Purpose**: Cryptographic testing using the AES algorithm (encryption and decryption).
+* **Functions**:
+* `nwy_mbedtls_aes_self_test(void)`: Validates MbedTLS AES functions against standard RFC test vectors.
+* `nwy_mbedtls_aes_test(void)`: Runs CBC/ECB encryption/decryption loops with 128/256-bit keys.
+### 17. nwy_test_cli_mbedtls_config.c
+* **Purpose**: Configuration helper mapping SSL configurations for secure client transport layers.
+* **Functions**:
+* `nwy_test_cli_get_sslinfo(void)`: Queries current active SSL session configurations and details.
+### 18. nwy_test_cli_mbedtls_ssltcp.c
+* **Purpose**: Secure SSL/TLS TCP socket connections and encrypted data exchanges.
+* **Functions**:
+* `nwy_test_cli_ssltcp_init(void)`: Initializes SSL credentials, server verification modes, and TLS version constraints.
+* `nwy_test_cli_ssltcp_setup(void)`: Connects socket and completes the secure SSL/TLS handshake with the remote server.
+* `nwy_test_cli_ssltcp_send(void)`: Transmits encrypted data blocks over the secure SSL connection.
+* `nwy_test_cli_ssltcp_close(void)`: Gracefully terminates the SSL session and releases GPRS socket allocations.
+### 19. nwy_test_cli_mobile.c
+* **Purpose**: Large helper checking Voice Calls, detailed LTE status, RF signal metrics, and GPRS default PDNs.
+* **Functions**:
+* `nwy_test_cli_nw_lte_st()`: Queries detailed LTE network configuration and attach status.
+* `nwy_test_cli_nw_operator_info()`: Returns the PLMN (MCC/MNC) and operator strings.
+* `nwy_test_cli_nw_get_ehplmn()`: Queries Equivalent Home PLMN (EHPLMN) configurations from the SIM.
+* `nwy_test_cli_nw_get_signal_rssi()`: Returns signal strength (dBm) and Rx/Tx power specs.
+* `nwy_test_cli_nw_get_cellmsg()`: Logs serving cell and neighboring cell reports.
+* `nwy_test_cli_nw_get_netmsg()`: Retrieves network system information blocks (SIB).
+* `nwy_test_cli_nw_get_cfgdftpdn_info(void)` / `nwy_test_cli_nw_set_cfgdftpdn_info(void)`: Configures/queries the default GPRS attach PDP profile parameters.
+* `nwy_test_cli_voice_call_start()`: Initiates an outgoing mobile voice call to a phone number.
+* `nwy_test_cli_voice_call_end()`: Terminates the active mobile voice call.
+* `nwy_test_cli_voice_auto_answ()`: Enables automatic answering for incoming voice calls.
+* `nwy_test_cli_voice_volte_set()`: Toggles VoLTE (Voice over LTE) calls mode.
+* `nwy_test_cli_voice_state_change()`: Monitors and reports calls state events.
+* `nwy_test_cli_voice_caller_id()`: Displays caller identification string.
+* `nwy_test_cli_voice_call_hold()` / `nwy_test_cli_voice_call_unhold()`: Puts an active call on hold or resumes it.
+### 20. nwy_test_cli_pwm.c
+* **Purpose**: Configures and drives hardware PWM output signals.
+* **Functions**:
+* `nwy_test_cli_pwm_init()`: Initializes PWM channel registers.
+* `nwy_test_cli_pwm_start()`: Configures PWM output frequency and duty cycle, then starts the generator.
+* `nwy_test_cli_pwm_stop()`: Disables PWM signal generation.
+* `nwy_test_cli_pwm_deinit()`: Powers down the PWM clock and resets the pin configuration.
+### 21. nwy_test_cli_sdw.c
+* **Purpose**: Bluetooth Low Energy (BLE) peripheral server profiles and central client modes.
+* **Functions**:
+* `nwy_test_cli_ble_get_st()`: Queries Bluetooth stack status.
+* `nwy_test_cli_ble_get_ver()`: Returns Bluetooth Protocol version.
+* `nwy_test_cli_ble_set_dev_name()`: Sets the BLE broadcast name.
+* `nwy_test_cli_ble_set_beacon()`: Sets standard iBeacon UUID, Major, and Minor values.
+* `nwy_test_cli_ble_set_manufacture()`: Configures manufacturer custom broadcast data.
+* `nwy_test_cli_ble_set_adv_server_uuid()`: Registers service UUIDs in the broadcast packet.
+* `nwy_test_cli_ble_set_srv()` / `nwy_test_cli_ble_set_char()`: Manages custom server services and characteristic settings.
+* `nwy_test_cli_ble_conn_status_report()` / `nwy_test_cli_ble_conn_status()`: Queries or reports active link statuses.
+* `nwy_test_cli_ble_mac_addr()`: Retrieves the local Bluetooth controller MAC address.
+* `nwy_test_cli_ble_add_server()` / `nwy_test_cli_ble_add_char()`: Dynamically defines GATT attributes.
+* `nwy_test_cli_ble_add_recv_data()` / `nwy_test_cli_ble_add_send_data()`: Reads/writes from/to characteristic attribute buffers.
+* `nwy_test_cli_ble_disconnect()`: Closes connection with a peer device.
+* `nwy_test_cli_ble_read_req()` / `nwy_test_cli_ble_read_rsp()`: Manages custom read transactions.
+* `nwy_test_cli_ble_close()`: Disables BLE stack.
+* `nwy_test_cli_ble_client_set_enable()`: Toggles Ble central client role mode.
+* `nwy_test_cli_ble_client_scan()`: Searches for nearby advertising Ble peripherals.
+* `nwy_test_cli_ble_client_connect()` / `nwy_test_cli_ble_client_disconnect()`: Establishes/closes links to target servers.
+* `nwy_test_cli_ble_client_discover_srv()`: Enumerates GATT services on the remote server.
+* `nwy_test_cli_ble_client_discover_char()`: Discovers characteristics of remote services.
+* `nwy_test_cli_ble_client_send_data()`: Writes data to a target remote GATT characteristic.
+* `nwy_test_cli_ble_client_recv_data()`: Enables remote GATT indications/notifications.
+### 22. nwy_test_cli_sntp.c
+* **Purpose**: Time sync over the network using Simple Network Time Protocol (SNTP).
+* **Functions**:
+* `nwy_test_cli_sntp_get_time()`: Queries network time from an NTP server and updates the local calendar.
+### 23. nwy_test_cli_stk.c
+* **Purpose**: SIM Application Toolkit (STK) interactive tests for smartcard commands.
+* **Functions**:
+* `nwy_test_cli_recv_info_stk()`: Decodes incoming proactive command notifications from the SIM.
+* `nwy_test_cli_set_switch_stk()` / `nwy_test_cli_get_switch_stk()`: Toggles device STK service activation.
+* `nwy_test_cli_terminal_response_stk()`: Transmits the terminal response payload (confirming action or error) back to the SIM.
+* `nwy_test_cli_envelope_command_stk()`: Submits envelope transaction commands (GPRS/Call events, menu selection) to the SIM card.
+* `nwy_test_cli_set_profile_stk()` / `nwy_test_cli_get_profile_stk()`: Configures or reads terminal profile capabilities.
+* `nwy_test_cli_stk_recv_cb()`: SAT event handler callback.
+* `nwy_test_cli_stk_reg()`: Registers SIM Toolkit event notifications.
+### 24. nwy_test_cli_tcpip.c
+* **Purpose**: Standard TCP and UDP socket connection tests.
+* **Functions**:
+* `nwy_test_cli_tcp_setup()`: Connects to a target TCP host and port.
+* `nwy_test_cli_tcp_send()`: Sends raw bytes over an active TCP socket.
+* `nwy_test_cli_tcp_close()`: Disconnects the TCP connection.
+* `nwy_test_cli_udp_setup()`: Creates a UDP socket for connectionless communication.
+* `nwy_test_cli_udp_send()`: Sends UDP datagram packets to the destination address.
+* `nwy_test_cli_udp_close()`: Closes the UDP socket.
+* `nwy_test_cli_ping()`: Performs network latency test using ICMP packets.
+* `nwy_test_cli_ip_packet()`: Sets custom IP header options.
+* `nwy_test_cli_tcp_server_menu()`: Renders options for server modes.
+* `nwy_test_cli_tcp_server_listen(void)`: Starts listening for TCP connections on a port.
+* `nwy_test_cli_tcp_server_close_listen(void)`: Stops TCP listening server.
+* `nwy_test_cli_tcp_server_send()`: Broadcasts data packets to all connected clients.
+* `nwy_test_cli_tcp_server_close_client()`: Forces disconnect on a specific client link.
+* `nwy_test_cli_tcp_server()`: Bootstraps the TCP listener.
+### 25. nwy_test_cli_tcpip_ex.c
+* **Purpose**: Extended Multi-socket, Multi-GPRS context, and DNS configuration API tests.
+* **Functions**:
+* `nwy_test_cli_tcp_setup_ex(void)`: Connects TCP client bound to a specific GPRS profile context.
+* `nwy_test_cli_tcp_send_ex(void)`: Sends socket data via GPRS profile index.
+* `nwy_test_cli_tcp_close_ex(void)`: Disconnects TCP client context.
+* `nwy_test_cli_udp_setup_ex(void)`: Creates UDP socket context.
+* `nwy_test_cli_udp_send_ex(void)`: Transmits UDP packets under selected profile.
+* `nwy_test_cli_udp_close_ex(void)`: Releases GPRS UDP socket resources.
+* `nwy_test_cli_tcp_server_setup_ex(void)`: Opens TCP listener bound to a GPRS network profile.
+* `nwy_test_cli_tcp_server_send_ex(void)`: Sends GPRS server client data.
+* `nwy_test_cli_tcp_server_close_client_ex(void)`: Closes active connections in GPRS server list.
+* `nwy_test_cli_tcp_server_close_ex(void)`: Disables the GPRS server listener.
+* `nwy_test_cli_tcp_server_menu_ex(void)`: Renders GPRS multi-server sub-menu.
+* `nwy_test_cli_tcp_server_ex(void)`: Initializer for the extended server tests.
+### 26. nwy_test_cli_uart.c
+* **Purpose**: Standard serial UART driver verification.
+* **Functions**:
+* `nwy_test_cli_uart_open()`: Configures and opens UART communication port.
+* `nwy_test_cli_uart_read()`: Reads incoming buffer streams.
+* `nwy_test_cli_uart_write()`: Outputs character buffers.
+* `nwy_test_cli_uart_dcb_set()` / `nwy_test_cli_uart_dcb_get()`: Sets/retrieves DCB parameters.
+* `nwy_test_cli_uart_close()`: Disables the UART port.
+* `nwy_test_cli_uart_rx_cb_register()` / `nwy_test_cli_uart_tx_cb_register()`: Registers event notifications callback.
+* `nwy_test_cli_uart_rx_frame_timeout_set()`: Configures pack idle interval settings.
+--------------------------------------------------------------------------------
+3. NWY_FUNCTION_DEMO - SOURCE FILES (nwy_function_demo/src/)
+--------------------------------------------------------------------------------
+Standalone demo loops showing how to construct a robust, production-ready OpenCPU app.
+### 1. nwy_demo_entry.c
+* **Purpose**: Initial bootstrap launcher of the OpenCPU app.
+* **Functions**:
+* `nwy_demo_init()`: Configures the virtual AT command engine mutex.
+* `nwy_open_app_entry()` / `appimg_enter()`: Entry hook. Spawns `nwy_main_control` and `nwy_net_monitor` threads.
+* `appimg_exit()`: Application shutdown handler.
+### 2. nwy_demo_main_control.c
+* **Purpose**: Primary event-handling dispatcher thread.
+* **Functions**:
+* `nwy_main_control_func(void *param)`: Loops indefinitely on thread event queues. Dispatches incoming `NWY_MAIN_DATA_CALL_CHANGE_MSG` events.
+* `nwy_main_data_call_change_proc(int profile_id, nwy_data_call_state_e state)`: Triggers the TCP client application (`nwy_tcp_cli_demo_main`) when network connectivity is confirmed.
+### 3. nwy_demo_network_monitor.c
+* **Purpose**: Core background worker that checks signal quality and cellular status.
+* **Functions**:
+* `nwy_demo_sim_err_proc()` / `nwy_demo_reg_err_proc()`: SIM / Reg error hooks.
+* `nwy_demo_data_call_monitor_cb()`: Callback for connection validation.
+* `nwy_demo_cfun_start()`: Asserts full cellular state (`AT+CFUN=1`).
+* `nwy_demo_cfun_reset_ckeck(int reset_flag)`: Power-cycles RF and data states.
+* `nwy_demo_restart_data_call()`: Posts connection restart message.
+* `nwy_demo_data_call_check()`: Loops until SIM and registration are fully validated.
+* `nwy_demo_check_cfun_reset()`: Checks signal (CSQ) and registration. Triggers AT command restarts (`AT+CFUN=0/1`) if connection is lost.
+* `nwy_demo_data_state_process(int profile_id, nwy_data_call_state_e state)`: Evaluates IP status and reports to controller.
+* `nwy_demo_network_monitor_cb()`: Periodic check signal trigger.
+* `nwy_demo_network_monitor_timer()` / `nwy_demo_data_call_monitor_timer()`: System timers setup.
+* `nwy_network_monitor_func(void *param)`: Thread entry. Loops on events like timers and data status notifications.
+### 4. nwy_demo_data.c
+* **Purpose**: Manages network data connection (PDP) dialing.
+* **Functions**:
+* `nwy_demo_data_call_cb(int profile_idx, nwy_data_call_state_e ind_state)`: Triggers on connection state changes and updates local tables.
+* `nwy_demo_call_info_get(int profile_idx, nwy_data_callinfo_t *info)`: Obtains and logs network IP and DNS.
+* `nwy_demo_data_call_clear()`: Stops active dials.
+* `nwy_demo_data_call_start()`: Configures APN options, registers state callbacks, and starts dialing profile 1.
+### 5. nwy_demo_tcp.c
+* **Purpose**: Establishes TCP connections and socket data transfers.
+* **Functions**:
+* `nwy_tcp_demo_recv(int fd, char *buf, int len, int64 timeout_s)`: Selects and reads data packets on a socket.
+* `nwy_tcp_demo_data_recv_func(void *param)`: Task loop reading incoming data from socket descriptors.
+* `nwy_tcp_cli_demo_setup(char *url, int port)`: Resolves host DNS, opens TCP sockets, and connects.
+* `nwy_tcp_cli_demo_main(void)`: Setup the client socket and send test strings.
+### 6. nwy_demo_utility.c
+* **Purpose**: Common output utilities.
+* **Functions**:
+* `nwy_demo_uart_echo(char *fmt, ...)`: Thread-safe, mutex-protected formatted console log transmitter.
+### 7. nwy_demo_vir_at.c
+* **Purpose**: Interacts with the cellular modem core using virtual AT commands without physical UART ports.
+* **Functions**:
+* `nwy_vir_at_test_init()`: Configures mutexes and virtual AT parameters.
+* `nwy_vir_at_send(char *at_command, char *ok_fmt, char *err_fmt, char *resp, int len)`: Wraps, signs, locks, and writes AT strings, capturing modem responses.
+================================================================================
