@@ -11,7 +11,7 @@ if "%CUST_PROJ_DIR:~-1%"=="\" set "CUST_PROJ_DIR=%CUST_PROJ_DIR:~0,-1%"
 :: Build output dir
 set "OUTPUT=%SDK_ROOT%\out"
 
-echo Building UartEcho...
+echo Building SimCardTest...
 echo SDK ROOT: %SDK_ROOT%
 echo PROJECT DIR: %CUST_PROJ_DIR%
 
@@ -52,7 +52,7 @@ echo ***********************  SUCCESS  ******************************
 echo ****************************************************************
 echo Final binary in SDK: %OUTPUT%\bin\nwy_open_app.bin
 
-:: New Step: Create the ZIP package for Aboot
+:: Create the ZIP package for Aboot
 echo.
 echo Packaging for Aboot...
 set "ABOOT_TOOL_DIR=%SDK_ROOT%\tools\aboot"

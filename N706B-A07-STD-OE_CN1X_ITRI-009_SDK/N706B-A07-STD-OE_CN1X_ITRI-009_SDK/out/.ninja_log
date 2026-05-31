@@ -1,7 +1,7 @@
 # ninja log v5
-1	163	8019225758273653	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/OsUartPmTest/src/hal/pm/nwy_hal_pm.obj	8595e36fbe9a219f
-19	165	8019225758263673	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/OsUartPmTest/src/hal/uart/nwy_hal_uart.obj	97eaf82a4c85f8bf
-11	185	8019225758517523	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/OsUartPmTest/src/hal/os/nwy_hal_os.obj	acfbef0dc87400cc
-15	190	8019225758567515	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/OsUartPmTest/src/main.obj	2ecd81d9c5aff4b
-190	404	8019225760302867	bin/nwy_open_app.elf	591a70e73d03bd94
-190	404	8019225760302867	bin/nwy_open_app.bin	591a70e73d03bd94
+15	167	8019306731362807	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SimCardTest/src/hal/uart/nwy_hal_uart.obj	4712c4ca9ec8b1a6
+6	169	8019306731372907	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SimCardTest/src/hal/os/nwy_hal_os.obj	7e8744d49312fb79
+1	193	8019306731619254	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SimCardTest/src/hal/sim/nwy_hal_sim.obj	be1814e409edcaf7
+10	194	8019306731609262	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SimCardTest/src/main.obj	326d599c37ea1375
+194	452	8019306733736050	bin/nwy_open_app.elf	54d6c7aa5d4f93c6
+194	452	8019306733736050	bin/nwy_open_app.bin	54d6c7aa5d4f93c6

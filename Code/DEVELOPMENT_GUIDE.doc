@@ -68,6 +68,11 @@ K. Mandatory Non-Zero Event Count in Thread Creation
 - Issue: When calling 'nwy_thread_create', setting the 'event_count' argument (6th parameter) to '0' causes the SDK to fail thread creation, returning 'NWY_FAIL'.
 - Solution: Always set 'event_count' to a value greater than 0 (typically '10' or '50') when spawning a custom thread.
 
+L. SIM Hotplug Hardware Detection Restrictions on ASR1605S
+- Issue: Attempting to manually enable or configure SIM detection trigger levels using `nwy_sim_detect_set()` returns `NWY_GEN_E_PLAT_NOT_SUPPORT` (-10) on the ASR1605S chipset.
+- Solution: The ASR1605S cellular core automatically configures and manages the SIM presence GPIO interrupt lines behind the scenes; the API is restricted because application-level overrides are disabled. Simply register the URC event callback using `nwy_hal_sim_register_urc_cb()`.
+- Note: Registering the URC callback on an inactive or empty SIM slot (such as Slot 2 when empty) returns `NWY_FAIL` (0) since the core disables unused slot lines. Furthermore, if hotplug events still fail to trigger the callback on active Slot 1, check the board schematic—if the mechanical SIM socket switch pin (SIM_DET) is left floating or unwired to the module, dynamic detection is physically impossible and status can only update on reboot.
+
 3. HOW TO BUILD YOUR PROJECTS
 Each project in the Code folder (e.g., HelloWorld, Blinky) has its own build_<ProjectName>.bat.
 
@@ -94,6 +99,8 @@ To start a new project (e.g., "MyTracker"):
 - UartEcho: Bidirectional UART communication on physical ports.
 - NetworkMonitor: Periodic cellular registration, signal strength reporting, and SMS echo testing using the modular HAL wrappers (PM, SIM, NET, SMS).
 - TimerToggle: Non-blocking LED toggle using the OS Software Timer API.
+- SimCardTest: Non-interactive automated diagnostic self-test suite and hotplug event listener running over Debug UART (UART4) to test and verify SIM Card HAL APIs (Readiness, IMSI/ICCID, slot configuration, PIN/PUK lock status, and hotplug URCs).
+
 
 6. COMMON PITFALLS & API NOTES
 - SIM ID: Use NWY_SIM_ID_SLOT_1. Some demo materials refer to NWY_DEFAULT_SIM_ID, which is not defined in the standard headers.
