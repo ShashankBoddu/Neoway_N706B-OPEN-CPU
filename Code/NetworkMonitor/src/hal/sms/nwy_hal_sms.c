@@ -3,6 +3,7 @@
 #include "nwy_sim_api.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static nwy_hal_sms_recv_callback_t g_user_sms_cb[2] = { NULL }; 
 
@@ -24,19 +25,22 @@ static void internal_sms_handler(nwy_sim_id_e sim_id, nwy_mt_sms_event_e urc_typ
     }
     
     if (urc_type == NWY_SMS_PP_IND) {
-        nwy_sms_recv_info_type_t sms_data;
-        memset(&sms_data, 0, sizeof(sms_data));
+        nwy_sms_recv_info_type_t *sms_data = (nwy_sms_recv_info_type_t *)malloc(sizeof(nwy_sms_recv_info_type_t));
+        if (!sms_data) {
+            return;
+        }
+        memset(sms_data, 0, sizeof(nwy_sms_recv_info_type_t));
         
         bool read_ok = false;
         
         if (strlen(ind_struct->sms_info.source_phone_num) > 0) {
-            memcpy(&sms_data, &ind_struct->sms_info, sizeof(sms_data));
+            memcpy(sms_data, &ind_struct->sms_info, sizeof(nwy_sms_recv_info_type_t));
             read_ok = true;
         } else {
-            if (nwy_sms_msg_read(sim_id, ind_struct->sms_info.nIndex, &sms_data) == 0) {
+            if (nwy_sms_msg_read(sim_id, ind_struct->sms_info.nIndex, sms_data) == 0) {
                 read_ok = true;
             } else {
-                memcpy(&sms_data, &ind_struct->sms_info, sizeof(sms_data));
+                memcpy(sms_data, &ind_struct->sms_info, sizeof(nwy_sms_recv_info_type_t));
                 read_ok = true;
             }
         }
@@ -46,30 +50,32 @@ static void internal_sms_handler(nwy_sim_id_e sim_id, nwy_mt_sms_event_e urc_typ
             char message[NWY_SMS_MAX_MT_MSG_LENGTH + 1];
             char timestamp[32];
             
-            strncpy(phone_num, sms_data.source_phone_num, sizeof(phone_num) - 1);
+            strncpy(phone_num, sms_data->source_phone_num, sizeof(phone_num) - 1);
             phone_num[sizeof(phone_num) - 1] = '\0';
             
             const char *msg_ptr = "";
-            if (strlen((char*)sms_data.msg_decoded_content) > 0) {
-                msg_ptr = (char*)sms_data.msg_decoded_content;
+            if (strlen((char*)sms_data->msg_decoded_content) > 0) {
+                msg_ptr = (char*)sms_data->msg_decoded_content;
             } else {
-                msg_ptr = (char*)sms_data.msg_content;
+                msg_ptr = (char*)sms_data->msg_content;
             }
             strncpy(message, msg_ptr, sizeof(message) - 1);
             message[sizeof(message) - 1] = '\0';
             
             snprintf(timestamp, sizeof(timestamp), "%04d-%02d-%02d %02d:%02d:%02d",
-                     sms_data.date.uYear,
-                     sms_data.date.uMonth,
-                     sms_data.date.uDay,
-                     sms_data.date.uHour,
-                     sms_data.date.uMinute,
-                     sms_data.date.uSecond);
+                     sms_data->date.uYear,
+                     sms_data->date.uMonth,
+                     sms_data->date.uDay,
+                     sms_data->date.uHour,
+                     sms_data->date.uMinute,
+                     sms_data->date.uSecond);
             
             g_user_sms_cb[sim_idx](user_sim_id, phone_num, message, timestamp);
             
             nwy_sms_msg_del(sim_id, ind_struct->sms_info.nIndex);
         }
+        
+        free(sms_data);
     }
 }
 
