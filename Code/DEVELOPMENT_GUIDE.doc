@@ -60,6 +60,14 @@ I. URC Thread Context Deadlocks (Watchdog Resets)
 - Issue: Executing blocking modem commands (like 'nwy_sms_msg_send()') directly inside the asynchronous URC callback context (such as the SMS receive callback) blocks the modem's notification handler thread. This results in core deadlocks that trigger watchdog resets (reboots).
 - Solution: Delegate the operation to the task context. Use an OSI semaphore ('nwy_osi_semaphore_t') to coordinate: the URC callback buffers the data and releases the semaphore, immediately waking up the background task to safely send the message.
 
+J. ASR SDK OS Primitive Handles Passed by Value (Typo in API Docs)
+- Issue: The official Neoway OS API Notes PDF claims timer, semaphore, and mutex helper functions take pointer references (e.g., 'nwy_osi_semaphore_t *sem'). However, the compiler header 'nwy_osi_api.h' defines them as void pointers ('typedef void * nwy_osi_semaphore_t'), meaning they must be passed by value. Passing them by address ('&sem') causes memory access violations, leading to silent timer failures or instant module resets/crashes when locking/acquiring them.
+- Solution: Always pass timer, semaphore, and mutex handles by value (e.g., 'nwy_semaphore_acquire(sem, timeout)') as declared in the header file, ignoring the typos in the PDF documentation.
+
+K. Mandatory Non-Zero Event Count in Thread Creation
+- Issue: When calling 'nwy_thread_create', setting the 'event_count' argument (6th parameter) to '0' causes the SDK to fail thread creation, returning 'NWY_FAIL'.
+- Solution: Always set 'event_count' to a value greater than 0 (typically '10' or '50') when spawning a custom thread.
+
 3. HOW TO BUILD YOUR PROJECTS
 Each project in the Code folder (e.g., HelloWorld, Blinky) has its own build_<ProjectName>.bat.
 
@@ -90,6 +98,10 @@ To start a new project (e.g., "MyTracker"):
 6. COMMON PITFALLS & API NOTES
 - SIM ID: Use NWY_SIM_ID_SLOT_1. Some demo materials refer to NWY_DEFAULT_SIM_ID, which is not defined in the standard headers.
 - Timers: When using nwy_sdk_timer_create, set thread_hdl to NWY_TIMER_IN_SERVICE to run callbacks in the system timer thread.
+- UART Port Naming Offset: SDK port string names are offset from physical EVB board labels:
+  * "URT1" in SDK code connects to physical UART4 (Debug UART) header.
+  * "URT2" in SDK code connects to physical UART1 header.
+  * "URT3" in SDK code connects to physical UART2 header.
 - Blocking Code: Avoid long while(1) loops with nwy_thread_sleep for critical tasks. Use software timers for better power and resource efficiency.
 - SMS Initialization: Always wait for the SIM card status to transition to READY before calling nwy_hal_sms_init(). Initializing the SMS library prior to SIM readiness will cause option configuration failures.
 - SMS Testing: Once a data connection is established, the module transmits a one-shot boot notification SMS to '+918074638788' (Indian region). Inbound SMS messages received by the module will trigger an automatic response containing 'Echo: <received message>' sent back to the sender.

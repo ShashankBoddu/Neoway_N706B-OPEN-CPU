@@ -237,7 +237,7 @@ CMAKE_STRIP:FILEPATH=E:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
 //No help, variable specified on the command line.
-CUST_PROJ_DIR:UNINITIALIZED=E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\NetworkMonitor
+CUST_PROJ_DIR:UNINITIALIZED=E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\OsUartPmTest
 
 //Single output directory for building all executables.
 EXECUTABLE_OUTPUT_PATH:PATH=
