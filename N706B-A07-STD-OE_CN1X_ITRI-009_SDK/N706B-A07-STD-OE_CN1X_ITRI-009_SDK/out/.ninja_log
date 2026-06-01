@@ -1,12 +1,12 @@
 # ninja log v5
-2	281	8020083205579880	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/gpio/nwy_hal_gpio.obj	5f42166615e4161a
-33	296	8020083205797601	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sntp/nwy_hal_sntp.obj	71ddcb1d19e4768a
-26	343	8020083206207245	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/pm/nwy_hal_pm.obj	8a09e2620f4bc691
-18	347	8020083206227234	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/os/nwy_hal_os.obj	6dbc2602ad64d346
-70	385	8020083206630524	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj	478f564a2214d556
-42	395	8020083206735377	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sms/nwy_hal_sms.obj	3fc233caa722ca3c
-54	404	8020083206873165	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sim/nwy_hal_sim.obj	8af39147f418ec81
-10	420	8020083207043707	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj	258ce1cdb01edc58
-62	498	8020083207818436	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj	f14a6e9e28fcadbc
-498	869	8020083210797734	bin/nwy_open_app.elf	a2e8438e0848ca27
-498	869	8020083210797734	bin/nwy_open_app.bin	a2e8438e0848ca27
+2	291	8020137790548607	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/gpio/nwy_hal_gpio.obj	e563b5d17e5f457d
+39	293	8020137790548607	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/sntp/nwy_hal_sntp.obj	1b68af0db77f19c7
+17	295	8020137790628564	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/pm/nwy_hal_pm.obj	f4aa54ead9cb240d
+24	313	8020137790788710	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/os/nwy_hal_os.obj	69345855e67cb8c
+32	319	8020137790873886	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/sms/nwy_hal_sms.obj	b19b24da533157f7
+64	339	8020137791109926	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/uart/nwy_hal_uart.obj	2596051d6c9cbc6a
+47	358	8020137791320608	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/sim/nwy_hal_sim.obj	e5ae21bc944f271e
+54	372	8020137791454657	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/main.obj	1503eb33616509ea
+10	399	8020137791714515	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/net/nwy_hal_net.obj	205731f0ad13bfc2
+399	788	8020137794838483	bin/nwy_open_app.elf	f8d06dc4bba2fe86
+399	788	8020137794838483	bin/nwy_open_app.bin	f8d06dc4bba2fe86
