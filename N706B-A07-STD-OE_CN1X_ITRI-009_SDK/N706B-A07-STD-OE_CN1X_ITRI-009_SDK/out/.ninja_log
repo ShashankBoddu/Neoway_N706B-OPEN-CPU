@@ -1,10 +1,12 @@
 # ninja log v5
-23	246	8019477001389699	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/pm/nwy_hal_pm.obj	8a09e2620f4bc691
-9	255	8019477001493558	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/os/nwy_hal_os.obj	6dbc2602ad64d346
-38	277	8019477001803682	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj	478f564a2214d556
-16	290	8019477001914194	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sim/nwy_hal_sim.obj	8af39147f418ec81
-47	301	8019477002042459	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sms/nwy_hal_sms.obj	3fc233caa722ca3c
-2	351	8019477002530279	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj	258ce1cdb01edc58
-29	405	8019477003059938	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj	f14a6e9e28fcadbc
-405	778	8019477006127851	bin/nwy_open_app.elf	f251cda79f786be
-405	778	8019477006127851	bin/nwy_open_app.bin	f251cda79f786be
+2	281	8020083205579880	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/gpio/nwy_hal_gpio.obj	5f42166615e4161a
+33	296	8020083205797601	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sntp/nwy_hal_sntp.obj	71ddcb1d19e4768a
+26	343	8020083206207245	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/pm/nwy_hal_pm.obj	8a09e2620f4bc691
+18	347	8020083206227234	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/os/nwy_hal_os.obj	6dbc2602ad64d346
+70	385	8020083206630524	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/uart/nwy_hal_uart.obj	478f564a2214d556
+42	395	8020083206735377	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sms/nwy_hal_sms.obj	3fc233caa722ca3c
+54	404	8020083206873165	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/sim/nwy_hal_sim.obj	8af39147f418ec81
+10	420	8020083207043707	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/hal/net/nwy_hal_net.obj	258ce1cdb01edc58
+62	498	8020083207818436	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/NetworkMonitor/src/main.obj	f14a6e9e28fcadbc
+498	869	8020083210797734	bin/nwy_open_app.elf	a2e8438e0848ca27
+498	869	8020083210797734	bin/nwy_open_app.bin	a2e8438e0848ca27

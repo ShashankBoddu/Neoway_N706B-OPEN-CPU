@@ -11,6 +11,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include "hal/gpio/nwy_hal_gpio.h"
+#include "hal/sntp/nwy_hal_sntp.h"
+
+typedef enum {
+  NET_LED_STATE_OOS = 0,
+  NET_LED_STATE_REGISTERED,
+  NET_LED_STATE_CONNECTED
+} net_led_state_e;
+static volatile net_led_state_e g_net_led_state = NET_LED_STATE_OOS;
 
 #define TEST_UART_PORT "URT1"
 #define TEST_UART_BAUD 115200
@@ -96,10 +105,22 @@ static void test_sim_urc_cb(int sim_id, bool card_present, nwy_sim_status_e sim_
 }
 
 // Callback for GPRS data call status changes
+static void test_sntp_cb(bool success) {
+  if (success) {
+    LOGI("SNTP TIME SYNC: [SUCCESS] Time successfully synchronized with NTP server.");
+  } else {
+    LOGW("SNTP TIME SYNC: [FAILED] Could not synchronize time.");
+  }
+}
+
 static void test_data_call_cb(int sim_id, int profile_idx, bool connected, const char *ip_address) {
   if (connected) {
     LOGI("DATA CALL CONNECTED - SIM %d, Profile %d, IP: %s", 
          sim_id, profile_idx, ip_address ? ip_address : "N/A");
+    
+    // Once internet is connected, trigger Time Sync
+    LOGI("Triggering SNTP time synchronization...");
+    nwy_hal_sntp_sync_time(1, "pool.ntp.org", "E5", test_sntp_cb); // East 5 zone (closest integer tz for India/UTC+5:30 or Pakistan)
   } else {
     LOGW("DATA CALL DISCONNECTED - SIM %d, Profile %d", sim_id, profile_idx);
   }
@@ -379,8 +400,12 @@ static void network_monitor_task(void *param) {
   printf("==================================================\r\n");
   printf("Port: UART4 (Debug) | Baudrate: 115200\r\n");
 
-  // Enable SIM hotplug hardware detection (critical for slot activity detection)
-  nwy_hal_sim_set_detect(1, 1, 0);
+  // Initialize LEDs
+  nwy_hal_gpio_init_out(HAL_GPIO_STATUS, true); // Status LED solid ON
+  nwy_hal_gpio_init_out(HAL_GPIO_NET_STATUS, false);
+
+  // Disable SIM hotplug hardware detection (custom boards often lack the physical switch)
+  nwy_hal_sim_set_detect(1, 0, 0);
 
   // Register SIM event handler
   nwy_hal_sim_register_urc_cb(1, test_sim_urc_cb);
@@ -421,10 +446,13 @@ static void network_monitor_task(void *param) {
     
     if (cs_state == NWY_NW_SERVICE_NONE && ps_state == NWY_NW_SERVICE_NONE) {
       LOGW("[STATUS] REGISTRATION: OUT OF SERVICE (Searching...)");
+      g_net_led_state = NET_LED_STATE_OOS;
     } else if (cs_state == NWY_NW_SERVICE_LIMITED || ps_state == NWY_NW_SERVICE_LIMITED) {
       LOGW("[STATUS] REGISTRATION: LIMITED SERVICE (RAT: %s)", get_rat_str(rat));
+      g_net_led_state = NET_LED_STATE_REGISTERED;
     } else {
       LOGI("[STATUS] REGISTRATION: REGISTERED (RAT: %s)", get_rat_str(rat));
+      g_net_led_state = NET_LED_STATE_REGISTERED;
     }
 
     // 4. IP/Data connection status
@@ -432,8 +460,12 @@ static void network_monitor_task(void *param) {
     bool ip_ok = nwy_hal_net_get_ip(1, 1, ip_address, sizeof(ip_address));
     if (ip_ok) {
       LOGI("[STATUS] INTERNET: CONNECTED (IP: %s)", ip_address);
+      g_net_led_state = NET_LED_STATE_CONNECTED;
     } else {
       LOGW("[STATUS] INTERNET: DISCONNECTED");
+      if (g_net_led_state == NET_LED_STATE_CONNECTED) {
+        g_net_led_state = NET_LED_STATE_REGISTERED;
+      }
     }
 
     LOGI("--------------------------------------------------");
@@ -442,10 +474,14 @@ static void network_monitor_task(void *param) {
     if (cs_state == NWY_NW_SERVICE_NONE && ps_state == NWY_NW_SERVICE_NONE) {
       oos_counter++;
       if (oos_counter >= 6) { // 60 seconds of consecutive Out of Service
-        if (csq == 99) {
+        if (csq == 99 && sim_ready) {
           LOGW("[STATUS] 60s Out-Of-Service timeout reached. However, CSQ is 99 (no physical signal), skipping radio cycle.");
         } else {
-          LOGW("[STATUS] 60s Out-Of-Service timeout reached with physical signal (CSQ=%d). Toggling radio state to force fresh search...", csq);
+          LOGW("[STATUS] 60s Out-Of-Service timeout reached. Toggling radio state and resetting SIM to force fresh search...");
+          if (!sim_ready) {
+            LOGI("SIM is not ready. Attempting software SIM reset...");
+            nwy_hal_sim_reset(1);
+          }
           nwy_hal_net_set_radio_mode(NWY_NW_RADIO_FLIGHT_MODE);
           nwy_hal_os_thread_sleep(2000);
           nwy_hal_net_set_radio_mode(NWY_NW_RADIO_NORMAL_MODE);
@@ -470,6 +506,38 @@ static void network_monitor_task(void *param) {
   }
 }
 
+// Background LED Blinker Thread
+static void led_indicator_task(void *param) {
+  while (1) {
+    switch (g_net_led_state) {
+      case NET_LED_STATE_OOS:
+        // Fast blink (200ms cycle) for searching/out of service
+        nwy_hal_gpio_set_value(HAL_GPIO_NET_STATUS, true);
+        nwy_hal_os_thread_sleep(100);
+        nwy_hal_gpio_set_value(HAL_GPIO_NET_STATUS, false);
+        nwy_hal_os_thread_sleep(100);
+        break;
+      case NET_LED_STATE_REGISTERED:
+        // Slow blink (2000ms cycle) for registered but no internet
+        nwy_hal_gpio_set_value(HAL_GPIO_NET_STATUS, true);
+        nwy_hal_os_thread_sleep(200);
+        nwy_hal_gpio_set_value(HAL_GPIO_NET_STATUS, false);
+        nwy_hal_os_thread_sleep(1800);
+        break;
+      case NET_LED_STATE_CONNECTED:
+        // Very slow blink (pulse) for active internet connection
+        nwy_hal_gpio_set_value(HAL_GPIO_NET_STATUS, true);
+        nwy_hal_os_thread_sleep(100);
+        nwy_hal_gpio_set_value(HAL_GPIO_NET_STATUS, false);
+        nwy_hal_os_thread_sleep(2000);
+        break;
+      default:
+        nwy_hal_os_thread_sleep(1000);
+        break;
+    }
+  }
+}
+
 // Entry Point
 #ifdef FEATURE_NWY_ASR_PLAT
 int nwy_open_app_entry()
@@ -485,6 +553,11 @@ int appimg_enter(void *param)
                                      network_monitor_task, NULL,
                                      NWY_OSI_PRIORITY_NORMAL, 1024 * 8);
   NWY_SDK_LOG_DEBUG("NetworkMonitor: Thread spawned, status = %d", ok);
+
+  nwy_osi_thread_t led_thread = NULL;
+  nwy_hal_os_thread_create(&led_thread, "led_indicator",
+                           led_indicator_task, NULL,
+                           NWY_OSI_PRIORITY_NORMAL, 1024 * 2);
 
   return 0;
 }
