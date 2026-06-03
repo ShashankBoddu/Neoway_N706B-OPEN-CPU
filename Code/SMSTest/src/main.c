@@ -1,8 +1,8 @@
+#include "hal/gpio/nwy_hal_gpio.h"
 #include "hal/net/nwy_hal_net.h"
 #include "hal/os/nwy_hal_os.h"
 #include "hal/sms/nwy_hal_sms.h"
 #include "hal/uart/nwy_hal_uart.h"
-#include "hal/gpio/nwy_hal_gpio.h"
 #include "nwy_log_api.h"
 #include "nwy_network_api.h"
 #include "nwy_osi_api.h"
@@ -30,72 +30,78 @@ static nwy_osi_mutex_t g_sms_mutex = NULL;
 
 // Callback to handle incoming SMS - Just enqueues the index!
 static void my_sms_recv_callback(int sim_id, int sms_index) {
-  if (!g_sms_mutex) return;
+  if (!g_sms_mutex)
+    return;
   nwy_hal_os_mutex_lock(g_sms_mutex, 1000);
   if (g_pending_sms_count < MAX_PENDING_SMS) {
-      g_pending_sms_indices[g_pending_sms_count++] = sms_index;
+    g_pending_sms_indices[g_pending_sms_count++] = sms_index;
   } else {
-      LOGE("Pending SMS queue is full! Dropping index %d", sms_index);
+    LOGE("Pending SMS queue is full! Dropping index %d", sms_index);
   }
   nwy_hal_os_mutex_unlock(g_sms_mutex);
 }
 
 // Process pending SMS from the main thread context
 static void process_pending_sms(int sim_id) {
-  if (!g_sms_mutex) return;
+  if (!g_sms_mutex)
+    return;
   nwy_hal_os_mutex_lock(g_sms_mutex, 1000);
   int count = g_pending_sms_count;
   int indices[MAX_PENDING_SMS];
-  for (int i=0; i<count; i++) {
-      indices[i] = g_pending_sms_indices[i];
+  for (int i = 0; i < count; i++) {
+    indices[i] = g_pending_sms_indices[i];
   }
   g_pending_sms_count = 0;
   nwy_hal_os_mutex_unlock(g_sms_mutex);
 
-  for (int i=0; i<count; i++) {
-      int idx = indices[i];
-      nwy_sms_recv_info_type_t sms_data;
-      memset(&sms_data, 0, sizeof(sms_data));
+  for (int i = 0; i < count; i++) {
+    int idx = indices[i];
+    nwy_sms_recv_info_type_t sms_data;
+    memset(&sms_data, 0, sizeof(sms_data));
 
-      if (nwy_hal_sms_read(sim_id, idx, &sms_data)) {
-          char phone_num[32];
-          char message[161];
-          char timestamp[32];
+    if (nwy_hal_sms_read(sim_id, idx, &sms_data)) {
+      char phone_num[32];
+      char message[161];
+      char timestamp[32];
 
-          strncpy(phone_num, sms_data.source_phone_num, sizeof(phone_num) - 1);
-          phone_num[sizeof(phone_num) - 1] = '\0';
-          
-          const char *msg_ptr = strlen((char*)sms_data.msg_decoded_content) > 0 ? (char*)sms_data.msg_decoded_content : (char*)sms_data.msg_content;
-          strncpy(message, msg_ptr, sizeof(message) - 1);
-          message[sizeof(message) - 1] = '\0';
+      strncpy(phone_num, sms_data.source_phone_num, sizeof(phone_num) - 1);
+      phone_num[sizeof(phone_num) - 1] = '\0';
 
-          snprintf(timestamp, sizeof(timestamp), "%04d-%02d-%02d %02d:%02d:%02d",
-                   sms_data.date.uYear, sms_data.date.uMonth, sms_data.date.uDay,
-                   sms_data.date.uHour, sms_data.date.uMinute, sms_data.date.uSecond);
+      const char *msg_ptr = strlen((char *)sms_data.msg_decoded_content) > 0
+                                ? (char *)sms_data.msg_decoded_content
+                                : (char *)sms_data.msg_content;
+      strncpy(message, msg_ptr, sizeof(message) - 1);
+      message[sizeof(message) - 1] = '\0';
 
-          LOGI("==================================================");
-          LOGI("📨 INCOMING SMS PROCESSED!");
-          LOGI("SIM Slot: %d", sim_id);
-          LOGI("Sender:   %s", phone_num);
-          LOGI("Time:     %s", timestamp);
-          LOGI("Message:  %s", message);
-          LOGI("==================================================");
+      snprintf(timestamp, sizeof(timestamp), "%04d-%02d-%02d %02d:%02d:%02d",
+               sms_data.date.uYear, sms_data.date.uMonth, sms_data.date.uDay,
+               sms_data.date.uHour, sms_data.date.uMinute,
+               sms_data.date.uSecond);
 
-          // Auto-reply/Echo functionality
-          LOGI("Sending automatic echo reply...");
-          char reply_msg[160];
-          snprintf(reply_msg, sizeof(reply_msg), "Echo from Neoway OpenCPU! You said: %s", message);
-          if (nwy_hal_sms_send(sim_id, phone_num, reply_msg)) {
-            LOGI("Echo reply sent successfully to %s", phone_num);
-          } else {
-            LOGE("Failed to send echo reply.");
-          }
+      LOGI("==================================================");
+      LOGI("📨 INCOMING SMS PROCESSED!");
+      LOGI("SIM Slot: %d", sim_id);
+      LOGI("Sender:   %s", phone_num);
+      LOGI("Time:     %s", timestamp);
+      LOGI("Message:  %s", message);
+      LOGI("==================================================");
 
-          // Clean up the message from storage
-          nwy_hal_sms_delete(sim_id, idx);
+      // Auto-reply/Echo functionality
+      LOGI("Sending automatic echo reply...");
+      char reply_msg[160];
+      snprintf(reply_msg, sizeof(reply_msg),
+               "Echo from Neoway OpenCPU! You said: %s", message);
+      if (nwy_hal_sms_send(sim_id, phone_num, reply_msg)) {
+        LOGI("Echo reply sent successfully to %s", phone_num);
       } else {
-          LOGE("Failed to read SMS index %d. It might have been deleted.", idx);
+        LOGE("Failed to send echo reply.");
       }
+
+      // Clean up the message from storage
+      nwy_hal_sms_delete(sim_id, idx);
+    } else {
+      LOGE("Failed to read SMS index %d. It might have been deleted.", idx);
+    }
   }
 }
 
@@ -167,7 +173,7 @@ static void sms_test_task(void *param) {
 
   // 2. Initialize SMS HAL
   LOGI("Initializing SMS Subsystem...");
-  if (nwy_hal_sms_init(sim_id)) {
+  if (nwy_hal_sms_init(sim_id, NWY_SMS_STORAGE_TYPE_NV)) {
     LOGI("SMS Subsystem initialized successfully.");
   } else {
     LOGE("SMS Initialization FAILED.");
@@ -196,7 +202,7 @@ static void sms_test_task(void *param) {
   // Idle loop (awaiting incoming SMS URCs and processing them)
   while (1) {
     if (g_pending_sms_count > 0) {
-        process_pending_sms(sim_id);
+      process_pending_sms(sim_id);
     }
     nwy_hal_os_thread_sleep(1000);
   }
@@ -205,7 +211,7 @@ static void sms_test_task(void *param) {
 // Background LED Blinker Thread
 static void led_indicator_task(void *param) {
   // Simple LED Blinker for System Status
-  nwy_hal_gpio_init_out(70, true); // Status LED 70
+  nwy_hal_gpio_init_out(70, true);  // Status LED 70
   nwy_hal_gpio_init_out(69, false); // Net LED 69
 
   while (1) {
@@ -224,8 +230,8 @@ int appimg_enter(void *param)
   nwy_hal_os_thread_sleep(1000);
 
   nwy_osi_thread_t led_thread = NULL;
-  nwy_hal_os_thread_create(&led_thread, "led_indicator", led_indicator_task, NULL,
-                           NWY_OSI_PRIORITY_NORMAL, 1024 * 2);
+  nwy_hal_os_thread_create(&led_thread, "led_indicator", led_indicator_task,
+                           NULL, NWY_OSI_PRIORITY_NORMAL, 1024 * 2);
 
   nwy_osi_thread_t sms_thread = NULL;
   nwy_hal_os_thread_create(&sms_thread, "sms_test", sms_test_task, NULL,

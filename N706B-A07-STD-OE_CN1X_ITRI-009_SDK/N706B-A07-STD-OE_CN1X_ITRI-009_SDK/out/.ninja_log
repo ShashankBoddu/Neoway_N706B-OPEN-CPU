@@ -1,12 +1,13 @@
 # ninja log v5
-2	291	8020137790548607	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/gpio/nwy_hal_gpio.obj	e563b5d17e5f457d
-39	293	8020137790548607	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/sntp/nwy_hal_sntp.obj	1b68af0db77f19c7
-17	295	8020137790628564	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/pm/nwy_hal_pm.obj	f4aa54ead9cb240d
-24	313	8020137790788710	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/os/nwy_hal_os.obj	69345855e67cb8c
-32	319	8020137790873886	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/sms/nwy_hal_sms.obj	b19b24da533157f7
-64	339	8020137791109926	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/uart/nwy_hal_uart.obj	2596051d6c9cbc6a
-47	358	8020137791320608	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/sim/nwy_hal_sim.obj	e5ae21bc944f271e
-54	372	8020137791454657	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/main.obj	1503eb33616509ea
-10	399	8020137791714515	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/SMSTest/src/hal/net/nwy_hal_net.obj	205731f0ad13bfc2
-399	788	8020137794838483	bin/nwy_open_app.elf	f8d06dc4bba2fe86
-399	788	8020137794838483	bin/nwy_open_app.bin	f8d06dc4bba2fe86
+0	169	8021853259782243	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TCP_IPSockets/src/hal/nwy_hal_gpio.obj	b40926e92f6ff93b
+11	216	8021853260255599	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TCP_IPSockets/src/hal/nwy_hal_pm.obj	58c65eb42cb0c5f8
+16	236	8021853260455582	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TCP_IPSockets/src/hal/nwy_hal_os.obj	ca8fc62a6e926377
+21	237	8021853260465611	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TCP_IPSockets/src/hal/nwy_hal_sntp.obj	f4251e048f6447aa
+56	305	8021853261100901	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TCP_IPSockets/src/hal/nwy_hal_uart.obj	17ada7db2575ca7d
+40	307	8021853261110899	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TCP_IPSockets/src/hal/nwy_hal_socket.obj	8d4ecaa0428d0b19
+34	308	8021853261130896	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TCP_IPSockets/src/hal/nwy_hal_sms.obj	872be8c5034beb1a
+27	315	8021853261270905	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TCP_IPSockets/src/hal/nwy_hal_sim.obj	87e6400bcec714f
+6	327	8021853261402770	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TCP_IPSockets/src/hal/nwy_hal_net.obj	ee70168cda4261f6
+48	352	8021853261675648	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TCP_IPSockets/src/main.obj	e52104edb17f9778
+353	574	8021853263478784	bin/nwy_open_app.elf	5a85f72a3685ad3e
+353	574	8021853263478784	bin/nwy_open_app.bin	5a85f72a3685ad3e

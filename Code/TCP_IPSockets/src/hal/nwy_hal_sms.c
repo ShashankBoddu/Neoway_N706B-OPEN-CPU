@@ -1,4 +1,4 @@
-#include "hal/sms/nwy_hal_sms.h"
+#include "hal/nwy_hal_sms.h"
 #include "nwy_sim_api.h"
 #include "nwy_sms_api.h"
 #include <stdio.h>
@@ -44,7 +44,7 @@ bool nwy_hal_sms_init(int sim_id, nwy_sms_storage_type_e sms_storage) {
     return false;
   }
 
-  if (nwy_sms_storage_set(internal_sim, sms_storage) != 0) {
+  if (nwy_sms_storage_set(internal_sim, NWY_SMS_STORAGE_TYPE_UIM) != 0) {
     return false;
   }
 
@@ -56,7 +56,7 @@ bool nwy_hal_sms_init(int sim_id, nwy_sms_storage_type_e sms_storage) {
     return false;
   }
 
-  // nwy_sms_msg_del_ext(internal_sim, NWY_SMS_MSG_DFLAG_ALL);
+  nwy_sms_msg_del_ext(internal_sim, NWY_SMS_MSG_DFLAG_ALL);
 
   return true;
 }
