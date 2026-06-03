@@ -272,6 +272,15 @@ static void network_monitor_task(void *param) {
 
   while (1) {
     nwy_hal_os_thread_sleep(10000);
+    nwy_time_t current_time;
+    int timezone = 0;
+
+    // Fetch the synchronized time
+    if (nwy_hal_pm_get_time(&current_time, &timezone)) {
+      printf("\r\n--- TIMESTAMP: %04d-%02d-%02d %02d:%02d:%02d ---\r\n",
+             current_time.year, current_time.mon, current_time.day,
+             current_time.hour, current_time.min, current_time.sec);
+    }
 
     bool sim_ready = nwy_hal_sim_is_ready(1);
     int cs_state = 0, ps_state = 0, rat = 0;
