@@ -39,6 +39,7 @@ static int g_uart_fd = -1;
 
 static nwy_http_param_t g_secure_http_param;
 static char g_sanitized_host[128];
+static char g_sanitized_uri[256] = "/";
 
 /**
  * @brief Industrial String Parser Engine.
@@ -70,7 +71,7 @@ static void secure_http_result_cb(nwy_http_result_t *result) {
         "HTTPS_TEST",
         "SSL/TLS handshake completed. Secured channel operational.");
     http_get_param_t get_opts = {0};
-    get_opts.uri = "/"; // Relative destination path resource identifier
+    get_opts.uri = g_sanitized_uri; // Use dynamically parsed URI
     get_opts.keepalive = 0;
     nwy_http_get(result->http_handle, &get_opts);
     break;
@@ -138,13 +139,28 @@ static void execute_automated_https_flow(void) {
 
   // RAW TEST STRING GATEWAY INPUT: Can safely contain protocol markers or paths
   // now
-  const char *raw_test_url = "https://httpbin.org/get";
+  // const char *raw_test_url = "https://httpbin.org/get";
+  const char *raw_test_url = "https://"
+                             "6a212042e3002b2788ce94c2--enchanting-faloodeh-"
+                             "36db90.netlify.app/otaconfig.txt";
 
   // Clean the host parameter input automatically to defend against resolution
   // faults
   sanitize_host_string(raw_test_url, g_sanitized_host,
                        sizeof(g_sanitized_host));
   LOGI("Sanitized target domain host: %s", g_sanitized_host);
+
+  const char *uri_start = strstr(raw_test_url, "://");
+  if (uri_start) {
+    uri_start = strchr(uri_start + 3, '/');
+  }
+  if (uri_start) {
+    strncpy(g_sanitized_uri, uri_start, sizeof(g_sanitized_uri) - 1);
+    g_sanitized_uri[sizeof(g_sanitized_uri) - 1] = '\0';
+  } else {
+    strcpy(g_sanitized_uri, "/");
+  }
+  LOGI("Sanitized target URI: %s", g_sanitized_uri);
 
   // 1. Initialize the SSL Context profile slot with injected SNI tracking
   nwy_ssl_conf_t *ssl_context =
