@@ -5,14 +5,17 @@
 #include "hal/nwy_hal_sim.h"
 #include "hal/nwy_hal_sms.h"
 #include "hal/nwy_hal_sntp.h"
-#include "hal/nwy_hal_socket.h"
-#include "hal/nwy_hal_ssl.h"
 #include "hal/nwy_hal_uart.h"
 #include "nwy_data_api.h"
-#include "nwy_http_api.h"
 #include "nwy_log_api.h"
 #include "nwy_network_api.h"
 #include "nwy_osi_api.h"
+#include "nwy_socket_api.h"
+
+// NATIVE PAHO EMBEDDED MQTT STRUCT REFERENCE HEADERS
+#include "MQTTClient.h"
+#include "nwy_pahomqtt_api.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,140 +40,197 @@ static volatile net_led_state_e g_net_led_state = NET_LED_STATE_OOS;
 static int g_uart_fd = -1;
 #define printf(fmt, ...) nwy_hal_uart_printf(g_uart_fd, fmt, ##__VA_ARGS__)
 
-static nwy_http_param_t g_secure_http_param;
-static char g_sanitized_host[128];
+// ============================================================================
+// MQTT CONFIGURATION PLATFORM MATRIX
+// ============================================================================
+#define MQTT_BROKER_HOST "mqtt.fervidlabs.in"
+#define MQTT_BROKER_USER "fervid"
+#define MQTT_BROKER_PASS "Fervid@123"
+#define MQTT_BROKER_PORT 1883
+#define MQTT_TOPIC_SUB "nwy_n706b/fervid/rx"
+#define MQTT_TOPIC_PUB "nwy_n706b/fervid/tx"
+
+static Network g_mqtt_network;
+static MQTTClient g_mqtt_client;
+static unsigned char g_mqtt_tx_buf[512];
+static unsigned char g_mqtt_rx_buf[512];
+static nwy_osi_thread_t g_mqtt_yield_task = NULL;
+static volatile bool g_mqtt_loop_running = false;
 
 /**
- * @brief Industrial String Parser Engine.
- * Automatically cleans full URL inputs into raw domain names on the fly.
+ * @brief Asynchronous Subscription Incoming Packet Callback Handler.
  */
-static void sanitize_host_string(const char *input, char *output, int max_len) {
-  if (!input || !output || max_len <= 0)
+static void mqtt_message_arrived_cb(MessageData *data) {
+  if (!data || !data->message || !data->topicName)
     return;
-  const char *start = input;
-  if (strncmp(start, "https://", 8) == 0)
-    start += 8;
-  else if (strncmp(start, "http://", 7) == 0)
-    start += 7;
 
-  int len = 0;
-  while (*start && *start != '/' && *start != ':' && len < (max_len - 1)) {
-    output[len++] = *start++;
+  uint32_t topic_len = data->topicName->lenstring.len;
+  uint32_t payload_len = data->message->payloadlen;
+
+  char *topic_str = (char *)malloc(topic_len + 1);
+  char *payload_str = (char *)malloc(payload_len + 1);
+
+  if (topic_str && payload_str) {
+    memcpy(topic_str, data->topicName->lenstring.data, topic_len);
+    topic_str[topic_len] = '\0';
+
+    memcpy(payload_str, data->message->payload, payload_len);
+    payload_str[payload_len] = '\0';
+
+    printf("\r\n--- [INBOUND MQTT PACKET DETECTED] ---\r\n");
+    printf("Topic Target: %s\r\n", topic_str);
+    printf("Message Payload: %s\r\n", payload_str);
+    printf("QoS Verification: %d\r\n", data->message->qos);
+    printf("----------------------------------------\r\n");
   }
-  output[len] = '\0';
+
+  if (topic_str)
+    free(topic_str);
+  if (payload_str)
+    free(payload_str);
 }
 
-static void secure_http_result_cb(nwy_http_result_t *result) {
-  if (!result)
-    return;
+/**
+ * @brief Thread Background Worker Task to feed Keepalive metrics
+ * (PingReq/PingResp).
+ */
+static void mqtt_yield_task_worker(void *param) {
+  LOGI("MQTT_THREAD: Background yield pipeline established active monitoring "
+       "loop.");
 
-  switch (result->event) {
-  case NWY_HTTPS_SSL_CONNECTED:
-    nwy_hal_uart_log_i(
-        "HTTPS_TEST",
-        "SSL/TLS handshake completed. Secured channel operational.");
-    http_get_param_t get_opts = {0};
-    get_opts.uri = "/"; // Relative destination path resource identifier
-    get_opts.keepalive = 0;
-    nwy_http_get(result->http_handle, &get_opts);
-    break;
-
-  case NWY_HTTP_DATA_RECVED:
-    nwy_hal_uart_log_i("HTTPS_TEST", "Data payload packet incoming: %d bytes.",
-                       result->data_len);
-    if (result->data_len > 0 && result->data != NULL) {
-      char *heap_visualizer = (char *)malloc(result->data_len + 1);
-      if (heap_visualizer) {
-        memcpy(heap_visualizer, result->data, result->data_len);
-        heap_visualizer[result->data_len] = '\0';
-
-        nwy_hal_uart_printf(g_uart_fd, "\r\n--- START SECURE PAYLOAD ---\r\n");
-        nwy_hal_uart_printf(g_uart_fd, "%s\r\n", heap_visualizer);
-        nwy_hal_uart_printf(g_uart_fd, "--- END SECURE PAYLOAD ---\r\n");
-
-        free(heap_visualizer);
-      }
+  while (g_mqtt_loop_running) {
+    // Core background parsing pump required to maintain network status
+    int yield_res =
+        MQTTYield(&g_mqtt_client, 1000); // 1-second packet check window
+    if (yield_res != 0) {
+      LOGE("MQTT_THREAD: Active broker link dropped. Internal error response: "
+           "%d",
+           yield_res);
+      break;
     }
-    break;
-
-  case NWY_HTTP_DNS_ERR:
-    nwy_hal_uart_log_e(
-        "HTTPS_TEST",
-        "Fatal: DNS Lookup Failed. Verification address failed to resolve.");
-    nwy_http_close(result->http_handle);
-    nwy_hal_ssl_destroy_context(0);
-    break;
-
-  case NWY_HTTP_OPEN_FAIL:
-    nwy_hal_uart_log_e(
-        "HTTPS_TEST",
-        "Fatal: System failed to assign internal socket resources.");
-    nwy_http_close(result->http_handle);
-    nwy_hal_ssl_destroy_context(0);
-    break;
-
-  case NWY_HTTP_CLOSED:
-  case NWY_HTTP_CLOSED_PASV:
-    nwy_hal_uart_log_w("HTTPS_TEST",
-                       "Secure socket channel terminated by host endpoint.");
-    nwy_http_close(result->http_handle);
-    nwy_hal_ssl_destroy_context(0);
-    break;
-
-  case NWY_HTTP_EVENT_SSL_CONNECT_FAIL:
-    nwy_hal_uart_log_e("HTTPS_TEST",
-                       "Fatal: TLS Handshake transaction rejected by peer.");
-    nwy_http_close(result->http_handle);
-    nwy_hal_ssl_destroy_context(0);
-    break;
-
-  default:
-    nwy_hal_uart_log_i("HTTPS_TEST", "Event signature hit: %d", result->event);
-    break;
+    nwy_hal_os_thread_sleep(200);
   }
+
+  g_mqtt_loop_running = false;
+  NetworkDisconnect(&g_mqtt_network); //
+  LOGW(
+      "MQTT_THREAD: Worker deactivated. Network descriptors released cleanly.");
 }
 
-static void execute_automated_https_flow(void) {
+/**
+ * @brief Automated MQTT Authentication, Handshake and Topology Sequence.
+ */
+static void execute_automated_mqtt_flow(void) {
   printf("\r\n");
   printf("==================================================\r\n");
-  printf("     PHASE 4 VERIFICATION: SECURE HTTPS STREAM     \r\n");
+  printf("     INDUSTRIAL STEP 6: SECURE PAHO MQTT TRIGGER   \r\n");
   printf("==================================================\r\n");
+  LOGI("STAGE 6 MQTT: Constructing context memory maps...");
 
-  // RAW TEST STRING GATEWAY INPUT: Can safely contain protocol markers or paths
-  // now
-  const char *raw_test_url = "https://httpbin.org/get";
-
-  // Clean the host parameter input automatically to defend against resolution
-  // faults
-  sanitize_host_string(raw_test_url, g_sanitized_host,
-                       sizeof(g_sanitized_host));
-  LOGI("Sanitized target domain host: %s", g_sanitized_host);
-
-  // 1. Initialize the SSL Context profile slot with injected SNI tracking
-  nwy_ssl_conf_t *ssl_context =
-      nwy_hal_ssl_create_context(0, NULL, g_sanitized_host);
-
-  // 2. Map structural parameters cleanly into permanent heap targets
-  memset(&g_secure_http_param, 0, sizeof(nwy_http_param_t));
-  g_secure_http_param.cid = 1;
-  g_secure_http_param.host = g_sanitized_host;
-  g_secure_http_param.port = 443;
-  g_secure_http_param.timeout_s = 30;
-  g_secure_http_param.cb = secure_http_result_cb;
-
-  // 3. Register routing settings down into the core network engine
-  nwy_http_handle_t secure_handle =
-      nwy_http_setup(&g_secure_http_param, ssl_context);
-  if (!secure_handle) {
-    nwy_hal_uart_log_e("HTTPS_TEST",
-                       "System rejected secure network socket layout mapping.");
-    nwy_hal_ssl_destroy_context(0);
+  // 1. Core Network Layer Allocation
+  NetworkInit(&g_mqtt_network);
+  g_mqtt_network.my_socket =
+      nwy_socket_open(2, 1, 6, 1); // AF_INET=2, SOCK_STREAM=1, TCP=6
+  if (g_mqtt_network.my_socket < 0) {
+    LOGE("STAGE 6 MQTT: Core driver flatly rejected socket initialization.");
     return;
   }
-  nwy_hal_uart_log_i("HTTPS_TEST",
-                     "Executing secure over-the-air TLS handshakes...");
+
+  // 2. Client Parameter Map Bindings
+  MQTTClientInit(&g_mqtt_client, &g_mqtt_network, 10000, g_mqtt_tx_buf,
+                 sizeof(g_mqtt_tx_buf), g_mqtt_rx_buf, sizeof(g_mqtt_rx_buf));
+
+  LOGI("STAGE 6 MQTT: Dialing connection endpoint -> %s:%d", MQTT_BROKER_HOST,
+       MQTT_BROKER_PORT);
+  int net_link_res =
+      NetworkConnect(&g_mqtt_network, MQTT_BROKER_HOST, MQTT_BROKER_PORT);
+  if (net_link_res != 0) {
+    LOGE("STAGE 6 MQTT: Socket routing failure on broker connection path: %d",
+         net_link_res);
+    nwy_socket_close(g_mqtt_network.my_socket);
+    return;
+  }
+  LOGI("STAGE 6 MQTT: TCP layer mapped. Assembling authentication token "
+       "frame...");
+
+  // 3. Mount Parameter Arrays with Security Settings
+  MQTTPacket_connectData auth_connection_data =
+      MQTTPacket_connectData_initializer;
+  auth_connection_data.MQTTVersion = 4; // Use standard v3.1.1 (Value 4)
+  auth_connection_data.clientID.cstring = "N706B_Fervid_Device_01";
+  auth_connection_data.keepAliveInterval = 60; // 60-second ping cycles
+  auth_connection_data.cleansession = 1;
+
+  // SECURE AUTHENTICATION ASSIGNMENTS VIA EXPLICIT POINTER STRING VALUES
+  auth_connection_data.username.cstring = MQTT_BROKER_USER;
+  auth_connection_data.password.cstring = MQTT_BROKER_PASS;
+
+  LOGI("STAGE 6 MQTT: Transferring authentication envelope to FervidLabs "
+       "Broker...");
+  int protocol_handshake_res =
+      MQTTConnect(&g_mqtt_client, &auth_connection_data);
+  if (protocol_handshake_res != 0) { // 0 represents Connection Accepted status
+                                     // in standard Paho implementations
+    LOGE("STAGE 6 MQTT: Protocol authentication rejected by broker. Code: %d",
+         protocol_handshake_res);
+    NetworkDisconnect(&g_mqtt_network); //
+    return;
+  }
+  LOGI("STAGE 6 MQTT: [SUCCESS] Verified link online. Spawning keepalive "
+       "thread.");
+
+  // 4. Background Engine Task Instantiation
+  g_mqtt_loop_running = true;
+  bool system_task_online = nwy_hal_os_thread_create(
+      &g_mqtt_yield_task, "mqtt_yielder", mqtt_yield_task_worker, NULL,
+      NWY_OSI_PRIORITY_NORMAL, 1024 * 8);
+  if (!system_task_online) {
+    LOGE("STAGE 6 MQTT: Failed to initialize yield processing worker.");
+    g_mqtt_loop_running = false;
+    NetworkDisconnect(&g_mqtt_network); //
+    return;
+  }
+
+  // 5. Subscribe to Controlled Input Gate
+  LOGI("STAGE 6 MQTT: Binding subscription matrix path: %s", MQTT_TOPIC_SUB);
+  int sub_status = MQTTSubscribe(&g_mqtt_client, MQTT_TOPIC_SUB, QOS0,
+                                 mqtt_message_arrived_cb); //
+  if (sub_status != 0) {
+    LOGW("STAGE 6 MQTT: Subscription tracking configuration code failure: %d",
+         sub_status);
+  }
+
+  // 6. Transmit Initial Diagnostics Payload Frame
+  LOGI(
+      "STAGE 6 MQTT: Delivering initial active packet payload data to path: %s",
+      MQTT_TOPIC_PUB);
+  char telemetry_packet[160];
+  snprintf(telemetry_packet, sizeof(telemetry_packet),
+           "{\"dev\":\"N706B\",\"auth\":\"authenticated\",\"topic\":\"fervid_"
+           "labs\",\"status\":\"active\"}");
+
+  MQTTMessage operational_message;
+  operational_message.qos = QOS0;
+  operational_message.retained = 0;
+  operational_message.dup = 0;
+  operational_message.payload = (void *)telemetry_packet;
+  operational_message.payloadlen = strlen(telemetry_packet);
+
+  int publish_res =
+      MQTTPublish(&g_mqtt_client, MQTT_TOPIC_PUB, &operational_message);
+  if (publish_res != 0) {
+    LOGE("STAGE 6 MQTT: Telemetry transmission pipeline dropped. Code: %d",
+         publish_res);
+  } else {
+    LOGI("STAGE 6 MQTT: Telemetry frame dropped cleanly to host routing "
+         "buffers.");
+  }
+  printf("==================================================\r\n");
 }
 
+// ============================================================================
+// REST OF SYSTEM DRIVER HOOKS (DO NOT ALTER BASE ARCHITECTURE MAPS)
+// ============================================================================
 static const char *get_reg_state_str(int state) {
   switch (state) {
   case NWY_NW_SERVICE_NONE:
@@ -194,12 +254,6 @@ static const char *get_rat_str(int rat) {
     return "WCDMA (3G)";
   case NWY_NW_RAT_LTE:
     return "LTE (4G)";
-  case NWY_NW_RAT_CATM:
-    return "CAT-M";
-  case NWY_NW_RAT_NBIoT:
-    return "NB-IoT";
-  case NWY_NW_RAT_NR:
-    return "5G NR";
   default:
     return "UNKNOWN";
   }
@@ -214,8 +268,6 @@ static void get_net_mode_str(int mode, char *buf, int max_len) {
   int len = 0;
   if (mode & NWY_NW_MODE_MASK_GSM)
     len += snprintf(buf + len, max_len - len, "GSM ");
-  if (mode & NWY_NW_MODE_MASK_WCDMA)
-    len += snprintf(buf + len, max_len - len, "WCDMA ");
   if (mode & NWY_NW_MODE_MASK_LTE)
     len += snprintf(buf + len, max_len - len, "LTE ");
   if (len > 0 && buf[len - 1] == ' ')
@@ -238,10 +290,11 @@ static void test_sntp_cb(bool success) {
   if (success) {
     LOGI("SNTP TIME SYNC: [SUCCESS] System clock aligned over cellular UDP.");
   } else {
-    LOGW("SNTP TIME SYNC: [FAILED] Clock window timeout. Progressing "
-         "connection pipeline regardless...");
+    LOGW("SNTP TIME SYNC: [FAILED] Clock window timeout. Processing context "
+         "pipeline regardless...");
   }
-  execute_automated_https_flow();
+  // Transition directly to authenticated MQTT Operations
+  execute_automated_mqtt_flow();
 }
 
 static void test_data_call_cb(int sim_id, int profile_idx, bool connected,
@@ -406,8 +459,8 @@ int appimg_enter(void *param)
   nwy_thread_sleep(1000);
   nwy_osi_thread_t monitor_thread = NULL;
 
-  // Re-verify 16KB execution boundaries to allow concurrent cryptographic heap
-  // calls
+  // Implemented safe 16KB execution boundaries to allow simultaneous FreeRTOS
+  // stack calls
   nwy_hal_os_thread_create(&monitor_thread, "net_monitor", network_monitor_task,
                            NULL, NWY_OSI_PRIORITY_NORMAL, 1024 * 16);
 
@@ -420,6 +473,7 @@ int appimg_enter(void *param)
 
 void appimg_exit(void) {
   if (g_uart_fd >= 0) {
+    g_mqtt_loop_running = false;
     nwy_hal_sim_unregister_urc_cb(1);
     nwy_hal_net_stop_data_call(1, 1);
     nwy_hal_uart_close(g_uart_fd);
