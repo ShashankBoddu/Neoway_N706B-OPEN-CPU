@@ -140,9 +140,9 @@ static void execute_automated_https_flow(void) {
   // RAW TEST STRING GATEWAY INPUT: Can safely contain protocol markers or paths
   // now
   // const char *raw_test_url = "https://httpbin.org/get";
-  const char *raw_test_url = "https://"
-                             "6a212042e3002b2788ce94c2--enchanting-faloodeh-"
-                             "36db90.netlify.app/otaconfig.txt";
+  const char *raw_test_url =
+      "https://6a23c6d8e482b8123008e30b--frabjous-hamster-7c3cbe.netlify.app/"
+      "app.bin";
 
   // Clean the host parameter input automatically to defend against resolution
   // faults
