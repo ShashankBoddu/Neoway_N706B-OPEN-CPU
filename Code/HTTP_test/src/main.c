@@ -70,10 +70,15 @@ static void secure_http_result_cb(nwy_http_result_t *result) {
     nwy_hal_uart_log_i(
         "HTTPS_TEST",
         "SSL/TLS handshake completed. Secured channel operational.");
-    http_get_param_t get_opts = {0};
-    get_opts.uri = g_sanitized_uri; // Use dynamically parsed URI
-    get_opts.keepalive = 0;
-    nwy_http_get(result->http_handle, &get_opts);
+    char raw_req[512];
+    snprintf(raw_req, sizeof(raw_req),
+             "GET %s HTTP/1.1\r\n"
+             "Host: %s\r\n"
+             "User-Agent: curl/7.81.0\r\n"
+             "Accept: */*\r\n"
+             "Connection: close\r\n\r\n",
+             g_sanitized_uri, g_sanitized_host);
+    nwy_http_open_mode(result->http_handle, raw_req, strlen(raw_req));
     break;
 
   case NWY_HTTP_DATA_RECVED:
@@ -141,8 +146,7 @@ static void execute_automated_https_flow(void) {
   // now
   // const char *raw_test_url = "https://httpbin.org/get";
   const char *raw_test_url =
-      "https://6a23c6d8e482b8123008e30b--frabjous-hamster-7c3cbe.netlify.app/"
-      "app.bin";
+      "https://raw.githubusercontent.com/ShashankBoddu/TestOTA/main/app.bin";
 
   // Clean the host parameter input automatically to defend against resolution
   // faults
@@ -330,7 +334,7 @@ static void network_monitor_task(void *param) {
   nwy_hal_uart_set_log_fd(g_uart_fd);
 
   printf("\r\n==================================================\r\n");
-  printf("   NEOWAY N706B OPENCPU - NETWORK MONITOR TEST 2   \r\n");
+  printf("   NEOWAY N706B OPENCPU - NETWORK MONITOR TEST 1   \r\n");
   printf("==================================================\r\n");
 
   nwy_hal_gpio_init_out(HAL_GPIO_STATUS, true);

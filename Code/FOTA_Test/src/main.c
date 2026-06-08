@@ -15,6 +15,7 @@
 #include "nwy_log_api.h"
 #include "nwy_network_api.h"
 #include "nwy_osi_api.h"
+#include "nwy_pm_api.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -44,6 +45,69 @@ typedef enum {
 } net_led_state_e;
 
 static volatile net_led_state_e g_net_led_state = NET_LED_STATE_OOS;
+
+// Sleep callback
+static void pm_sleep_test_cb(int enter_sleep) {
+    if(enter_sleep) {
+        LOGI("PM_TEST: Entering sleep mode...");
+    } else {
+        LOGI("PM_TEST: Exiting sleep mode...");
+    }
+}
+
+// Function to test all Power Management APIs
+static void test_all_pm_functions(void) {
+    LOGI("==== TESTING ALL PM FUNCTIONS ====");
+    
+    // 1. Get Boot Reason
+    int boot_reason = nwy_pm_boot_res();
+    LOGI("Boot Reason Code: %d", boot_reason);
+    
+    // 2. Power State
+    int pwr_state = nwy_power_state();
+    LOGI("Power State: %d (1=Normal, 0=Drop)", pwr_state);
+    
+    // 3. VBAT Voltage
+    int vbat = 0;
+    if (nwy_pm_vbat_voltage_get(&vbat) == 0) {
+        LOGI("VBAT Voltage: %d mV", vbat);
+    } else {
+        LOGE("Failed to get VBAT voltage");
+    }
+    
+    // 4. Battery Percent
+    int percent = 0;
+    if (nwy_battery_percent_get(&percent) == 0) {
+        LOGI("Battery Percent: %d%%", percent);
+    } else {
+        LOGE("Failed to get battery percent");
+    }
+    
+    // 5. Charge State
+    int charge_state = 0;
+    if (nwy_pm_charge_state_get(&charge_state) == 0) {
+        LOGI("Charge State: %d (0=None, 1=Charging, 2=Full)", charge_state);
+    } else {
+        LOGE("Failed to get charge state");
+    }
+    
+    // 6. Set Sleep Callback
+    LOGI("Setting Sleep Callback...");
+    nwy_pm_sleep_callback_set(pm_sleep_test_cb);
+    
+    // 7. Enable Sleep Mode
+    LOGI("Enabling Sleep Mode...");
+    nwy_pm_state_set(NWY_PM_SLEEP_ENABLE);
+    
+    // 8. Configure Wakeup
+    LOGI("Configuring Wakeup Source (GPIO/DTR)...");
+    nwy_pm_sleep_wakeup_set(0, 1, 0); // wake_source=0, enable=1, wake_level=0
+    
+    // Note: Skipping nwy_pm_ctrl() to prevent the device from shutting down or rebooting during this test.
+    // Note: Skipping nwy_pm_level_set and nwy_pm_power_switch to prevent turning off peripherals like LCD/Camera unexpectedly.
+    
+    LOGI("==== PM FUNCTIONS TEST COMPLETE ====");
+}
 
 // Extract Value from JSON string safely
 static bool extract_json_str(const char *json, const char *key, char *out,
@@ -140,6 +204,9 @@ static void network_monitor_task(void *param) {
   nwy_hal_gpio_init_out(HAL_GPIO_STATUS, true);
   nwy_hal_gpio_init_out(HAL_GPIO_NET_STATUS, false);
   nwy_hal_net_set_mode(1, NWY_NW_MODE_MASK_LTE);
+
+  // Call the PM test suite at boot
+  test_all_pm_functions();
 
   bool data_call_dialed = false;
   while (1) {
