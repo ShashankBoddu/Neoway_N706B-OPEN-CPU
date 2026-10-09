@@ -12,9 +12,9 @@ from cryptography.hazmat.primitives.asymmetric import utils
 # HARDCODED CONFIGURATIONS
 # ==========================================
 PRIVATE_KEY_PATH = r"E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\FOTA_Test\tools\fota_private_key.pem"
-FIRMWARE_ZIP_PATH = r"C:\Users\fervi\Downloads\app.bin"
+FIRMWARE_ZIP_PATH = r"C:\Users\fervi\Downloads\TestOTA\nwy_open_app_fota.pkt"
 # VERCEL_FIRMWARE_URL = "https://6a23c6d8e482b8123008e30b--frabjous-hamster-7c3cbe.netlify.app/app.bin"
-VERCEL_FIRMWARE_URL = "https://project-508sg.vercel.app/app.bin"
+VERCEL_FIRMWARE_URL = "https://raw.githubusercontent.com/ShashankBoddu/TestOTA/main/nwy_open_app_fota.pkt"
 # FIRMWARE_ZIP_PATH = r"E:\projects\DevelopmentLevelCode\Neoway_N706B\Code\FOTA_Test\release\nwy_open_app_fota.pkt"
 # VERCEL_FIRMWARE_URL = "https://6a2402c3926549b7d9893742--thunderous-otter-3352fa.netlify.app/nwy_open_app_fota.pkt"
 

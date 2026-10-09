@@ -74,8 +74,9 @@ static void secure_http_result_cb(nwy_http_result_t *result) {
     snprintf(raw_req, sizeof(raw_req),
              "GET %s HTTP/1.1\r\n"
              "Host: %s\r\n"
-             "User-Agent: curl/7.81.0\r\n"
-             "Accept: */*\r\n"
+             "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36\r\n"
+             "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8\r\n"
+             "Accept-Language: en-US,en;q=0.5\r\n"
              "Connection: close\r\n\r\n",
              g_sanitized_uri, g_sanitized_host);
     nwy_http_open_mode(result->http_handle, raw_req, strlen(raw_req));
@@ -145,8 +146,7 @@ static void execute_automated_https_flow(void) {
   // RAW TEST STRING GATEWAY INPUT: Can safely contain protocol markers or paths
   // now
   // const char *raw_test_url = "https://httpbin.org/get";
-  const char *raw_test_url =
-      "https://raw.githubusercontent.com/ShashankBoddu/TestOTA/main/app.bin";
+  const char *raw_test_url = "https://project-508sg.vercel.app/app.bin";
 
   // Clean the host parameter input automatically to defend against resolution
   // faults

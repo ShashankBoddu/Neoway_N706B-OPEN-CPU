@@ -48,13 +48,14 @@ static volatile net_led_state_e g_net_led_state = NET_LED_STATE_OOS;
 
 // Sleep callback
 static void pm_sleep_test_cb(int enter_sleep) {
-    if(enter_sleep) {
-        LOGI("PM_TEST: Entering sleep mode...");
-    } else {
-        LOGI("PM_TEST: Exiting sleep mode...");
-    }
+  if (enter_sleep) {
+    LOGI("PM_TEST: Entering sleep mode...");
+  } else {
+    LOGI("PM_TEST: Exiting sleep mode...");
+  }
 }
 
+#if 0
 // Function to test all Power Management APIs
 static void test_all_pm_functions(void) {
     LOGI("==== TESTING ALL PM FUNCTIONS ====");
@@ -74,6 +75,7 @@ static void test_all_pm_functions(void) {
     } else {
         LOGE("Failed to get VBAT voltage");
     }
+        
     
     // 4. Battery Percent
     int percent = 0;
@@ -108,6 +110,7 @@ static void test_all_pm_functions(void) {
     
     LOGI("==== PM FUNCTIONS TEST COMPLETE ====");
 }
+#endif
 
 // Extract Value from JSON string safely
 static bool extract_json_str(const char *json, const char *key, char *out,
@@ -206,7 +209,7 @@ static void network_monitor_task(void *param) {
   nwy_hal_net_set_mode(1, NWY_NW_MODE_MASK_LTE);
 
   // Call the PM test suite at boot
-  test_all_pm_functions();
+  // test_all_pm_functions();
 
   bool data_call_dialed = false;
   while (1) {

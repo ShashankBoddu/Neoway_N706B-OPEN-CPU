@@ -1,0 +1,20 @@
+<config>
+	<config_file>		
+		<file>/NVM/audio_voice_calibration.nvm</file>
+		<file>/NVM/audio_voice_calibration_ap.nvm</file>
+		<file>/NVM/audio_swvol_calibration.xml</file>
+		<file>/NVM/audio_gain_calibration.xml</file>
+		<file>/NVM/audio_effect_config.xml</file>
+		<file>/etc/audio_basic_element.xml</file>
+		<file>/etc/audio_coeff_config.xml</file>
+		<file>/etc/audio_gain_config.xml</file>
+		<file>/etc/audio_path_config.xml</file>
+		<file>/etc/audio_virtualpath_config.xml</file>
+		<file>/etc/audio_basic_element_codec.xml</file>
+		<file>/etc/audio_basic_element_apu.xml</file>
+		<file>/etc/audio_profile_config_apu.xml</file>
+		<file>/etc/audio_swvol_element.xml</file>
+		<file>/etc/audio_swvol_config.xml</file>
+	</config_file>
+</config>
+
