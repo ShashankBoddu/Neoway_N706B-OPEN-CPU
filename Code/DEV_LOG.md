@@ -941,33 +941,35 @@ To eliminate race conditions, direction contention, and kernel panics across dee
      - `0` (`NWY_UART_MODE_AT`): Routes incoming UART bytes to the modem AT command interpreter.
      - `1` (`NWY_UART_MODE_DATA`): Routes UART traffic to the OpenCPU application driver and DMA ring buffers.
      If `uartMode` is `0`, `nwy_uart_open()` skips allocating the 2068-byte driver struct, causing `nwy_uart_rx_cb_register()` to fail and routing arbitrary data to the baseband AT parser, which crashes on long non-AT ASCII strings.
-* **Resolution & Engineering Implementation:**
-  1. **Eliminated `nwy_uart_rx_frame_timeout_set()` Call:**
-     Completely removed the call to `nwy_uart_rx_frame_timeout_set()`. When `time == 0`, Crane OS uses its native direct streaming DMA callback path (`8026215c`), dispatching received chunks cleanly into `rs485_uart_rx_isr()` via `nwy_async_work_push()` without any timers or panic risks.
-  2. **Enforced Global `NWY_UART_MODE_DATA`:**
-     Explicitly set `*(volatile uint8_t *)0x7e22e3c0 = NWY_UART_MODE_DATA;` before `nwy_uart_open()` in both `nwy_hal_rs485_init()` and `nwy_hal_uart_open()`.
-  3. **Industrial Saturation & Bounds Protection:**
-     Hardened `rs485_uart_rx_isr()` with industrial clamp protection:
-     ```c
-     if (s_rs485_rx_count < sizeof(s_rs485_rx_fifo) - 1) {
-       size_t space_left = sizeof(s_rs485_rx_fifo) - 1 - s_rs485_rx_count;
-       size_t to_copy = (length < space_left) ? (size_t)length : space_left;
-       memcpy(&s_rs485_rx_fifo[s_rs485_rx_count], str, to_copy);
-       s_rs485_rx_count += to_copy;
-       s_rs485_rx_fifo[s_rs485_rx_count] = '\0';
-     }
-     ```
-  4. **Active UART RX FIFO Flush:**
-     In `nwy_hal_rs485_flush_rx()`, added active drain loops using `nwy_uart_read()` to purge any stale hardware bytes before arming the receive engine.
+* **Resolution & Engineering Implementation (Transition to Pure Synchronous Polling):**
+  1. **Why Interrupts Caused the Crash on Bulk Frames:**
+     Disassembly and RTOS analysis confirmed that when `nwy_uart_rx_cb_register()` registers an ISR callback, incoming UART traffic on ASR1605 triggers kernel DMA interrupts that dynamically allocate memory (`malloc(len + 16)` in `__uart_dma_rx_cb`) and push items to the FreeRTOS async worker queue via `nwy_async_work_push`. Under back-to-back 160-byte bursts, this storm of interrupt work items rapidly exhausts kernel task queues / heap and starves baseband threads, causing the RTOS watchdog panic reboot.
+  2. **Pure Synchronous Polling Architecture (`cb = NULL`):**
+     Switched RS-485 receive exclusively to pure hardware FIFO polling by passing `NULL` to `nwy_uart_rx_cb_register(g_rs485_fd, NULL)` (as officially specified in `nwy_uart_api.h`).
+     - **Zero ISR Overheads:** Completely disables kernel UART interrupts, async work queues, and interrupt-driven heap allocations.
+     - **Direct Hardware FIFO Drain:** The listening thread loops every 10 ms (`POLL_SLICE_MS = 10`), directly calling `nwy_uart_read()` to drain the hardware FIFO into the caller's buffer.
+     - **FIFO Overrun Prevention:** At 9600 baud (1.04 ms/char), a 10 ms slice reads ~10 bytes—comfortably below the 64-byte hardware FIFO limit.
+     - **Inter-Frame Silence Detection:** When no new bytes are read for 120 ms (`FRAME_QUIET_THRESHOLD_MS`), frame assembly completes cleanly and control returns to the application.
+  3. **Enforced Global `NWY_UART_MODE_DATA`:**
+     Explicitly set `*(volatile uint8_t *)0x7e22e3c0 = NWY_UART_MODE_DATA;` before `nwy_uart_open()` to guarantee that Crane OS initializes the UART driver in pure data mode.
+  4. **Active Hardware Drain in `nwy_hal_rs485_flush_rx()`:**
+     Repeatedly drains residual bytes using `nwy_uart_read()` before opening the listening window.
   5. **Expanded Debug Print Formatting Buffers:**
-     Increased `content_buf` to 512 bytes and `log_buf` to 576 bytes in `nwy_hal_uart.c` to support multi-line and 160+ byte bulk packet logs without string truncation.
+     Increased `content_buf` to 512 bytes and `log_buf` to 576 bytes in `nwy_hal_uart.c` to prevent log truncation.
+  6. **Separated Initial Response Timeout from Inter-Frame Duration:**
+     In `nwy_hal_rs485_listen()`, separated `wait_start_elapsed_ms` (10s waiting for first byte) from `frame_duration_ms` (3s max once packet starts arriving). If a packet starts arriving at 9.9 seconds, the packet is not truncated.
+  7. **Elevated MQTT Payload Buffer Capacity:**
+     Increased `MQTT_BUFF_LIMIT` in `nwy_hal_mqtt.c` from 512 to 1024 bytes to support large telemetry payloads containing bulk RS-485 frames.
+  8. **Binary-Safe RFC 8259 JSON Sanitization:**
+     Sanitization in `main.c` uses `rx_bytes` instead of `strlen()` to cleanly sanitize all bytes and prevent embedded null bytes from corrupting JSON payloads.
 * **Verification & Validation (V&V):**
-  - Full project compiled and packaged cleanly via `build_Network_Mqtt_Rs485_DeepSleep.bat` (Exit code 0).
-  - Output binary packages verified: `nwy_open_app.zip` (2.59 MB) and `nwy_open_app_fota.pkt` (66.4 KB).
+  - Project compiled and packaged cleanly via `build_Network_Mqtt_Rs485_DeepSleep.bat` (Exit code 0).
+  - Output binary packages verified: `nwy_open_app.zip` (2.59 MB) and `nwy_open_app_fota.pkt` (66.2 KB).
 
 ---
 
 ## 11. Standard Industrial Entry Template for Future Logs
+
 
 
 ```markdown

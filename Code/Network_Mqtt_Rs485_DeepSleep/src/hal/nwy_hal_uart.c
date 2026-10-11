@@ -5,7 +5,8 @@
 
 static int g_log_fd = -1;
 
-#define NWY_CORE_UART_MODE_ADDR 0x7e22e3c0
+#define NWY_CORE_UART_MODE_ADDR  0x7e22e3c0
+#define NWY_CORE_LOG_CONFIG_ADDR 0x7e212578
 
 int nwy_hal_uart_open(const char *port_name, uint32_t baudrate) {
   if (!port_name)
@@ -14,6 +15,10 @@ int nwy_hal_uart_open(const char *port_name, uint32_t baudrate) {
   // Enforce DATA mode in baseband so driver is initialized and not routed to AT interpreter
   volatile uint8_t *p_uart_mode = (volatile uint8_t *)NWY_CORE_UART_MODE_ADDR;
   *p_uart_mode = NWY_UART_MODE_DATA;
+
+  // Disable Crane OS ROM debug logger to prevent fixed 200-byte buffer overflows in nwy_uart_read/write
+  volatile uint8_t *p_log_config = (volatile uint8_t *)NWY_CORE_LOG_CONFIG_ADDR;
+  *p_log_config = 0;
 
   int fd = nwy_uart_open((char *)port_name, baudrate, FC_NONE);
   if (fd >= 0) {
@@ -78,6 +83,10 @@ static void uart_log_format(char level_char, const char *tag, const char *fmt,
   char log_buf[576];
   int total_len = snprintf(log_buf, sizeof(log_buf), "[%c][%s] %s\r\n",
                            level_char, tag, content_buf);
+
+  if (total_len >= (int)sizeof(log_buf)) {
+    total_len = (int)sizeof(log_buf) - 1;
+  }
 
   if (total_len > 0) {
     nwy_uart_write(g_log_fd, (uint8_t *)log_buf, total_len);

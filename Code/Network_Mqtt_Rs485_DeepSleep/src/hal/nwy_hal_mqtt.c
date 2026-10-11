@@ -8,7 +8,7 @@
 #include <string.h>
 
 #define TAG "HAL_MQTT"
-#define MQTT_BUFF_LIMIT 512
+#define MQTT_BUFF_LIMIT 1024
 
 static Network g_network;
 static MQTTClient g_client;

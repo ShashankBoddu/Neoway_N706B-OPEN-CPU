@@ -242,6 +242,7 @@ static void main_task(void *param) {
 
     char rs485_tx_str[80];
     uint8_t rs485_rx_buf[512];
+    int rx_bytes = 0;
     memset(rs485_tx_str, 0, sizeof(rs485_tx_str));
     memset(rs485_rx_buf, 0, sizeof(rs485_rx_buf));
 
@@ -262,9 +263,15 @@ static void main_task(void *param) {
 
       // 2. RECEIVE PHASE (10 seconds: DE/RE=LOW, polling mode)
       LOGI(">>> [PHASE 2/2] RECEIVE MODE ACTIVE (GPIO87=LOW) - Listening for 10 seconds...");
-      int rx_bytes = nwy_hal_rs485_listen(rs485_rx_buf, sizeof(rs485_rx_buf), RS485_RX_TIMEOUT_MS);
+      rx_bytes = nwy_hal_rs485_listen(rs485_rx_buf, sizeof(rs485_rx_buf), RS485_RX_TIMEOUT_MS);
       if (rx_bytes > 0) {
-        LOGI("RS-485 Bus Verified! Received %d bytes: \"%s\"", rx_bytes, (char *)rs485_rx_buf);
+        LOGI("RS-485 Bus Verified! Received %d bytes", rx_bytes);
+        char rx_preview[84];
+        int preview_len = (rx_bytes > 80) ? 80 : rx_bytes;
+        memcpy(rx_preview, rs485_rx_buf, preview_len);
+        rx_preview[preview_len] = '\0';
+        LOGI("RS-485 RX Preview (%d bytes): \"%s%s\"",
+             rx_bytes, rx_preview, (rx_bytes > 80) ? "..." : "");
       } else {
         LOGW("RS-485 Timeout: No response received within %d ms (Normal if no response sent from PC)", RS485_RX_TIMEOUT_MS);
         snprintf((char *)rs485_rx_buf, sizeof(rs485_rx_buf), "NO_RESPONSE_10S");
@@ -338,7 +345,10 @@ static void main_task(void *param) {
         LOGI("MQTT Connected successfully!");
 
         // Sanitize RS-485 RX buffer for clean, valid RFC 8259 JSON serialization
-        size_t rx_raw_len = strlen((char *)rs485_rx_buf);
+        size_t rx_raw_len = (rx_bytes > 0) ? (size_t)rx_bytes : strlen((char *)rs485_rx_buf);
+        if (rx_raw_len >= sizeof(rs485_rx_buf)) {
+          rx_raw_len = sizeof(rs485_rx_buf) - 1;
+        }
         for (size_t i = 0; i < rx_raw_len; i++) {
           unsigned char c = (unsigned char)rs485_rx_buf[i];
           if (c < 32 || c > 126) {
@@ -347,6 +357,7 @@ static void main_task(void *param) {
             rs485_rx_buf[i] = '\'';
           }
         }
+        rs485_rx_buf[rx_raw_len] = '\0';
         // Trim trailing whitespace
         while (rx_raw_len > 0 && rs485_rx_buf[rx_raw_len - 1] == ' ') {
           rs485_rx_buf[--rx_raw_len] = '\0';
@@ -375,8 +386,7 @@ static void main_task(void *param) {
                  adc_data.adc0_raw_mv, adc_data.adc0_current_ma,
                  rs485_tx_str, (char *)rs485_rx_buf);
 
-        LOGI("Publishing JSON payload to '%s':", MQTT_PUB_TOPIC);
-        LOGI("  Payload: %s", json_payload);
+        LOGI("Publishing JSON payload to '%s' (%u bytes)...", MQTT_PUB_TOPIC, (unsigned int)strlen(json_payload));
 
         bool pub_ok = nwy_hal_mqtt_publish(MQTT_PUB_TOPIC, json_payload, 1, false);
         LOGI("MQTT Publish Status: %s", pub_ok ? "SUCCESS" : "FAILED");
