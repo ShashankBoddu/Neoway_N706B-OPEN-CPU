@@ -21,171 +21,209 @@ static void usb_printf(const char *fmt, ...) {
   }
 }
 
-#define TEST_UART_PORT "URT1"
+#define DBG_UART_PORT "URT1"
+#define MAIN_UART_PORT "URT2"
 #define TEST_UART_BAUD 115200
 
-static int g_uart_fd = -1;
+static int g_dbg_uart_fd = -1;
+static int g_main_uart_fd = -1;
+
 static nwy_osi_timer_t g_heartbeat_timer = NULL;
 static nwy_osi_semaphore_t g_test_sem = NULL;
 static nwy_osi_mutex_t g_test_mutex = NULL;
 static int g_heartbeat_count = 0;
 
-static void uart_send_string(const char *str) {
-  if (g_uart_fd >= 0 && str) {
-    nwy_hal_uart_write(g_uart_fd, (const uint8_t *)str, strlen(str));
+static void broadcast_string(const char *str) {
+  if (!str) return;
+  size_t len = strlen(str);
+  if (g_main_uart_fd >= 0) {
+    nwy_hal_uart_write(g_main_uart_fd, (const uint8_t *)str, len);
   }
+  if (g_dbg_uart_fd >= 0) {
+    nwy_hal_uart_write(g_dbg_uart_fd, (const uint8_t *)str, len);
+  }
+  usb_printf("%s", str);
 }
 
-// Timer Callback
+// Timer Callback: Broadcasts heartbeat every 1 second
 static void heartbeat_timer_callback(void *ctx) {
   g_heartbeat_count++;
-  char log_buf[64];
-  snprintf(log_buf, sizeof(log_buf), "\r\n[TIMER] Heartbeat count: %d\r\n",
+  int vbat_mv = 0;
+  nwy_hal_pm_get_vbat(&vbat_mv);
+
+  char ping_buf[160];
+  snprintf(ping_buf, sizeof(ping_buf),
+           "[MAIN_URT2 #%04d] HELLO FROM PINS 17/18! VBAT=%d mV\r\n",
+           g_heartbeat_count, vbat_mv);
+
+  // Send packet out of MAIN UART (Pins 17/18, EVB Header J606)
+  if (g_main_uart_fd >= 0) {
+    nwy_hal_uart_write(g_main_uart_fd, (const uint8_t *)ping_buf, strlen(ping_buf));
+  }
+
+  // Also log status to DBG UART (Pins 38/39, EVB Header J607) and USB
+  char mon_buf[160];
+  snprintf(mon_buf, sizeof(mon_buf),
+           "[DBG_URT1] Ping #%04d sent out on MAIN_URT2 (Pins 17/18).\r\n",
            g_heartbeat_count);
-  uart_send_string(log_buf);
+  if (g_dbg_uart_fd >= 0) {
+    nwy_hal_uart_write(g_dbg_uart_fd, (const uint8_t *)mon_buf, strlen(mon_buf));
+  }
+  usb_printf("[PING #%d] Sent to MAIN_URT2", g_heartbeat_count);
 }
 
-// UART RX Callback
-static void test_uart_rx_cb(const char *str, uint32_t length) {
-  if (length == 0 || !str)
-    return;
+// MAIN UART (URT2, Pins 17/18) RX Callback
+static void main_uart_rx_cb(const char *str, uint32_t length) {
+  if (length == 0 || !str) return;
 
   char cmd = str[0];
-  char out_buf[128];
+  char out_buf[160];
+
+  snprintf(out_buf, sizeof(out_buf),
+           "\r\n[MAIN_URT2 ECHO] Received character: '%c' (0x%02X) on Module Pin 18 (MAIN_RXD)!\r\n",
+           (cmd >= 32 && cmd <= 126) ? cmd : '.', (unsigned char)cmd);
+  broadcast_string(out_buf);
 
   switch (cmd) {
   case 'r': // Reboot
-    uart_send_string("\r\n[CMD] Rebooting system...\r\n");
+    broadcast_string("\r\n[CMD] Rebooting system...\r\n");
     nwy_hal_os_thread_sleep(1000);
     nwy_hal_pm_reboot();
     break;
 
   case 'p': // Power Off
-    uart_send_string("\r\n[CMD] Powering off system...\r\n");
+    broadcast_string("\r\n[CMD] Powering off system...\r\n");
     nwy_hal_os_thread_sleep(1000);
     nwy_hal_pm_power_off();
     break;
 
-  case 'v': // Get VBAT
-  {
-    int vbat = 0;
-    if (nwy_hal_pm_get_vbat(&vbat)) {
-      snprintf(out_buf, sizeof(out_buf), "\r\n[CMD] Battery Voltage: %d mV\r\n",
-               vbat);
-    } else {
-      snprintf(out_buf, sizeof(out_buf),
-               "\r\n[CMD] Failed to get battery voltage\r\n");
-    }
-    uart_send_string(out_buf);
-  } break;
-
-  case 't': // Get Time
-  {
-    nwy_time_t curr_time;
-    int timezone = 0;
-    memset(&curr_time, 0, sizeof(curr_time));
-    if (nwy_hal_pm_get_time(&curr_time, &timezone)) {
-      snprintf(out_buf, sizeof(out_buf),
-               "\r\n[CMD] Date: %04d-%02d-%02d %02d:%02d:%02d GMT%+d\r\n",
-               curr_time.year, curr_time.mon, curr_time.day, curr_time.hour,
-               curr_time.min, curr_time.sec, timezone);
-    } else {
-      snprintf(out_buf, sizeof(out_buf),
-               "\r\n[CMD] Failed to get RTC time\r\n");
-    }
-    uart_send_string(out_buf);
-  } break;
-
-  case 's': // Semaphore Test
-    uart_send_string("\r\n[CMD] Testing Semaphore...\r\n");
+  case 's': // Semaphore test
+    broadcast_string("\r\n[CMD] Testing Semaphore...\r\n");
     if (g_test_sem) {
-      // Try to acquire non-blocking
       if (nwy_hal_os_semaphore_acquire(g_test_sem, 0)) {
-        uart_send_string("[SEM] Semaphore acquired successfully!\r\n");
+        broadcast_string("[SEM] Semaphore acquired successfully!\r\n");
       } else {
-        uart_send_string(
-            "[SEM] Semaphore unavailable (count is 0). Releasing...\r\n");
+        broadcast_string("[SEM] Semaphore unavailable (count=0). Releasing...\r\n");
         nwy_hal_os_semaphore_release(g_test_sem);
-        uart_send_string("[SEM] Semaphore released.\r\n");
+        broadcast_string("[SEM] Semaphore released.\r\n");
       }
     }
     break;
 
-  case 'm': // Mutex Test
-    uart_send_string("\r\n[CMD] Testing Mutex...\r\n");
+  case 'm': // Mutex test
+    broadcast_string("\r\n[CMD] Testing Mutex...\r\n");
     if (g_test_mutex) {
       if (nwy_hal_os_mutex_lock(g_test_mutex, 1000)) {
-        uart_send_string(
-            "[MUTEX] Locked. Performing critical operations...\r\n");
+        broadcast_string("[MUTEX] Locked. Performing critical operations...\r\n");
         nwy_hal_os_thread_sleep(500);
         nwy_hal_os_mutex_unlock(g_test_mutex);
-        uart_send_string("[MUTEX] Unlocked.\r\n");
+        broadcast_string("[MUTEX] Unlocked.\r\n");
       } else {
-        uart_send_string("[MUTEX] Lock timeout!\r\n");
+        broadcast_string("[MUTEX] Lock timeout!\r\n");
       }
+    }
+    break;
+
+  case 'v': // Battery status
+    {
+      int vbat = 0;
+      nwy_hal_pm_get_vbat(&vbat);
+      char vbuf[64];
+      snprintf(vbuf, sizeof(vbuf), "\r\n[CMD] Current VBAT = %d mV\r\n", vbat);
+      broadcast_string(vbuf);
     }
     break;
 
   case 'h': // Help Menu
   default:
-    uart_send_string("\r\n--- Supported Commands ---\r\n"
-                     " r - Reboot Module\r\n"
-                     " p - Power Off Module\r\n"
-                     " v - Get Battery Voltage\r\n"
-                     " t - Get System Time\r\n"
-                     " s - Test OS Semaphores\r\n"
-                     " m - Test OS Mutexes\r\n"
-                     " h - Show this menu\r\n"
-                     "--------------------------\r\n");
+    broadcast_string("\r\n=========================================\r\n"
+                     " NEOWAY N706B MAIN UART (URT2) COMMAND MENU \r\n"
+                     "=========================================\r\n"
+                     "  'r' : Soft Reboot Module\r\n"
+                     "  'p' : Power Off Module\r\n"
+                     "  's' : Test OS Semaphore\r\n"
+                     "  'm' : Test OS Mutex\r\n"
+                     "  'v' : Query Battery Voltage (VBAT)\r\n"
+                     "  'h' : Show This Help Menu\r\n"
+                     "=========================================\r\n\r\n");
     break;
   }
 }
 
+// DBG UART (URT1, Pins 38/39) RX Callback
+static void dbg_uart_rx_cb(const char *str, uint32_t length) {
+  if (length == 0 || !str) return;
+  // Route to the same command interpreter
+  main_uart_rx_cb(str, length);
+}
+
 // Background monitoring task
 static void main_monitor_task(void *param) {
-  nwy_hal_os_thread_sleep(3000); // Allow UART and system stability
+  nwy_hal_os_thread_sleep(2000); // Allow UART and system stability
 
-  usb_printf("OsUartPmTest: Spawning test UART interface...");
-  g_uart_fd = nwy_hal_uart_open(TEST_UART_PORT, TEST_UART_BAUD);
-  if (g_uart_fd < 0) {
-    usb_printf("OsUartPmTest: Failed to open UART %s, error %d", TEST_UART_PORT,
-               g_uart_fd);
-    return;
+  usb_printf("OsUartPmTest: Starting Multi-UART Test Harness...");
+
+  // 1. Open DBG_UART_PORT (URT1, Pins 38/39, EVB Header J607) for diagnostics
+  g_dbg_uart_fd = nwy_hal_uart_open(DBG_UART_PORT, TEST_UART_BAUD);
+  if (g_dbg_uart_fd >= 0) {
+    nwy_hal_uart_register_rx_cb(g_dbg_uart_fd, dbg_uart_rx_cb);
+    usb_printf("OsUartPmTest: DBG UART %s opened (fd=%d)", DBG_UART_PORT, g_dbg_uart_fd);
   }
 
-  usb_printf("OsUartPmTest: UART %s opened successfully (fd=%d)",
-             TEST_UART_PORT, g_uart_fd);
-  nwy_hal_uart_register_rx_cb(g_uart_fd, test_uart_rx_cb);
+  // 2. Open MAIN_UART_PORT (URT2, Pins 17/18, EVB Header J606) as PRIMARY test subject
+  g_main_uart_fd = nwy_hal_uart_open(MAIN_UART_PORT, TEST_UART_BAUD);
+  if (g_main_uart_fd >= 0) {
+    nwy_hal_uart_register_rx_cb(g_main_uart_fd, main_uart_rx_cb);
+    usb_printf("OsUartPmTest: MAIN UART %s opened (fd=%d)", MAIN_UART_PORT, g_main_uart_fd);
+  } else {
+    usb_printf("OsUartPmTest: FAILED to open MAIN UART %s (err=%d)", MAIN_UART_PORT, g_main_uart_fd);
+  }
 
-  // Print Initial Greeting
-  uart_send_string("\r\n==============================================\r\n");
-  uart_send_string("  NEOWAY N706B OPENCPU - OS / UART / PM TEST  \r\n");
-  uart_send_string("==============================================\r\n");
+  // 3. Print Initial Diagnostic Banner on all active channels
+  broadcast_string("\r\n");
+  broadcast_string("====================================================================\r\n");
+  broadcast_string("  NEOWAY N706B OPENCPU - MAIN UART (PINS 17/18) TEST HARNESS        \r\n");
+  broadcast_string("====================================================================\r\n");
+  broadcast_string("  Primary Port : URT2 (Module Pin 17 MAIN_TXD / Pin 18 MAIN_RXD)\r\n");
+  broadcast_string("  Debug Mirror : URT1 (Module Pin 38 DBG_RXD / Pin 39 DBG_TXD)\r\n");
+  broadcast_string("  Baud Rate    : 115200 baud, 8-N-1 (Flow Control: NONE)\r\n");
+  broadcast_string("--------------------------------------------------------------------\r\n");
+  broadcast_string("  >> HARDWARE WIRING ON MINI EVB CONNECTOR J606 (UART1) <<\r\n");
+  broadcast_string("     Pin 2: MAIN_RXD -> MODULE PIN 18 (Input)  *** CONNECT PC TX HERE ***\r\n");
+  broadcast_string("     Pin 3: MAIN_TXD -> MODULE PIN 17 (Output) *** CONNECT PC RX HERE ***\r\n");
+  broadcast_string("     Pin 4: GND      -> CONNECT PC GND HERE\r\n");
+  broadcast_string("====================================================================\r\n\r\n");
 
-  char reason_buf[64];
-  snprintf(reason_buf, sizeof(reason_buf), "Boot Reason: %s\r\n",
-           nwy_hal_pm_get_boot_reason_str());
-  uart_send_string(reason_buf);
+  char boot_buf[64];
+  snprintf(boot_buf, sizeof(boot_buf), "Boot Reason: %s\r\n", nwy_hal_pm_get_boot_reason_str());
+  broadcast_string(boot_buf);
 
   // Create synchronization resources
   nwy_hal_os_semaphore_create(&g_test_sem, 1, 1);
   nwy_hal_os_mutex_create(&g_test_mutex);
 
-  // Create and start periodic heartbeat timer
-  if (nwy_hal_os_timer_create(&g_heartbeat_timer, heartbeat_timer_callback,
-                              NULL)) {
-    nwy_hal_os_timer_start(g_heartbeat_timer, 2000, NWY_HAL_OS_TIMER_PERIODIC);
-    uart_send_string(
-        "[INIT] Heartbeat timer created and started (2s interval).\r\n");
+  // Create and start periodic heartbeat timer (1-second interval)
+  if (nwy_hal_os_timer_create(&g_heartbeat_timer, heartbeat_timer_callback, NULL)) {
+    nwy_hal_os_timer_start(g_heartbeat_timer, 1000, NWY_HAL_OS_TIMER_PERIODIC);
+    broadcast_string("[INIT] Heartbeat timer active (1-second interval broadcast).\r\n");
   } else {
-    uart_send_string("[INIT] Failed to create heartbeat timer.\r\n");
+    broadcast_string("[WARN] Failed to create heartbeat timer!\r\n");
   }
 
-  uart_send_string("Press 'h' for command options.\r\n");
-
+  // Main monitor loop: logs runtime telemetry
+  uint32_t seconds = 0;
   while (1) {
-    nwy_hal_os_thread_sleep(10000);
-    usb_printf("OsUartPmTest: main thread looping...");
+    nwy_hal_os_thread_sleep(5000);
+    seconds += 5;
+
+    int vbat = 0;
+    nwy_hal_pm_get_vbat(&vbat);
+
+    char stat_buf[128];
+    snprintf(stat_buf, sizeof(stat_buf),
+             "[MONITOR #%lu] Core running normally. Uptime: %lu s | VBAT: %d mV\r\n",
+             (unsigned long)(seconds / 5), (unsigned long)seconds, vbat);
+    broadcast_string(stat_buf);
   }
 }
 
@@ -222,7 +260,10 @@ void appimg_exit(void) {
   if (g_test_mutex) {
     nwy_hal_os_mutex_delete(g_test_mutex);
   }
-  if (g_uart_fd >= 0) {
-    nwy_hal_uart_close(g_uart_fd);
+  if (g_main_uart_fd >= 0) {
+    nwy_hal_uart_close(g_main_uart_fd);
+  }
+  if (g_dbg_uart_fd >= 0) {
+    nwy_hal_uart_close(g_dbg_uart_fd);
   }
 }
