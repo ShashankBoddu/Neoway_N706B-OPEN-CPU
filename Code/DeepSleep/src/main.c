@@ -27,8 +27,16 @@
 #define ACTIVE_DURATION_SEC 10 // Active running for 10 seconds
 #define SLEEP_DURATION_SEC  30 // Low-power sleep for 30 seconds
 
-// GPIO0 (Pin 83) controls peripheral load switch (VCC_SWout)
-#define PIN_LOAD_SWITCH_GPIO0 0
+// Master Peripheral Power Control (Pin 83, GPIO0):
+// - ACTIVE MODE (HIGH / 1.8V):
+//     * Powers cut peripheral VEXT track (1.8V to level shifters U4, U15, U6, U8, OE=1.8V)
+//     * Drives Q5 NPN -> Q4 P-MOSFET (connects buck converter output to peripheral VBAT & U14 RS-485)
+//     * Drives Q3 NPN -> Q1 P-MOSFET (connects Vin to VCC_SWout for external sensors)
+// - SLEEP MODE (LOW / 0.0V):
+//     * Clamps VEXT & OE to 0.0V (tri-states all level shifters to High-Z)
+//     * Q5 OFF -> Q4 OFF (cuts buck power from peripheral VBAT rail)
+//     * Q3 OFF -> Q1 OFF (cuts Vin from VCC_SWout rail)
+#define PIN_PERIPHERAL_POWER_GPIO0 0
 
 // General-purpose module GPIOs connected to level shifter U15 on carrier board
 // Pins: GPIO01 (Pin 84), GPIO05 (Pin 26), GPIO07 (Pin 21),
@@ -94,14 +102,24 @@ static bool send_virt_at_cmd(const char *cmd, char *resp_out, int resp_len) {
 }
 
 // ---------------------------------------------------------------------------
-// GPIO ISOLATION ROUTINE
-// Clamps all GPIO pins to Ground (Pull-Down) to stop ESD diodes from
-// back-feeding 1.8V into the cut VDD_EXT island (which creates the 1.2V reading).
+// PERIPHERAL MASTER POWER & GPIO CONTROL ROUTINES
 // ---------------------------------------------------------------------------
+static void set_peripheral_master_power(bool enable) {
+  nwy_hal_gpio_init_out(PIN_PERIPHERAL_POWER_GPIO0, enable);
+  nwy_hal_gpio_set_value(PIN_PERIPHERAL_POWER_GPIO0, enable);
+  if (enable) {
+    LOGI("Peripheral Master Power (GPIO0): ON (1.8V VEXT + Q4 Buck VBAT + Q1 Vin)");
+  } else {
+    LOGI("Peripheral Master Power (GPIO0): OFF (Clamped to 0.0V GND)");
+  }
+}
+
 static void isolate_all_gpios_to_low(void) {
-  // 1. Ensure peripheral load switch (Q3/Q1) is held firmly OFF
-  nwy_hal_gpio_init_out(PIN_LOAD_SWITCH_GPIO0, false);
-  nwy_hal_gpio_set_value(PIN_LOAD_SWITCH_GPIO0, false);
+  // 1. Turn OFF peripheral master power:
+  // Clamps cut VEXT track to 0.0V (tri-states level translators U4, U15, U6),
+  // turns off Q5->Q4 (cuts Buck output from peripheral VBAT / U14),
+  // and turns off Q3->Q1 (cuts Vin from VCC_SWout).
+  set_peripheral_master_power(false);
 
   // 2. Set all exposed GPIO lines to input with Pull-Down
   // This sinks any leakage to GND and eliminates the 1.2V on the disconnected trace!
@@ -113,8 +131,8 @@ static void isolate_all_gpios_to_low(void) {
 }
 
 static void restore_gpios_after_sleep(void) {
-  // Ensure load switch remains OFF unless explicitly needed
-  nwy_hal_gpio_set_value(PIN_LOAD_SWITCH_GPIO0, false);
+  // Turn ON peripheral master power for active phase
+  set_peripheral_master_power(true);
 }
 
 static void dump_system_wake_locks(const char *stage_name) {
@@ -165,18 +183,24 @@ static void print_banner(void) {
   LOGI("Virtual AT engine init: %s (ret=%d)",
        (at_init == NWY_SUCCESS) ? "SUCCESS" : "FAIL", at_init);
 
+  // Configure baseband sleep policy with retry (allows modem AT daemon to finish spawning)
+  bool at_enpwr_ok = false;
   char startup_resp[64];
-  memset(startup_resp, 0, sizeof(startup_resp));
-  if (send_virt_at_cmd("AT+ENPWRSAVE=1", startup_resp, sizeof(startup_resp))) {
-    LOGI("Baseband modem sleep policy: AT+ENPWRSAVE=1 (OK)");
-  } else {
-    LOGW("Failed to set AT+ENPWRSAVE=1 via Virtual AT");
+  for (int retry = 0; retry < 3; retry++) {
+    memset(startup_resp, 0, sizeof(startup_resp));
+    if (send_virt_at_cmd("AT+ENPWRSAVE=1", startup_resp, sizeof(startup_resp))) {
+      LOGI("Baseband modem sleep policy: AT+ENPWRSAVE=1 (OK, attempt %d)", retry + 1);
+      at_enpwr_ok = true;
+      break;
+    }
+    nwy_hal_os_thread_sleep(1500);
+  }
+  if (!at_enpwr_ok) {
+    LOGW("Failed to set AT+ENPWRSAVE=1 via Virtual AT (will retry before sleep)");
   }
 
-  // Turn off peripheral load switch
-  nwy_hal_gpio_init_out(PIN_LOAD_SWITCH_GPIO0, false);
-  nwy_hal_gpio_set_value(PIN_LOAD_SWITCH_GPIO0, false);
-  LOGI("Peripheral load switch (VCC_SWout / GPIO0): OFF");
+  // Turn on peripheral master power during active initialization
+  set_peripheral_master_power(true);
 
   // Register low-level PMU sleep callback
   nwy_pm_sleep_callback_set_fn p_cb_set =
@@ -220,6 +244,7 @@ static void main_task(void *param) {
     // PHASE 1: ACTIVE MODE (Running for 10 seconds)
     // -------------------------------------------------------------
     nwy_pm_state_set(NWY_PM_SLEEP_DISABLE);
+    set_peripheral_master_power(true);
 
     LOGI("");
     LOGI(">>> [CYCLE %lu] ACTIVE RUNNING (%d seconds) <<<", cycle, ACTIVE_DURATION_SEC);

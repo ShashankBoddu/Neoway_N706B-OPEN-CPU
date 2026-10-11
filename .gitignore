@@ -4,3 +4,8 @@
 # Language server cache and compiler databases
 Code/.cache/
 Code/compile_commands.json
+
+# Large raw PPK2 captures exceeding GitHub's 100MB limit
+*.ppk2
+Code/current/
+

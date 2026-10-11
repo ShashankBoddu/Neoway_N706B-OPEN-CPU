@@ -101,3 +101,20 @@ Each project folder contains its dedicated `build_<ProjectName>.bat` script.
 2. **Binary:** Select `nwy_open_app.zip` from your project's `release/` folder.
 3. **Download Mode:** In serial terminal on MAIN_UART, send `AT$MYDOWNLOAD=1`.
 4. **Flashing:** Click 'Start' in SWDownloader; the module flashes in ~3 seconds.
+
+---
+
+## 5. Low-Power Sleep Configuration & Hardware Rework (568.69 uA Sub-Milliamp Record)
+For full engineering details, circuit schematics, multimeter ground truths, and Nordic PPK2 captures across all development stages (from 35 mA down to 568.69 uA), refer to the comprehensive developer log:
+- **[DEV_LOG.md](DEV_LOG.md)** (or **[DEV.md](DEV.md)**)
+
+### Quick Hardware Setup Summary:
+1. **New Board Validated (Zero Trace Cuts Required):** The latest Stage 4 validation was performed on a **new carrier board with completely intact, uncut copper tracks** (VBAT and VEXT tracks are **NOT cut**!).
+2. **P-MOSFET Gate Pull-Up Resistors (R4, R27):** Upgraded from 100k ohm to **26k ohm** to ensure full cutoff (VGS = 0V) during sleep.
+3. **Master Power Control (GPIO0, Pin 83):** In active mode, GPIO0 is HIGH (0.909V, saturating NPNs); in sleep mode, GPIO0 is driven LOW (0.00V), completely turning off Q1 and Q10 via the 26k pull-ups.
+4. **Baseband Sleep Policy:** Run `AT+ENPWRSAVE=1` (standard ASR Crane OS command; note that `AT+NWENPWRSAVE` returns ERROR on this chipset).
+5. **Empirical Bench Results:**
+   - Active Current: **44.05 mA** (23.45s)
+   - Sleep Current: **568.69 uA** (29.86s flatline)
+   - Switched Rails in Sleep: VCC_SWout = 0.00V, RS-485 VCC = 0.32V (100% isolated).
+
