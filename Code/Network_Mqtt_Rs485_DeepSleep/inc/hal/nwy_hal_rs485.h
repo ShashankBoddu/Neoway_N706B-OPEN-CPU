@@ -60,6 +60,11 @@ int nwy_hal_rs485_poll_read(uint8_t *buf, size_t max_len);
 int nwy_hal_rs485_listen(uint8_t *buf, size_t max_len, uint32_t timeout_ms);
 
 /**
+ * @brief Flush and clear UART internal RX buffers and reset capture state.
+ */
+void nwy_hal_rs485_flush_rx(void);
+
+/**
  * @brief De-initialize RS-485: closes URT2, sets GPIO87 LOW, cuts GPIO0 power
  */
 void nwy_hal_rs485_deinit(void);

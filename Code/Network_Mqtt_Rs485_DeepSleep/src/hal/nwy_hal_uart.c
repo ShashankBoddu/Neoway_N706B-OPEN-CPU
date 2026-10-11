@@ -5,9 +5,16 @@
 
 static int g_log_fd = -1;
 
+#define NWY_CORE_UART_MODE_ADDR 0x7e22e3c0
+
 int nwy_hal_uart_open(const char *port_name, uint32_t baudrate) {
   if (!port_name)
     return -1;
+
+  // Enforce DATA mode in baseband so driver is initialized and not routed to AT interpreter
+  volatile uint8_t *p_uart_mode = (volatile uint8_t *)NWY_CORE_UART_MODE_ADDR;
+  *p_uart_mode = NWY_UART_MODE_DATA;
+
   int fd = nwy_uart_open((char *)port_name, baudrate, FC_NONE);
   if (fd >= 0) {
     g_log_fd = fd; // Set opened port as default log output
@@ -63,12 +70,12 @@ static void uart_log_format(char level_char, const char *tag, const char *fmt,
                             va_list args) {
   if (g_log_fd < 0 || !fmt || !tag)
     return;
-  char content_buf[256];
+  char content_buf[512];
   int content_len = vsnprintf(content_buf, sizeof(content_buf), fmt, args);
   if (content_len <= 0)
     return;
 
-  char log_buf[320];
+  char log_buf[576];
   int total_len = snprintf(log_buf, sizeof(log_buf), "[%c][%s] %s\r\n",
                            level_char, tag, content_buf);
 

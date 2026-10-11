@@ -14,26 +14,36 @@
 #define LOGW(fmt, ...) nwy_hal_uart_log_w(TAG, fmt, ##__VA_ARGS__)
 #define LOGE(fmt, ...) nwy_hal_uart_log_e(TAG, fmt, ##__VA_ARGS__)
 
+#define NWY_CORE_UART_MODE_ADDR 0x7e22e3c0
+#define RS485_INTERNAL_BUF_SIZE 1024
+
 static int g_rs485_fd = -1;
 static uint32_t g_rs485_baudrate = 9600;
 
 // High-capacity RX accumulation buffer filled by kernel UART ISR
-static uint8_t s_rs485_rx_fifo[512];
+static uint8_t s_rs485_rx_fifo[RS485_INTERNAL_BUF_SIZE];
 static volatile size_t s_rs485_rx_count = 0;
+static volatile bool s_rx_capturing = false;
 
 static void rs485_uart_rx_isr(const char *str, uint32_t length) {
-  if (!str || length == 0)
+  // Discard incoming bytes if capture window is not armed or parameters are invalid
+  if (!s_rx_capturing || !str || length == 0) {
     return;
+  }
 
-  // Thread-safe / ISR-safe accumulation without blocking or printf
-  if (s_rs485_rx_count + length < sizeof(s_rs485_rx_fifo)) {
-    memcpy(&s_rs485_rx_fifo[s_rs485_rx_count], str, length);
-    s_rs485_rx_count += length;
+  // Fast, bounds-checked accumulation into static buffer with saturation safety
+  if (s_rs485_rx_count < sizeof(s_rs485_rx_fifo) - 1) {
+    size_t space_left = sizeof(s_rs485_rx_fifo) - 1 - s_rs485_rx_count;
+    size_t to_copy = (length < space_left) ? (size_t)length : space_left;
+    memcpy(&s_rs485_rx_fifo[s_rs485_rx_count], str, to_copy);
+    s_rs485_rx_count += to_copy;
     s_rs485_rx_fifo[s_rs485_rx_count] = '\0';
   }
 }
 
 void nwy_hal_rs485_tx_mode(void) {
+  // Disable RX capture during transmission to prevent loopback/noise accumulation
+  s_rx_capturing = false;
   // GPIO87 controls Q7 level shifter to RS_De (RE#/DE):
   // HIGH (1.8V): Q7 OFF -> RS_De pulled HIGH to VBAT (DE=1, RE#=1: Transmit Mode)
   nwy_hal_gpio_set_value(PIN_RS485_DIR_GPIO87, true);
@@ -42,6 +52,30 @@ void nwy_hal_rs485_tx_mode(void) {
 void nwy_hal_rs485_rx_mode(void) {
   // LOW (0.0V): Q7 ON -> RS_De pulled LOW to GND (DE=0, RE#=0: Receive Mode)
   nwy_hal_gpio_set_value(PIN_RS485_DIR_GPIO87, false);
+}
+
+void nwy_hal_rs485_flush_rx(void) {
+  // 1. Disarm capture while clearing
+  s_rx_capturing = false;
+
+  // 2. Clear software buffer and count
+  s_rs485_rx_count = 0;
+  memset(s_rs485_rx_fifo, 0, sizeof(s_rs485_rx_fifo));
+
+  // 3. Drain low-level driver buffer and FIFO if port is open
+  if (g_rs485_fd >= 0) {
+    uint8_t trash[128];
+    while (nwy_uart_read(g_rs485_fd, trash, sizeof(trash)) > 0) {
+      // drain residual bytes
+    }
+  }
+
+  // 4. Allow any in-flight UART ISR interrupts or transients to settle
+  nwy_hal_os_thread_sleep(20);
+
+  // 5. Reset counter again after transient settling
+  s_rs485_rx_count = 0;
+  memset(s_rs485_rx_fifo, 0, sizeof(s_rs485_rx_fifo));
 }
 
 bool nwy_hal_rs485_init(uint32_t baudrate) {
@@ -63,10 +97,18 @@ bool nwy_hal_rs485_init(uint32_t baudrate) {
 
   // 3. Open UART port (URT2, Pins 17/18 MAIN_TXD/MAIN_RXD)
   if (g_rs485_fd >= 0) {
-    nwy_uart_rx_cb_register(g_rs485_fd, NULL);
+    s_rx_capturing = false;
+    nwy_hal_os_thread_sleep(10);
     nwy_uart_close(g_rs485_fd);
     g_rs485_fd = -1;
   }
+
+  // Critical Crane OS Configuration:
+  // Enforce global uartMode = NWY_UART_MODE_DATA (1) at address 0x7e22e3c0.
+  // This ensures nwy_uart_open initializes driver data structures and
+  // does not route URT2 to baseband AT command interpreter.
+  volatile uint8_t *p_uart_mode = (volatile uint8_t *)NWY_CORE_UART_MODE_ADDR;
+  *p_uart_mode = NWY_UART_MODE_DATA;
 
   g_rs485_fd = nwy_uart_open(NWY_RS485_UART_PORT, g_rs485_baudrate, FC_NONE);
   if (g_rs485_fd < 0) {
@@ -87,10 +129,21 @@ bool nwy_hal_rs485_init(uint32_t baudrate) {
   nwy_uart_dcb_set(g_rs485_fd, &dcb);
 
   // 5. Register native asynchronous callback to safely capture incoming frames
+  // Note: nwy_uart_rx_frame_timeout_set() is intentionally NOT called.
+  // The SDK implementation of that function has a firmware branch condition bug
+  // that leaves the timer callback uninitialized, causing a hard panic reset.
+  // Native ISR accumulation delivers chunks reliably and safely.
+  s_rx_capturing = false;
   s_rs485_rx_count = 0;
   memset(s_rs485_rx_fifo, 0, sizeof(s_rs485_rx_fifo));
-  nwy_uart_rx_cb_register(g_rs485_fd, rs485_uart_rx_isr);
-  nwy_uart_rx_frame_timeout_set(g_rs485_fd, 32);
+  nwy_error_e cb_err = nwy_uart_rx_cb_register(g_rs485_fd, rs485_uart_rx_isr);
+  if (cb_err != NWY_SUCCESS) {
+    LOGE("Failed to register RS-485 RX callback (Error: %d)", cb_err);
+    return false;
+  }
+
+  // Flush any startup garbage/noise before operational use
+  nwy_hal_rs485_flush_rx();
 
   return true;
 }
@@ -101,7 +154,7 @@ int nwy_hal_rs485_send(const uint8_t *data, size_t len) {
     return -1;
   }
 
-  // 1. Switch hardware transceiver to Transmit mode (GPIO87 = HIGH)
+  // 1. Switch hardware transceiver to Transmit mode (GPIO87 = HIGH, RX capture disarmed)
   nwy_hal_rs485_tx_mode();
   nwy_hal_os_thread_sleep(5); // Driver enable stabilization delay
 
@@ -136,35 +189,51 @@ int nwy_hal_rs485_listen(uint8_t *buf, size_t max_len, uint32_t timeout_ms) {
 
   // 1. Switch to Receive mode (GPIO87 = LOW)
   nwy_hal_rs485_rx_mode();
-  nwy_hal_os_thread_sleep(10); // Driver disable stabilization delay
+  nwy_hal_os_thread_sleep(20); // Driver disable and transceiver RO stabilization delay
 
-  // 2. Clear RX buffer before listening window opens
-  s_rs485_rx_count = 0;
-  memset(s_rs485_rx_fifo, 0, sizeof(s_rs485_rx_fifo));
+  // 2. Clear UART internal RX buffer and reset accumulation state
+  nwy_hal_rs485_flush_rx();
   memset(buf, 0, max_len);
+
+  // 3. Arm the RX capture engine
+  s_rx_capturing = true;
 
   LOGI("Listening on RS-485 (URT2, DE/RE=LOW) for %lu ms...", (unsigned long)timeout_ms);
 
   uint32_t elapsed = 0;
-  const uint32_t poll_step_ms = 50;
+  const uint32_t POLL_SLICE_MS = 20;
+  const uint32_t FRAME_QUIET_THRESHOLD_MS = 150; // 150 ms silence window ensures full multi-chunk frame delivery
+  uint32_t quiet_elapsed_ms = 0;
+  size_t last_recorded_count = 0;
 
   while (elapsed < timeout_ms) {
-    if (s_rs485_rx_count > 0) {
-      // Data detected! Allow 50ms for any trailing bytes of the frame to arrive
-      size_t prev_count = s_rs485_rx_count;
-      nwy_hal_os_thread_sleep(50);
-      elapsed += 50;
-      if (s_rs485_rx_count == prev_count) {
-        // Line is quiet, complete packet captured
-        break;
+    size_t current_count = s_rs485_rx_count;
+
+    if (current_count > 0) {
+      if (current_count != last_recorded_count) {
+        // New bytes arrived! Reset quiet detection timer
+        last_recorded_count = current_count;
+        quiet_elapsed_ms = 0;
+      } else {
+        // No new bytes arrived during this slice, accumulate quiet time
+        quiet_elapsed_ms += POLL_SLICE_MS;
+        if (quiet_elapsed_ms >= FRAME_QUIET_THRESHOLD_MS) {
+          // Bus is quiet for full 150 ms after bytes arrived: frame transmission is complete
+          break;
+        }
       }
-      continue;
     }
-    nwy_hal_os_thread_sleep(poll_step_ms);
-    elapsed += poll_step_ms;
+
+    nwy_hal_os_thread_sleep(POLL_SLICE_MS);
+    elapsed += POLL_SLICE_MS;
   }
 
-  size_t copy_len = (s_rs485_rx_count < max_len - 1) ? s_rs485_rx_count : (max_len - 1);
+  // 4. Disarm capture to prevent concurrent ISR modification while copying
+  s_rx_capturing = false;
+
+  size_t total_received = s_rs485_rx_count;
+  size_t copy_len = (total_received < max_len - 1) ? total_received : (max_len - 1);
+
   if (copy_len > 0) {
     memcpy(buf, s_rs485_rx_fifo, copy_len);
     buf[copy_len] = '\0';
@@ -179,13 +248,20 @@ int nwy_hal_rs485_listen(uint8_t *buf, size_t max_len, uint32_t timeout_ms) {
 
 void nwy_hal_rs485_deinit(void) {
   LOGI("De-initializing RS-485 interface...");
+
+  // 1. Disarm RX capture so no callbacks process data during teardown
+  s_rx_capturing = false;
+  nwy_hal_os_thread_sleep(20);
+
+  // 2. Close UART port descriptor cleanly (masks hardware interrupts)
   if (g_rs485_fd >= 0) {
-    nwy_uart_rx_cb_register(g_rs485_fd, NULL);
     nwy_uart_close(g_rs485_fd);
     g_rs485_fd = -1;
   }
-  // Drive direction to Receive mode and cut transceiver power
+
+  // 3. Drive direction to Receive mode and cut transceiver power
   nwy_hal_rs485_rx_mode();
   nwy_hal_gpio_set_value(PIN_RS485_POWER_GPIO0, false);
   LOGI("Transceiver VCC Rail (GPIO00): CUT (OFF)");
 }
+

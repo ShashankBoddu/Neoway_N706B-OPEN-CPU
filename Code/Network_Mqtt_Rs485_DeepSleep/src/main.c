@@ -1,3 +1,4 @@
+#include "hal/nwy_hal_adc.h"
 #include "hal/nwy_hal_gpio.h"
 #include "hal/nwy_hal_mqtt.h"
 #include "hal/nwy_hal_net.h"
@@ -134,6 +135,7 @@ static void print_banner(void) {
   printf("  Hardware Revision: 26k Pull-up on Q10/Q1 (Intact Rails)\r\n");
   printf("  Boot Reason: 0x%04X (%s)\r\n", raw_boot, nwy_hal_pm_get_boot_reason_str());
   printf("  Direct VBAT: %d mV\r\n", vbat_mv);
+  printf("  ADC Channels: ADC1 (Pin 96, U5 Voltage Div 4.83x) | ADC0 (Pin 9, 60R 4-20mA Loop)\r\n");
   printf("  RS-485 Port: URT2 (MAIN_UART, Pins 17/18) @ %d baud | Direction Pin: GPIO87\r\n", RS485_TEST_BAUD);
   printf("  MQTT Broker: %s:%d (Topic: %s)\r\n", MQTT_BROKER_HOST, MQTT_BROKER_PORT, MQTT_PUB_TOPIC);
   printf("  Sleep Duration: %d seconds per cycle\r\n", SLEEP_DURATION_SEC);
@@ -164,6 +166,9 @@ static void main_task(void *param) {
   for (int i = 0; i < dev_cnt; i++) {
     LOGI("  Port [%d]: '%s'", i + 1, dev_names[i]);
   }
+
+  // Inspect registered ADC devices in firmware
+  nwy_hal_adc_init();
 
   // Set modem sleep policy: AT+ENPWRSAVE=1
   char at_resp[64];
@@ -198,12 +203,36 @@ static void main_task(void *param) {
 
     int vbat_mv = 0;
     nwy_hal_pm_get_vbat(&vbat_mv);
-    LOGI("Cycle %lu: VBAT Rail = %d mV", (unsigned long)cycle, vbat_mv);
+    LOGI("Cycle %lu: Initial VBAT Rail = %d mV", (unsigned long)cycle, vbat_mv);
 
     // -----------------------------------------------------------------
-    // STEP 2: RS-485 TRANSCEIVER TEST (Half-Duplex URT2 / MAIN_UART)
+    // STAGE 1/5: ANALOG SENSORS & MULTI-CHANNEL ADC TELEMETRY
     // -----------------------------------------------------------------
-    LOGI("--- [STAGE 1/4] RS-485 HALF-DUPLEX COMMUNICATION TEST ---");
+    LOGI("--- [STAGE 1/5] ANALOG SENSORS & MULTI-CHANNEL ADC TELEMETRY ---");
+    LOGI("==================================================================");
+    LOGI(">> SAMPLING ONBOARD ANALOG SENSOR INTERFACES <<");
+    LOGI("   ADC1 (Module Pin 96, Connector U5): DC Voltage (100k/26.1k divider, 4.831x)");
+    LOGI("   ADC0 (Module Pin 9,  Net INADC0):    4-20mA Current Loop (60 ohm shunt)");
+    LOGI("   VBAT (Internal Rail):                Direct PMIC Battery Monitoring");
+    LOGI("==================================================================");
+
+    nwy_hal_adc_data_t adc_data;
+    memset(&adc_data, 0, sizeof(adc_data));
+    nwy_hal_adc_sample_all(&adc_data);
+
+    LOGI("ADC1 [DC Voltage Sensor]: Raw Pin = %d mV -> True Vin = %d mV (%.3f V)",
+         adc_data.adc1_raw_mv, adc_data.adc1_vin_mv, (float)adc_data.adc1_vin_mv / 1000.0f);
+    LOGI("ADC0 [4-20mA Current Loop]: Raw Pin = %d mV -> Loop Current = %.2f mA (%d uA)",
+         adc_data.adc0_raw_mv, adc_data.adc0_current_ma, adc_data.adc0_current_ua);
+    LOGI("VBAT [Battery Rail via ADC]: %d mV", adc_data.vbat_mv);
+    if (adc_data.vbat_mv > 0) {
+      vbat_mv = adc_data.vbat_mv;
+    }
+
+    // -----------------------------------------------------------------
+    // STAGE 2/5: RS-485 TRANSCEIVER TEST (Half-Duplex URT2 / MAIN_UART)
+    // -----------------------------------------------------------------
+    LOGI("--- [STAGE 2/5] RS-485 HALF-DUPLEX COMMUNICATION TEST ---");
     LOGI("==================================================================");
     LOGI(">> HALF-DUPLEX TIMING SEQUENCE: TX for 10s -> RX for 10s <<");
     LOGI("   Port: URT2 (MAIN_UART, Pins 17/18) @ %d baud, 8-N-1", RS485_TEST_BAUD);
@@ -212,7 +241,7 @@ static void main_task(void *param) {
     LOGI("==================================================================");
 
     char rs485_tx_str[80];
-    uint8_t rs485_rx_buf[256];
+    uint8_t rs485_rx_buf[512];
     memset(rs485_tx_str, 0, sizeof(rs485_tx_str));
     memset(rs485_rx_buf, 0, sizeof(rs485_rx_buf));
 
@@ -235,7 +264,7 @@ static void main_task(void *param) {
       LOGI(">>> [PHASE 2/2] RECEIVE MODE ACTIVE (GPIO87=LOW) - Listening for 10 seconds...");
       int rx_bytes = nwy_hal_rs485_listen(rs485_rx_buf, sizeof(rs485_rx_buf), RS485_RX_TIMEOUT_MS);
       if (rx_bytes > 0) {
-        LOGI("RS-485 Bus Verified! Received: \"%s\"", (char *)rs485_rx_buf);
+        LOGI("RS-485 Bus Verified! Received %d bytes: \"%s\"", rx_bytes, (char *)rs485_rx_buf);
       } else {
         LOGW("RS-485 Timeout: No response received within %d ms (Normal if no response sent from PC)", RS485_RX_TIMEOUT_MS);
         snprintf((char *)rs485_rx_buf, sizeof(rs485_rx_buf), "NO_RESPONSE_10S");
@@ -248,9 +277,9 @@ static void main_task(void *param) {
     }
 
     // -----------------------------------------------------------------
-    // STEP 3: CELLULAR NETWORK ATTACHMENT & DATA CALL
+    // STEP 4: CELLULAR NETWORK ATTACHMENT & DATA CALL
     // -----------------------------------------------------------------
-    LOGI("--- [STAGE 2/4] CELLULAR ATTACHMENT ---");
+    LOGI("--- [STAGE 3/5] CELLULAR ATTACHMENT ---");
     bool sim_ready = nwy_hal_sim_is_ready(1);
     LOGI("SIM Card Slot 1 Readiness: %s", sim_ready ? "READY" : "NOT_READY");
 
@@ -299,9 +328,9 @@ static void main_task(void *param) {
     }
 
     // -----------------------------------------------------------------
-    // STEP 4: MQTT TELEMETRY TRANSMISSION
+    // STEP 5: MQTT TELEMETRY TRANSMISSION
     // -----------------------------------------------------------------
-    LOGI("--- [STAGE 3/4] MQTT TELEMETRY STREAM ---");
+    LOGI("--- [STAGE 4/5] MQTT TELEMETRY STREAM ---");
     if (g_data_call_active && strlen(g_local_ip) > 0) {
       LOGI("Connecting to MQTT Broker (%s:%d)...", MQTT_BROKER_HOST, MQTT_BROKER_PORT);
 
@@ -309,20 +338,21 @@ static void main_task(void *param) {
         LOGI("MQTT Connected successfully!");
 
         // Sanitize RS-485 RX buffer for clean, valid RFC 8259 JSON serialization
-        for (size_t i = 0; i < strlen((char *)rs485_rx_buf); i++) {
-          if (rs485_rx_buf[i] == '\r' || rs485_rx_buf[i] == '\n') {
+        size_t rx_raw_len = strlen((char *)rs485_rx_buf);
+        for (size_t i = 0; i < rx_raw_len; i++) {
+          unsigned char c = (unsigned char)rs485_rx_buf[i];
+          if (c < 32 || c > 126) {
             rs485_rx_buf[i] = ' ';
-          } else if (rs485_rx_buf[i] == '"' || rs485_rx_buf[i] == '\\') {
+          } else if (c == '"' || c == '\\') {
             rs485_rx_buf[i] = '\'';
           }
         }
         // Trim trailing whitespace
-        size_t rx_trim_len = strlen((char *)rs485_rx_buf);
-        while (rx_trim_len > 0 && rs485_rx_buf[rx_trim_len - 1] == ' ') {
-          rs485_rx_buf[--rx_trim_len] = '\0';
+        while (rx_raw_len > 0 && rs485_rx_buf[rx_raw_len - 1] == ' ') {
+          rs485_rx_buf[--rx_raw_len] = '\0';
         }
 
-        // Construct structured JSON payload
+        // Construct structured JSON payload with ADC sensor metrics
         char json_payload[1024];
         memset(json_payload, 0, sizeof(json_payload));
         snprintf(json_payload, sizeof(json_payload),
@@ -333,10 +363,16 @@ static void main_task(void *param) {
                  "\"csq\":%d,"
                  "\"operator\":\"%s\","
                  "\"ip\":\"%s\","
+                 "\"adc1_raw_mv\":%d,"
+                 "\"adc1_vin_mv\":%d,"
+                 "\"adc0_raw_mv\":%d,"
+                 "\"adc0_current_ma\":%.2f,"
                  "\"rs485_tx\":\"%s\","
                  "\"rs485_rx\":\"%s\""
                  "}",
                  (unsigned long)cycle, vbat_mv, csq, oper_name, g_local_ip,
+                 adc_data.adc1_raw_mv, adc_data.adc1_vin_mv,
+                 adc_data.adc0_raw_mv, adc_data.adc0_current_ma,
                  rs485_tx_str, (char *)rs485_rx_buf);
 
         LOGI("Publishing JSON payload to '%s':", MQTT_PUB_TOPIC);
@@ -374,11 +410,11 @@ static void main_task(void *param) {
     }
 
     // -----------------------------------------------------------------
-    // STEP 5: LOW-POWER DEEP SLEEP (30 SECONDS)
+    // STEP 6: LOW-POWER DEEP SLEEP (30 SECONDS)
     // -----------------------------------------------------------------
     LOGI("");
     LOGI("==============================================================");
-    LOGI("--- [STAGE 4/4] ENTERING LOW-POWER DEEP SLEEP (%d SEC) ---", SLEEP_DURATION_SEC);
+    LOGI("--- [STAGE 5/5] ENTERING LOW-POWER DEEP SLEEP (%d SEC) ---", SLEEP_DURATION_SEC);
     LOGI("==============================================================");
     LOGI("Expected PPK2 Floor: ~568.69 uA (26k Pull-up verified benchmark)");
 

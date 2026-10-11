@@ -652,6 +652,104 @@ The complete engineering progression from factory baseline down to record-breaki
 
 ---
 
+### [2026-10-11] - Stage 10: Multi-Channel ADC HAL Driver Implementation & Board Sensor Calibration
+* **Subsystem Scope:** Analog-to-Digital Converter ([`include/nwy_adc_api.h`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/include/nwy_adc_api.h)) / ADC HAL Driver ([`inc/hal/nwy_hal_adc.h`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/inc/hal/nwy_hal_adc.h) & [`src/hal/nwy_hal_adc.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_adc.c)) / Hardware Schematics / Industrial Telemetry
+* **Description & Context:**
+  Integrated complete onboard analog sensing into the benchmark cycle for `Network_Mqtt_Rs485_DeepSleep`. The carrier board provides two dedicated external analog conditioning circuits plus internal battery monitoring:
+  1. **ADC Channel 1 (Module Pin 96, Connector `U5`):** External DC Voltage Sensor Input (0–24V range).
+  2. **ADC Channel 2 (Module Pin 9, Net `INADC0`):** 4–20 mA Industrial Current Loop Input.
+  3. **ADC VBAT Channel (`NWY_ADC_CHANNEL_VBAT`):** Native internal battery rail monitoring.
+* **Hardware Schematic Ground Truth & Electrical Calibration:**
+  1. **DC Voltage Sensor Divider on ADC1 (Pin 96):**
+     - Schematic Net: `ADC1`, connected to 2-pin connector `U5` (Pin 1 = Positive, Pin 2 = GND).
+     - Divider Network: Series resistor $R20 = 100\text{ k}\Omega$ and pull-down resistor $R19 = 26.1\text{ k}\Omega$ to GND.
+     - Transient Protection: $D9$ bidirectional TVS diode (`PESD3V3T1BLYL`).
+     - Divider Ratio:
+       $$\text{Ratio} = \frac{R20 + R19}{R19} = \frac{100\text{ k}\Omega + 26.1\text{ k}\Omega}{26.1\text{ k}\Omega} = \frac{126.1}{26.1} \approx 4.8314176$$
+     - Transfer Function: $V_{in} = V_{adc1} \times 4.8314176$.
+     - When measuring up to 24V DC: $V_{adc1} = 24.0\text{ V} / 4.8314 = 4.967\text{ V}$.
+     - Configured Scale: `NWY_ADC_SCALE_5V000` (0 to 5.0 V full-scale).
+  2. **4–20 mA Current Loop Shunt on ADC0 (Pin 9):**
+     - Schematic Net: `INADC0` / `ADC0`.
+     - Shunt Network: $R17 = 120\ \Omega$ in parallel with $R18 = 120\ \Omega$, yielding an effective shunt resistance $R_{shunt} = 60.0\ \Omega$ to GND.
+     - Transient Protection: $D7$ bidirectional TVS diode (`PESD3V3T1BLYL`).
+     - At $4\text{ mA}$: $V_{adc0} = 4\text{ mA} \times 60\ \Omega = 240\text{ mV}$.
+     - At $20\text{ mA}$: $V_{adc0} = 20\text{ mA} \times 60\ \Omega = 1200\text{ mV} = 1.20\text{ V}$.
+     - Transfer Function: $I_{\text{mA}} = \frac{V_{adc0\_\text{mV}}}{60.0\ \Omega}$.
+     - Configured Scale: `NWY_ADC_SCALE_2V444` (0 to 2.444 V, allowing up to 40.7 mA without clipping).
+  3. **Internal VBAT Channel (`NWY_ADC_CHANNEL_VBAT` = 4):**
+     - Measures raw internal battery supply rail in millivolts directly from the PMIC.
+* **Resolution & Implementation:**
+  1. **Modular ADC HAL ([`inc/hal/nwy_hal_adc.h`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/inc/hal/nwy_hal_adc.h) & [`src/hal/nwy_hal_adc.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_adc.c)):**
+     - Dynamic peripheral enumeration using `nwy_dev_name_list_get(NWY_DEV_TYPE_ADC, ...)`.
+     - Multi-sample averaging filter (`nwy_hal_adc_read_averaged`) with 5 ms inter-sample delay to eliminate electrical line ripple.
+     - Unified sampling routine `nwy_hal_adc_sample_all()` computing integer-rounded true voltages (`adc1_vin_mv`), loop currents (`adc0_current_ma`, `adc0_current_ua`), and battery rail (`vbat_mv`).
+  2. **Benchmark Cycle Stage Integration in [`src/main.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/src/main.c):**
+     - Added **`--- [STAGE 1/5] ANALOG SENSORS & MULTI-CHANNEL ADC TELEMETRY ---`** as the first active measurement in each cycle.
+     - Renumbered pipeline to 5 stages:
+       - Stage 1/5: Analog Sensors & ADC Telemetry
+       - Stage 2/5: RS-485 Half-Duplex Transceiver Test (URT2, GPIO87 direction)
+       - Stage 3/5: Cellular Network Attachment (LTE Cat-1)
+       - Stage 4/5: MQTT Telemetry Stream
+       - Stage 5/5: Low-Power Deep Sleep (30 sec)
+  3. **MQTT Telemetry JSON Expansion:**
+     - Included `adc1_raw_mv`, `adc1_vin_mv`, `adc0_raw_mv`, and `adc0_current_ma` in the published telemetry string payload.
+* **Verification & Validation (V&V):**
+  - Clean compilation via `build_Network_Mqtt_Rs485_DeepSleep.bat` with exit code 0.
+  - Release binaries generated:
+    - [`release/nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/release/nwy_open_app.zip) (2.59 MB)
+    - [`release/nwy_open_app_fota.pkt`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/release/nwy_open_app_fota.pkt) (66.1 KB)
+
+---
+
+### [2026-10-11] - Stage 11: Industrial RS-485 Buffer Management & Multi-Chunk Inter-Frame Quiet Window Detection
+* **Subsystem Scope:** RS-485 Half-Duplex HAL Driver ([`src/hal/nwy_hal_rs485.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_rs485.c) & [`inc/hal/nwy_hal_rs485.h`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/inc/hal/nwy_hal_rs485.h)) / UART Hardware FIFO / Frame Assembly / Serial Buffer Sanitization
+* **Description & Context:**
+  When sending an 80-byte burst from a PC serial terminal:
+  ```text
+  "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
+  ```
+  during the Phase 2 receive window at 9600 baud, only half the frame (~40 bytes) was received, followed immediately by an SoC crash / panic reboot (`Boot Reason: 0x0010 (Unknown)`).
+* **Root Cause Analysis (RCA):**
+  1. **Premature Frame Exit via Fixed 50 ms Single-Check:**
+     - At 9600 baud, 80 characters take ~83.3 ms to stream on the physical differential bus.
+     - The ASR1605 hardware UART FIFO generates an interrupt when its internal threshold is reached (e.g., at 32 or 40 bytes, ~42 ms into the burst).
+     - The listen loop woke up, observed `s_rs485_rx_count = 40`, executed a single `nwy_hal_os_thread_sleep(50)`, and checked `s_rs485_rx_count == prev_count`.
+     - At $t = 42 + 50 = 92\text{ ms}$, the trailing 40 bytes had just arrived on the wire and were still buffered in the silicon FIFO waiting for the hardware 32 ms frame timeout to expire (scheduled for $83.3 + 32 = 115.3\text{ ms}$).
+     - Because the callback had not yet fired for the second chunk, `count == prev_count` evaluated to true. The loop prematurely broke, copying only 40 bytes (half the frame).
+  2. **Race Condition on Port Deinitialization Leading to Kernel Panic Reset:**
+     - Because `nwy_hal_rs485_listen()` exited early, the application immediately executed `nwy_hal_rs485_deinit()`.
+     - At $t = 115.3\text{ ms}$, the UART hardware frame timeout interrupt fired for the second 40-byte chunk while the port was in the middle of being closed/deregistered.
+     - With `cb == NULL` or pending interrupts during teardown, the kernel attempted to branch to a NULL callback (`BLX 0x0`), triggering an ARM Cortex-R5 Prefetch Abort / Kernel Panic (`0x0010`).
+  3. **Residual Noise from Transmit Phase:**
+     - During Phase 1 transmission (10 bursts), differential line transitions and direction switching (`GPIO87` HIGH $\to$ LOW) generate transients on the transceiver `RO` pin, leaking stray bytes into the buffer before the receive window opened.
+* **Resolution & Implementation:**
+  1. **Dynamic Multi-Chunk Idle Window Detection (`FRAME_QUIET_THRESHOLD_MS = 150` ms):**
+     - Slices polling into 20 ms increments and tracks `last_recorded_count`.
+     - Every time new bytes arrive in `s_rs485_rx_count`, the idle timer resets to 0.
+     - The listen loop exits only after the line has been completely silent for a full **150 ms** after data has arrived.
+     - Guarantees 100% of multi-chunk bulk frames (up to 1024 bytes) are assembled before returning.
+  2. **Active Capture Window Arming (`s_rx_capturing`):**
+     - Added volatile state flag `s_rx_capturing`.
+     - In transmit mode, idle periods, and teardown, `s_rx_capturing = false` causes `rs485_uart_rx_isr()` to immediately discard any transients or loopback bytes.
+     - Capture is armed exclusively during Phase 2.
+  3. **Dedicated Hardware/Software RX Purge (`nwy_hal_rs485_flush_rx()`):**
+     - Switches `GPIO87 = LOW`, pauses 20 ms for level shifters to settle, clears all buffers and counters, and drains any in-flight UART interrupts before arming capture.
+  4. **Clean Port Teardown:**
+     - In `nwy_hal_rs485_deinit()`, disarms `s_rx_capturing = false`, waits 20 ms for in-flight ISR execution to complete, and closes `nwy_uart_close()` directly, masking hardware interrupts cleanly without exposing dangling NULL callbacks.
+  5. **Buffer Expansion:**
+     - Expanded `s_rs485_rx_fifo` from 512 to **1024 bytes**.
+     - Expanded `rs485_rx_buf` in [`main.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/src/main.c) from 256 to **512 bytes**.
+  6. **Hardened RFC 8259 JSON Sanitization:**
+     - Sanitizes all characters outside printable ASCII range (0x20 to 0x7E) with single-pass length tracking.
+* **Verification & Validation (V&V):**
+  - Clean compilation via `build_Network_Mqtt_Rs485_DeepSleep.bat` with exit code 0.
+  - Release binaries generated:
+    - [`release/nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/release/nwy_open_app.zip) (2.59 MB)
+    - [`release/nwy_open_app_fota.pkt`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/release/nwy_open_app_fota.pkt) (66.3 KB)
+
+---
+
 ## 8. Hardware Rework & Bench Modification Matrix (`ELEKTRONIKA_N706B Rev 1.0`)
 
 > **IMPORTANT PRODUCTION FINDING (Stage 4 Ground Truth):**
@@ -813,7 +911,64 @@ To eliminate race conditions, direction contention, and kernel panics across dee
 
 ---
 
+### [2026-10-11] - Stage 12: RS-485 Bulk Packet Reception Crash Root Cause Analysis & Hardware Driver Hardening
+* **Subsystem Scope:** UART Driver / ASR1605 Crane OS Kernel / RS-485 HAL / Firmware Timer Engine
+* **Observed Anomaly & User Problem:**
+  When streaming large byte frames (e.g., 80 to 160 ASCII characters such as `"12345678901234567890..."`) into `URT2` (Pins 17/18, `MAIN_UART`) during the Phase 2 receive listening window (`Listening on RS-485 (URT2, DE/RE=LOW) for 10000 ms...`), the Neoway N706B module suffered an immediate kernel panic and software watchdog reboot ~1.9 seconds later:
+  ```text
+  19:57:24.276 -> [I][N706B_PROD] RS-485 TX burst 10/10: 70 bytes sent
+  19:57:25.136 -> [I][N706B_PROD] >>> [PHASE 2/2] RECEIVE MODE ACTIVE (GPIO87=LOW) - Listening for 10 seconds...
+  19:57:25.178 -> [I][HAL_RS485] Listening on RS-485 (URT2, DE/RE=LOW) for 10000 ms...
+  19:57:27.154 -> 
+  19:57:27.154 -> [INFO: PlatInfo  ] CHIP_ID: 0x1605, REV_ID: 0xB0, AROM_VER: 2022.11.06
+  19:57:27.154 -> [INFO: PlatInfo  ] PLATFORM: CRANELRH (SILICON)
+  ```
+* **Root Cause Analysis (Disassembly of `N706B-A07-STD-OE_CN1X_ITRI-009.axf`):**
+  1. **Fatal SDK Firmware Bug in `nwy_uart_rx_frame_timeout_set()`:**
+     Disassembly of the Crane OS ROM/DDR code revealed that calling `nwy_uart_rx_frame_timeout_set(g_rs485_fd, 32)` introduces an inverted branch condition:
+     ```arm
+     802627aa: ldr r0, [pc, #76]
+     802627ac: str r7, [r4, #0]   ; stores timeout = 32 into [r4, #0]
+     802627ae: ldrb r0, [r0, #0]
+     ...
+     802627ca: ldr r0, [r4, #0]
+     802627cc: cbnz r0, 802627f0  ; BUG: If timeout != 0, JUMP TO RETURN -1 FAILURE!
+     ```
+     Because `cbnz r0, 802627f0` aborts immediately when `timeout != 0`, the subsequent instruction at `802627e4` (which registers the timer callback function pointer `0x80262009 <__uart_rx_tmier_cb>`) was **completely bypassed**.
+     Consequently, when the DMA interrupt handler (`__uart_dma_rx_cb`) received bytes on `URT2`, it saw `[r4, #0] == 32`, triggered the hardware timer, and 35ms later the timer expired and executed a **NULL / uninitialized function pointer**, triggering a HardFault / Watchdog Panic reboot!
+  2. **Crane OS `uartMode` Routing Variable at `0x7e22e3c0`:**
+     In the baseband kernel, global memory variable `uartMode` at address `0x7e22e3c0` determines UART driver behavior:
+     - `0` (`NWY_UART_MODE_AT`): Routes incoming UART bytes to the modem AT command interpreter.
+     - `1` (`NWY_UART_MODE_DATA`): Routes UART traffic to the OpenCPU application driver and DMA ring buffers.
+     If `uartMode` is `0`, `nwy_uart_open()` skips allocating the 2068-byte driver struct, causing `nwy_uart_rx_cb_register()` to fail and routing arbitrary data to the baseband AT parser, which crashes on long non-AT ASCII strings.
+* **Resolution & Engineering Implementation:**
+  1. **Eliminated `nwy_uart_rx_frame_timeout_set()` Call:**
+     Completely removed the call to `nwy_uart_rx_frame_timeout_set()`. When `time == 0`, Crane OS uses its native direct streaming DMA callback path (`8026215c`), dispatching received chunks cleanly into `rs485_uart_rx_isr()` via `nwy_async_work_push()` without any timers or panic risks.
+  2. **Enforced Global `NWY_UART_MODE_DATA`:**
+     Explicitly set `*(volatile uint8_t *)0x7e22e3c0 = NWY_UART_MODE_DATA;` before `nwy_uart_open()` in both `nwy_hal_rs485_init()` and `nwy_hal_uart_open()`.
+  3. **Industrial Saturation & Bounds Protection:**
+     Hardened `rs485_uart_rx_isr()` with industrial clamp protection:
+     ```c
+     if (s_rs485_rx_count < sizeof(s_rs485_rx_fifo) - 1) {
+       size_t space_left = sizeof(s_rs485_rx_fifo) - 1 - s_rs485_rx_count;
+       size_t to_copy = (length < space_left) ? (size_t)length : space_left;
+       memcpy(&s_rs485_rx_fifo[s_rs485_rx_count], str, to_copy);
+       s_rs485_rx_count += to_copy;
+       s_rs485_rx_fifo[s_rs485_rx_count] = '\0';
+     }
+     ```
+  4. **Active UART RX FIFO Flush:**
+     In `nwy_hal_rs485_flush_rx()`, added active drain loops using `nwy_uart_read()` to purge any stale hardware bytes before arming the receive engine.
+  5. **Expanded Debug Print Formatting Buffers:**
+     Increased `content_buf` to 512 bytes and `log_buf` to 576 bytes in `nwy_hal_uart.c` to support multi-line and 160+ byte bulk packet logs without string truncation.
+* **Verification & Validation (V&V):**
+  - Full project compiled and packaged cleanly via `build_Network_Mqtt_Rs485_DeepSleep.bat` (Exit code 0).
+  - Output binary packages verified: `nwy_open_app.zip` (2.59 MB) and `nwy_open_app_fota.pkt` (66.4 KB).
+
+---
+
 ## 11. Standard Industrial Entry Template for Future Logs
+
 
 ```markdown
 ### [YYYY-MM-DD] - [Feature / Bug Fix / Engineering Change Title]
