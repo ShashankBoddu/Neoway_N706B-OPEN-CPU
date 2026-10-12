@@ -1222,6 +1222,40 @@ To eliminate race conditions, direction contention, and kernel panics across dee
   - Aboot ZIP Package: `Code/GNSS_Location/release/nwy_open_app.zip` (2.6 MB)
   - FOTA PKT Package: `Code/GNSS_Location/release/nwy_open_app_fota.pkt` (66 KB)
 
+### 10.7 RS-485 Hydrostatic Level Sensor Interface (Modbus RTU over URT2) (2026-10-12)
+* **Subsystem Scope:** RS-485 Transceiver (`THVD1420DR`, `U14`), `URT2` Serial Bus, Modbus RTU Protocol, Hydrostatic Level Sensor Transducer, Baseband USB Controller Power Management.
+* **Reference CubeMX Analysis (`HydrostaticRS485_TU.pdf`):**
+  - Inspected the reference STM32 CubeMX project configuration report (`HydrostaticRS485_TU.pdf`):
+    - **`USART1` (Hydrostatic Sensor RS-485 Bus):**
+      - **Baud Rate:** **`4800`** (explicitly marked with `*` as user-configured).
+      - **Word Length:** 8 Bits, **Parity:** None, **Stop Bits:** 1 (`8-N-1`).
+      - **Hardware Pins:** `PB6` (TX), `PB7` (RX), `PA15` (`UART1_En` / RS485 Direction `DE`/`!RE`), `PA9` (`BoostSW` / Sensor Power Enable).
+    - **`USART2` (Debug Serial Console):**
+      - **Baud Rate:** `115200` (solely for debug `printf` console logging, NOT the sensor!).
+* **Implementation Details:**
+  1. **Baud Rate & Turnaround Timing:**
+     - Configured `URT2` at **4800 baud** (8-N-1).
+     - Calculated transmission duration for 8-byte Modbus RTU frame: ~16.7 ms at 4800 baud.
+     - Added 6 ms safety margin ($\approx 23\text{ ms}$) before toggling direction control pin `GPIO87` from TX (`1`) to RX (`0`).
+  2. **5-Attempt Modbus Query Retry Mechanism:**
+     - Added robust 5-attempt retry loop (`for (int attempt = 1; attempt <= 5; attempt++)`) in `nwy_hal_rs485_read_hydro_sensor()`.
+     - Flushes RX FIFO before each transmission to discard line noise.
+     - Queries Slave `0x01`, Function Code `0x03`, Register `0x0004` (Water Level).
+     - If response times out or fails CRC check, waits 500 ms before next attempt.
+     - On successful CRC and slave match, extracts water level (mm and m) and exits loop immediately.
+  3. **Dynamic USB Power Management (Active COM Ports vs. Microamp Deep Sleep):**
+     - **Active Telemetry Phases (Boot & Stages 1-4):** Firmware enforces `AT+ENPWRSAVE=0` and keeps Cortex-R5 PMU awake. USB 2.0 PHY remains active and enumerated in Windows Device Manager (COM21/COM27) during all sensor acquisitions, LTE attachments, and MQTT operations.
+     - **Deep Sleep Phase (Stage 5):** When entering deep sleep, firmware dynamically applies `AT+ENPWRSAVE=1`, powers down RF (`AT+CFUN=0`), cuts USIM LDO (`nwy_sim_power_set(0)`), isolates GPIOs (`isolate_gpios_for_sleep()`), and authorizes PMU sleep (`nwy_pm_state_set(NWY_PM_SLEEP_ENABLE)`). This turns off the USB PHY and drops sleep current down to the verified **$\sim 568\,\mu\text{A}$ microamp floor**.
+     - **Cycle Wakeup (Step 6):** Upon expiration of the 30-second timer, the CPU wakes up, re-enables PMU, re-powers USIM and RF (`AT+CFUN=1`), and issues `AT+ENPWRSAVE=0` to reactivate the USB PHY for host access during the next cycle.
+  4. **Power Rail Management (`VCC_SWout`):**
+     - External sensor is powered from `VIN` (12V) through P-MOSFET switch `Q1`, controlled by `Q3` (`GPIO00`).
+     - `GPIO00` goes HIGH at the start of sensor reading and is deasserted (`GPIO00=0`) after reading to conserve battery.
+* **Packaging & Validation:**
+  - Built cleanly with 0 errors via `build_Network_Mqtt_Rs485_DeepSleep.bat`.
+  - Generated Packages:
+    - `Code/Network_Mqtt_Rs485_DeepSleep/release/nwy_open_app.zip` (2.6 MB)
+    - `Code/Network_Mqtt_Rs485_DeepSleep/release/nwy_open_app_fota.pkt` (66 KB)
+
 ---
 
 ## 11. Standard Industrial Entry Template for Future Logs

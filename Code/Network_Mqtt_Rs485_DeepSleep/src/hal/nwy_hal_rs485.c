@@ -254,3 +254,206 @@ void nwy_hal_rs485_deinit(void) {
   LOGI("Transceiver VCC Rail (GPIO00): CUT (OFF)");
 }
 
+/* =========================================================================
+ * MODBUS RTU & HYDROSTATIC SENSOR IMPLEMENTATION
+ * ========================================================================= */
+
+uint16_t nwy_hal_modbus_calc_crc(const uint8_t *data, uint16_t len) {
+  uint16_t crc = 0xFFFF;
+  for (uint16_t pos = 0; pos < len; pos++) {
+    crc ^= (uint16_t)data[pos];
+    for (int i = 8; i != 0; i--) {
+      if ((crc & 0x0001) != 0) {
+        crc >>= 1;
+        crc ^= 0xA001;
+      } else {
+        crc >>= 1;
+      }
+    }
+  }
+  return crc;
+}
+
+ModbusStatusCode nwy_hal_modbus_send_receive(
+    uint8_t address,
+    const uint8_t *command,
+    uint8_t command_length,
+    uint8_t *response,
+    uint8_t expected_response_length,
+    uint32_t timeout_ms)
+{
+  if (g_rs485_fd < 0 || !command || command_length == 0 || !response || expected_response_length < 5) {
+    return MODBUS_STATUS_FRAME_ERROR;
+  }
+
+  uint8_t tx_frame[32] = {0};
+  tx_frame[0] = address;
+  memcpy(&tx_frame[1], command, command_length);
+
+  uint16_t tx_crc = nwy_hal_modbus_calc_crc(tx_frame, (uint16_t)(command_length + 1));
+  tx_frame[command_length + 1] = (uint8_t)(tx_crc & 0x00FF);
+  tx_frame[command_length + 2] = (uint8_t)((tx_crc >> 8) & 0x00FF);
+  uint16_t tx_length = (uint16_t)(command_length + 3);
+
+  // Hex dump of transmitted frame
+  char tx_hex[64] = {0};
+  for (uint16_t i = 0; i < tx_length && i < 16; i++) {
+    char byte_str[4];
+    snprintf(byte_str, sizeof(byte_str), "%02X ", tx_frame[i]);
+    strncat(tx_hex, byte_str, sizeof(tx_hex) - strlen(tx_hex) - 1);
+  }
+  LOGI("Modbus TX Frame (%d bytes): %s", tx_length, tx_hex);
+
+  // 1. Drain RX FIFO before transmit to eliminate line noise
+  nwy_hal_rs485_flush_rx();
+
+  // 2. Transmit mode (GPIO87 = HIGH, DE=1, /RE=1)
+  nwy_hal_rs485_tx_mode();
+  nwy_hal_os_thread_sleep(1); // Driver enable stabilization delay
+
+  // 3. Write frame to UART
+  int written = nwy_uart_write(g_rs485_fd, (const unsigned char *)tx_frame, tx_length);
+  if (written != (int)tx_length) {
+    nwy_hal_rs485_rx_mode();
+    LOGE("Modbus TX write failed: %d/%d bytes", written, tx_length);
+    return MODBUS_STATUS_NO_RESPONSE;
+  }
+
+  // 4. Wait for transmission to clear UART shift register
+  // At 4800 baud: 8 bytes = ~16.7 ms. Add 6ms margin -> ~23 ms.
+  uint32_t tx_delay_ms = ((tx_length * 10 * 1000) / g_rs485_baudrate) + 6;
+  if (tx_delay_ms < 3) tx_delay_ms = 3;
+  nwy_hal_os_thread_sleep(tx_delay_ms);
+
+  // 5. Receive mode (GPIO87 = LOW, DE=0, /RE=0) immediately
+  nwy_hal_rs485_rx_mode();
+
+  // 6. Receive response bytes via polling
+  memset(response, 0, expected_response_length);
+  size_t total_received = 0;
+  uint32_t elapsed_ms = 0;
+  const uint32_t POLL_SLICE_MS = 5;
+
+  while (elapsed_ms < timeout_ms && total_received < expected_response_length) {
+    uint8_t chunk[32];
+    memset(chunk, 0, sizeof(chunk));
+    int n = nwy_uart_read(g_rs485_fd, chunk, sizeof(chunk) - 1);
+    if (n > 0) {
+      size_t to_copy = (size_t)n;
+      if (total_received + to_copy > expected_response_length) {
+        to_copy = expected_response_length - total_received;
+      }
+      memcpy(&response[total_received], chunk, to_copy);
+      total_received += to_copy;
+    }
+    if (total_received >= expected_response_length) {
+      break;
+    }
+    nwy_hal_os_thread_sleep(POLL_SLICE_MS);
+    elapsed_ms += POLL_SLICE_MS;
+  }
+
+  if (total_received > 0) {
+    char rx_hex[64] = {0};
+    for (size_t i = 0; i < total_received && i < 16; i++) {
+      char byte_str[4];
+      snprintf(byte_str, sizeof(byte_str), "%02X ", response[i]);
+      strncat(rx_hex, byte_str, sizeof(rx_hex) - strlen(rx_hex) - 1);
+    }
+    LOGI("Modbus RX Data (%u bytes): %s", (unsigned int)total_received, rx_hex);
+  }
+
+  if (total_received < expected_response_length) {
+    LOGW("Modbus RX timeout: received %u/%u bytes in %lu ms",
+         (unsigned int)total_received, (unsigned int)expected_response_length, (unsigned long)timeout_ms);
+    return MODBUS_STATUS_NO_RESPONSE;
+  }
+
+  // 7. Verify Modbus CRC
+  uint16_t calc_crc = nwy_hal_modbus_calc_crc(response, (uint16_t)(expected_response_length - 2));
+  uint16_t rx_crc = (uint16_t)response[expected_response_length - 2] |
+                    ((uint16_t)response[expected_response_length - 1] << 8);
+
+  if (calc_crc != rx_crc) {
+    LOGE("Modbus CRC mismatch: calculated 0x%04X, received 0x%04X", calc_crc, rx_crc);
+    return MODBUS_STATUS_CRC_ERROR;
+  }
+
+  // 8. Verify slave address
+  if (response[0] != address) {
+    LOGE("Modbus address mismatch: expected 0x%02X, received 0x%02X", address, response[0]);
+    return MODBUS_STATUS_FRAME_ERROR;
+  }
+
+  return MODBUS_STATUS_OK;
+}
+
+bool nwy_hal_rs485_read_hydro_sensor(nwy_hydro_sensor_data_t *sensor_out) {
+  if (!sensor_out) return false;
+  memset(sensor_out, 0, sizeof(*sensor_out));
+  sensor_out->status = MODBUS_STATUS_NOT_READ;
+
+  LOGI("==============================================================");
+  LOGI(">>> RS-485 HYDROSTATIC LEVEL SENSOR INTERFACE (MODBUS RTU) <<<");
+  LOGI("==============================================================");
+  LOGI("1. Powering ON Sensor & RS-485 Transceiver at 4800 baud (GPIO00=1)...");
+  if (!nwy_hal_rs485_init(4800)) {
+    LOGE("Failed to initialize RS-485 interface at 4800 baud!");
+    sensor_out->status = MODBUS_STATUS_FRAME_ERROR;
+    return false;
+  }
+
+  // Industrial sensor requirement: allow internal transducer & boost power stabilization
+  LOGI("2. Waiting 3000 ms for sensor transducer & boost power stabilization...");
+  nwy_hal_os_thread_sleep(3000);
+
+  // Command to read Register 0x0004 (Water Level): Function 0x03, Reg 0x0004, Count 0x0001
+  const uint8_t modbus_cmd[5] = {0x03, 0x00, 0x04, 0x00, 0x01};
+  uint8_t rx_buf[16] = {0};
+
+  ModbusStatusCode status = MODBUS_STATUS_NO_RESPONSE;
+  const int MAX_RETRIES = 5;
+
+  for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    memset(rx_buf, 0, sizeof(rx_buf));
+    LOGI("3. Querying Hydrostatic Sensor [Attempt %d/%d]: Slave=0x01, Reg=0x0004 (4800 baud)...",
+         attempt, MAX_RETRIES);
+
+    status = nwy_hal_modbus_send_receive(
+        0x01, modbus_cmd, sizeof(modbus_cmd), rx_buf, 7, 1500);
+
+    if (status == MODBUS_STATUS_OK) {
+      if (rx_buf[1] == 0x03 && rx_buf[2] == 0x02) {
+        uint16_t raw_mm = ((uint16_t)rx_buf[3] << 8) | (uint16_t)rx_buf[4];
+        sensor_out->raw_register = raw_mm;
+        sensor_out->level_mm = (float)raw_mm;
+        sensor_out->level_m  = sensor_out->level_mm / 1000.0f;
+        sensor_out->is_valid = true;
+        sensor_out->status   = MODBUS_STATUS_OK;
+        LOGI(">>> HYDROSTATIC LEVEL SENSOR ACQUISITION SUCCESS [Attempt %d/%d]! <<<",
+             attempt, MAX_RETRIES);
+        LOGI("    Raw Register (0x0004) : 0x%04X (%u)", raw_mm, raw_mm);
+        LOGI("    Water Level (mm)      : %.1f mm", sensor_out->level_mm);
+        LOGI("    Water Level (meters)  : %.3f m", sensor_out->level_m);
+        break;
+      } else {
+        LOGW("Invalid response format [Attempt %d]: Func=0x%02X, Bytes=%u",
+             attempt, rx_buf[1], rx_buf[2]);
+        status = MODBUS_STATUS_FRAME_ERROR;
+      }
+    } else {
+      LOGW("Modbus query attempt %d/%d failed (Status: %d)", attempt, MAX_RETRIES, (int)status);
+    }
+
+    if (attempt < MAX_RETRIES) {
+      nwy_hal_os_thread_sleep(500); // 500 ms inter-retry recovery delay
+    }
+  }
+
+  // Power off sensor and transceiver immediately to conserve battery
+  LOGI("4. Powering OFF Sensor & Transceiver (GPIO00=0) to preserve battery...");
+  nwy_hal_rs485_deinit();
+
+  sensor_out->status = status;
+  return sensor_out->is_valid;
+}

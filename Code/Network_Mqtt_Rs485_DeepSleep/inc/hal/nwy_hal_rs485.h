@@ -69,4 +69,70 @@ void nwy_hal_rs485_flush_rx(void);
  */
 void nwy_hal_rs485_deinit(void);
 
+/* =========================================================================
+ * MODBUS RTU & HYDROSTATIC LEVEL SENSOR INTERFACE
+ * ========================================================================= */
+
+typedef enum {
+  MODBUS_STATUS_NOT_READ      = 0U,
+  MODBUS_STATUS_OK            = 1U,
+  MODBUS_STATUS_NO_RESPONSE   = 2U,
+  MODBUS_STATUS_CRC_ERROR     = 3U,
+  MODBUS_STATUS_FRAME_ERROR   = 4U,
+  MODBUS_STATUS_INVALID_VALUE = 5U
+} ModbusStatusCode;
+
+typedef struct {
+  bool             is_valid;       /* True if level measurement was successfully parsed */
+  float            level_mm;       /* Water level in millimeters (mm) */
+  float            level_m;        /* Water level in meters (m) */
+  uint16_t         raw_register;   /* Raw 16-bit register value read from sensor */
+  ModbusStatusCode status;         /* Modbus transaction status code */
+} nwy_hydro_sensor_data_t;
+
+/**
+ * @brief Calculate Modbus RTU 16-bit CRC (Polynomial: 0xA001, Init: 0xFFFF)
+ * @param data Pointer to input data buffer
+ * @param len Length of data in bytes
+ * @return uint16_t Computed CRC-16
+ */
+uint16_t nwy_hal_modbus_calc_crc(const uint8_t *data, uint16_t len);
+
+/**
+ * @brief Execute a half-duplex Modbus RTU send/receive transaction over RS-485.
+ *
+ * Automatically wraps command in slave address and CRC16, asserts TX mode (DE=1),
+ * transmits frame, automatically reverts to RX mode (DE=0), and validates response CRC.
+ *
+ * @param address Modbus slave device address (e.g. 0x01)
+ * @param command Pointer to PDU command bytes (e.g. {0x03, 0x00, 0x04, 0x00, 0x01})
+ * @param command_length Length of command bytes
+ * @param response Buffer to store received raw response
+ * @param expected_response_length Expected total response length (including addr and CRC)
+ * @param timeout_ms Maximum time in milliseconds to wait for full response
+ * @return ModbusStatusCode Result of the transaction
+ */
+ModbusStatusCode nwy_hal_modbus_send_receive(
+    uint8_t address,
+    const uint8_t *command,
+    uint8_t command_length,
+    uint8_t *response,
+    uint8_t expected_response_length,
+    uint32_t timeout_ms);
+
+/**
+ * @brief Power on, stabilize, read, and power off the RS-485 Hydrostatic Level Sensor.
+ *
+ * Follows exact industrial procedure:
+ * 1. Enables VCC_SWout switched rail (GPIO00=1) to power transducer and transceiver at 4800 baud.
+ * 2. Waits 3000 ms for analog transducer oscillator stabilization.
+ * 3. Transmits Modbus RTU Read Holding Register (Addr 0x01, Func 0x03, Reg 0x0004, Count 0x0001).
+ * 4. Parses level data in millimeters and converts to meters.
+ * 5. Immediately cuts power to transceiver and sensor (GPIO00=0) to preserve battery.
+ *
+ * @param sensor_out Pointer to output structure receiving parsed water level and status
+ * @return bool true if valid level reading was obtained, false otherwise
+ */
+bool nwy_hal_rs485_read_hydro_sensor(nwy_hydro_sensor_data_t *sensor_out);
+
 #endif /* __NWY_HAL_RS485_H__ */

@@ -30,9 +30,10 @@
 #define DEBUG_UART_PORT "URT1"
 #define DEBUG_UART_BAUD 115200
 
-#define RS485_TEST_BAUD 9600
-#define RS485_RX_TIMEOUT_MS 10000
+#define RS485_HYDRO_BAUD 4800
 #define SLEEP_DURATION_SEC 30
+/* Dynamic USB: USB is kept active during application run (Stages 1-4)
+ * and deactivated during deep sleep (Stage 5) to achieve ~568 uA microamp sleep floor */
 
 #define MQTT_BROKER_HOST "mqtt.fervidlabs.in"
 #define MQTT_BROKER_PORT 1883
@@ -101,7 +102,7 @@ static void on_mqtt_message_rx(const char *topic, const uint8_t *payload,
   LOGI("MQTT Inbound RX [%s]: %.*s", topic, (int)len, (const char *)payload);
 }
 
-static void isolate_gpios_for_sleep(void) {
+__attribute__((unused)) static void isolate_gpios_for_sleep(void) {
   // 1. Cut Peripheral Master Power (GPIO0 = LOW)
   // Cuts Buck output to peripheral VBAT & THVD1420DR VCC (0.32V)
   // Cuts Vin from external sensor rail VCC_SWout (0.00V)
@@ -136,7 +137,7 @@ static void print_banner(void) {
   printf("  Boot Reason: 0x%04X (%s)\r\n", raw_boot, nwy_hal_pm_get_boot_reason_str());
   printf("  Direct VBAT: %d mV\r\n", vbat_mv);
   printf("  ADC Channels: ADC1 (Pin 96, U5 Voltage Div 4.83x) | ADC0 (Pin 9, 60R 4-20mA Loop)\r\n");
-  printf("  RS-485 Port: URT2 (MAIN_UART, Pins 17/18) @ %d baud | Direction Pin: GPIO87\r\n", RS485_TEST_BAUD);
+  printf("  RS-485 Sensor: Hydrostatic Level (Modbus RTU) @ %d baud | Dir: GPIO87\r\n", RS485_HYDRO_BAUD);
   printf("  MQTT Broker: %s:%d (Topic: %s)\r\n", MQTT_BROKER_HOST, MQTT_BROKER_PORT, MQTT_PUB_TOPIC);
   printf("  Sleep Duration: %d seconds per cycle\r\n", SLEEP_DURATION_SEC);
   printf("====================================================================\r\n\r\n");
@@ -170,21 +171,11 @@ static void main_task(void *param) {
   // Inspect registered ADC devices in firmware
   nwy_hal_adc_init();
 
-  // Set modem sleep policy: AT+ENPWRSAVE=1
+  // Active Stage: Keep USB Ports (COM21/COM27) alive during application runtime
+  LOGI("Active Phase Init: Enabling USB Ports (COM21/COM27) (AT+ENPWRSAVE=0)...");
   char at_resp[64];
-  bool enpwr_configured = false;
-  for (int retry = 0; retry < 3; retry++) {
-    memset(at_resp, 0, sizeof(at_resp));
-    if (send_virt_at_cmd("AT+ENPWRSAVE=1", at_resp, sizeof(at_resp))) {
-      LOGI("Baseband sleep policy configured: AT+ENPWRSAVE=1 (Attempt %d)", retry + 1);
-      enpwr_configured = true;
-      break;
-    }
-    nwy_hal_os_thread_sleep(500);
-  }
-  if (!enpwr_configured) {
-    LOGW("Initial AT+ENPWRSAVE=1 attempt busy; policy will be enforced prior to sleep.");
-  }
+  memset(at_resp, 0, sizeof(at_resp));
+  send_virt_at_cmd("AT+ENPWRSAVE=0", at_resp, sizeof(at_resp));
 
   uint32_t cycle = 1;
 
@@ -230,57 +221,37 @@ static void main_task(void *param) {
     }
 
     // -----------------------------------------------------------------
-    // STAGE 2/5: RS-485 TRANSCEIVER TEST (Half-Duplex URT2 / MAIN_UART)
+    // STAGE 2/5: RS-485 HYDROSTATIC LEVEL SENSOR ACQUISITION (MODBUS RTU)
     // -----------------------------------------------------------------
-    LOGI("--- [STAGE 2/5] RS-485 HALF-DUPLEX COMMUNICATION TEST ---");
+    LOGI("");
     LOGI("==================================================================");
-    LOGI(">> HALF-DUPLEX TIMING SEQUENCE: TX for 10s -> RX for 10s <<");
-    LOGI("   Port: URT2 (MAIN_UART, Pins 17/18) @ %d baud, 8-N-1", RS485_TEST_BAUD);
-    LOGI("   Direction Control: GPIO87 (HIGH=Transmit, LOW=Receive)");
-    LOGI("   Transceiver Power: GPIO00 (Master Peripheral Switch)");
+    LOGI("--- [STAGE 2/5] RS-485 HYDROSTATIC LEVEL SENSOR (MODBUS RTU) ---");
+    LOGI("   Port: URT2 @ %d Baud, 8-N-1 | Slave: 0x01 | Reg: 0x0004", RS485_HYDRO_BAUD);
+    LOGI("   Power Rail: GPIO00 (Master Switched Rail) | Direction: GPIO87");
     LOGI("==================================================================");
 
-    char rs485_tx_str[80];
-    uint8_t rs485_rx_buf[512];
-    int rx_bytes = 0;
-    memset(rs485_tx_str, 0, sizeof(rs485_tx_str));
-    memset(rs485_rx_buf, 0, sizeof(rs485_rx_buf));
+    nwy_hydro_sensor_data_t hydro_data;
+    memset(&hydro_data, 0, sizeof(hydro_data));
 
-    snprintf(rs485_tx_str, sizeof(rs485_tx_str), "N706B_RS485_CYCLE_%lu_TEST", (unsigned long)cycle);
+    bool hydro_ok = nwy_hal_rs485_read_hydro_sensor(&hydro_data);
 
-    if (nwy_hal_rs485_init(RS485_TEST_BAUD)) {
-      // 1. TRANSMIT PHASE (10 seconds: 10 bursts spaced 1 second apart)
-      LOGI(">>> [PHASE 1/2] TRANSMIT MODE ACTIVE (GPIO87=HIGH) - Sending 10 bursts over 10 seconds...");
-      for (int burst = 1; burst <= 10; burst++) {
-        char burst_packet[128];
-        snprintf(burst_packet, sizeof(burst_packet),
-                 "[N706B_RS485_TX_%02d/10] HELLO FROM URT2! CYCLE=%lu BURST=%02d VBAT=%dmV\r\n",
-                 burst, (unsigned long)cycle, burst, vbat_mv);
-        int written = nwy_hal_rs485_send((const uint8_t *)burst_packet, strlen(burst_packet));
-        LOGI("RS-485 TX burst %02d/10: %d bytes sent", burst, written);
-        nwy_hal_os_thread_sleep(900); // ~1.0 second per burst
-      }
+    const char *modbus_status_str = "NOT_READ";
+    switch (hydro_data.status) {
+      case MODBUS_STATUS_OK:            modbus_status_str = "OK"; break;
+      case MODBUS_STATUS_NO_RESPONSE:   modbus_status_str = "NO_RESPONSE"; break;
+      case MODBUS_STATUS_CRC_ERROR:     modbus_status_str = "CRC_ERROR"; break;
+      case MODBUS_STATUS_FRAME_ERROR:   modbus_status_str = "FRAME_ERROR"; break;
+      case MODBUS_STATUS_INVALID_VALUE: modbus_status_str = "INVALID_VALUE"; break;
+      default:                          modbus_status_str = "NOT_READ"; break;
+    }
 
-      // 2. RECEIVE PHASE (10 seconds: DE/RE=LOW, polling mode)
-      LOGI(">>> [PHASE 2/2] RECEIVE MODE ACTIVE (GPIO87=LOW) - Listening for 10 seconds...");
-      rx_bytes = nwy_hal_rs485_listen(rs485_rx_buf, sizeof(rs485_rx_buf), RS485_RX_TIMEOUT_MS);
-      if (rx_bytes > 0) {
-        LOGI("RS-485 Bus Verified! Received %d bytes", rx_bytes);
-        char rx_preview[84];
-        int preview_len = (rx_bytes > 80) ? 80 : rx_bytes;
-        memcpy(rx_preview, rs485_rx_buf, preview_len);
-        rx_preview[preview_len] = '\0';
-        LOGI("RS-485 RX Preview (%d bytes): \"%s%s\"",
-             rx_bytes, rx_preview, (rx_bytes > 80) ? "..." : "");
-      } else {
-        LOGW("RS-485 Timeout: No response received within %d ms (Normal if no response sent from PC)", RS485_RX_TIMEOUT_MS);
-        snprintf((char *)rs485_rx_buf, sizeof(rs485_rx_buf), "NO_RESPONSE_10S");
-      }
-
-      nwy_hal_rs485_deinit();
+    if (hydro_ok && hydro_data.is_valid) {
+      LOGI(">>> SENSOR DATA ACQUIRED SUCCESSFULLY <<<");
+      LOGI("    Water Level : %.1f mm (%.3f m)", hydro_data.level_mm, hydro_data.level_m);
+      LOGI("    Raw Reg Val : 0x%04X (%u)", hydro_data.raw_register, hydro_data.raw_register);
+      LOGI("    Status      : %s", modbus_status_str);
     } else {
-      LOGE("Failed to initialize RS-485 transceiver on URT2!");
-      snprintf((char *)rs485_rx_buf, sizeof(rs485_rx_buf), "INIT_FAILED");
+      LOGW(">>> Hydrostatic sensor read failed: Status=%s <<<", modbus_status_str);
     }
 
     // -----------------------------------------------------------------
@@ -344,26 +315,7 @@ static void main_task(void *param) {
       if (nwy_hal_mqtt_init(1, MQTT_BROKER_HOST, MQTT_BROKER_PORT, MQTT_USER, MQTT_PASS, on_mqtt_message_rx)) {
         LOGI("MQTT Connected successfully!");
 
-        // Sanitize RS-485 RX buffer for clean, valid RFC 8259 JSON serialization
-        size_t rx_raw_len = (rx_bytes > 0) ? (size_t)rx_bytes : strlen((char *)rs485_rx_buf);
-        if (rx_raw_len >= sizeof(rs485_rx_buf)) {
-          rx_raw_len = sizeof(rs485_rx_buf) - 1;
-        }
-        for (size_t i = 0; i < rx_raw_len; i++) {
-          unsigned char c = (unsigned char)rs485_rx_buf[i];
-          if (c < 32 || c > 126) {
-            rs485_rx_buf[i] = ' ';
-          } else if (c == '"' || c == '\\') {
-            rs485_rx_buf[i] = '\'';
-          }
-        }
-        rs485_rx_buf[rx_raw_len] = '\0';
-        // Trim trailing whitespace
-        while (rx_raw_len > 0 && rs485_rx_buf[rx_raw_len - 1] == ' ') {
-          rs485_rx_buf[--rx_raw_len] = '\0';
-        }
-
-        // Construct structured JSON payload with ADC sensor metrics
+        // Construct structured JSON payload with ADC & Hydrostatic sensor metrics
         char json_payload[1024];
         memset(json_payload, 0, sizeof(json_payload));
         snprintf(json_payload, sizeof(json_payload),
@@ -378,13 +330,16 @@ static void main_task(void *param) {
                  "\"adc1_vin_mv\":%d,"
                  "\"adc0_raw_mv\":%d,"
                  "\"adc0_current_ma\":%.2f,"
-                 "\"rs485_tx\":\"%s\","
-                 "\"rs485_rx\":\"%s\""
+                 "\"water_level_mm\":%.1f,"
+                 "\"water_level_m\":%.3f,"
+                 "\"raw_register\":%u,"
+                 "\"modbus_status\":\"%s\""
                  "}",
                  (unsigned long)cycle, vbat_mv, csq, oper_name, g_local_ip,
                  adc_data.adc1_raw_mv, adc_data.adc1_vin_mv,
                  adc_data.adc0_raw_mv, adc_data.adc0_current_ma,
-                 rs485_tx_str, (char *)rs485_rx_buf);
+                 hydro_data.level_mm, hydro_data.level_m,
+                 hydro_data.raw_register, modbus_status_str);
 
         LOGI("Publishing JSON payload to '%s' (%u bytes)...", MQTT_PUB_TOPIC, (unsigned int)strlen(json_payload));
 
@@ -428,8 +383,8 @@ static void main_task(void *param) {
     LOGI("==============================================================");
     LOGI("Expected PPK2 Floor: ~568.69 uA (26k Pull-up verified benchmark)");
 
-    // 1. Confirm Baseband CP 32kHz clock-gating policy (done while AT engine & SIM are active)
-    LOGI("1. Enforcing baseband power save: AT+ENPWRSAVE=1...");
+    // 1. Deactivate USB PHY & enable baseband 32kHz clock-gating policy to allow microamp floor
+    LOGI("1. Deactivating USB PHY & baseband sleep policy: AT+ENPWRSAVE=1...");
     memset(at_resp, 0, sizeof(at_resp));
     send_virt_at_cmd("AT+ENPWRSAVE=1", at_resp, sizeof(at_resp));
     nwy_hal_os_thread_sleep(200);
@@ -438,7 +393,6 @@ static void main_task(void *param) {
     LOGI("2. Shutting down RF synthesizers: AT+CFUN=0...");
     memset(at_resp, 0, sizeof(at_resp));
     send_virt_at_cmd("AT+CFUN=0", at_resp, sizeof(at_resp));
-    // Allow RF synthesizers and baseband protocol stack to reach idle standby cleanly
     nwy_hal_os_thread_sleep(1500);
 
     // 3. Shut off SIM Card LDO power (done LAST among modem ops so detach is completely done)
@@ -456,7 +410,7 @@ static void main_task(void *param) {
 
     LOGI("6. Closing UART1 debug logging port...");
     LOGI("--------------------------------------------------------------");
-    LOGI("OBSERVE PPK2 CURRENT PROFILE NOW (30-second sleep window)");
+    LOGI("OBSERVE PPK2 CURRENT PROFILE NOW (30-second microamp sleep window)");
     LOGI("--------------------------------------------------------------");
     nwy_hal_os_thread_sleep(200);
 
@@ -469,9 +423,7 @@ static void main_task(void *param) {
     // Enter deep sleep for 30 seconds
     nwy_hal_os_thread_sleep(SLEEP_DURATION_SEC * 1000);
 
-    // -----------------------------------------------------------------
     // STEP 6: WAKEUP & RESTORATION
-    // -----------------------------------------------------------------
     nwy_pm_state_set(NWY_PM_SLEEP_DISABLE);
 
     g_dbg_uart_fd = nwy_hal_uart_open(DEBUG_UART_PORT, DEBUG_UART_BAUD);
@@ -484,19 +436,20 @@ static void main_task(void *param) {
     LOGI(">>> CYCLE %lu COMPLETE - CPU WAKEUP RESUMED! <<<", (unsigned long)cycle);
     LOGI("==============================================================");
 
-    // Restore peripheral master power, USIM LDO, and RF synthesizers
-    LOGI("Restoring peripheral power, USIM LDO, and RF (AT+CFUN=1)...");
+    LOGI("Restoring peripheral power, USIM LDO, RF, and USB PHY...");
     restore_gpios_after_sleep();
-
-    // Power up USIM LDO and wait for SIM ATR (Answer-to-Reset) before sending AT+CFUN=1
     nwy_sim_power_set(NWY_SIM_ID_SLOT_1, 1);
     nwy_hal_os_thread_sleep(1000);
 
     memset(at_resp, 0, sizeof(at_resp));
     send_virt_at_cmd("AT+CFUN=1", at_resp, sizeof(at_resp));
-
-    // Recovery stabilization
     nwy_hal_os_thread_sleep(2000);
+
+    // Re-activate USB controller and PHY for active communication during Cycle N+1
+    LOGI("Re-activating USB PHY for active telemetry stage: AT+ENPWRSAVE=0...");
+    memset(at_resp, 0, sizeof(at_resp));
+    send_virt_at_cmd("AT+ENPWRSAVE=0", at_resp, sizeof(at_resp));
+    nwy_hal_os_thread_sleep(500);
 
     cycle++;
   }
