@@ -89,11 +89,14 @@ void i2c_bus_unlock(void)
  * ========================================================================= */
 static inline void bb_delay(void)
 {
-    /* At 400 kHz, half-cycle is ~1.25 µs; at 100 kHz, ~5 µs */
-    if (s_cfg.speed_hz <= 100000) {
-        nwy_thread_usleep(5);
-    } else {
-        nwy_thread_usleep(2);
+    /* Tight CPU assembly cycle loop for microsecond timing without RTOS context switch.
+     * On Cortex-R5 running at ~300-600 MHz:
+     * - 150 iterations gives ~1.25 µs half-cycle (400 kHz Fast Mode)
+     * - 600 iterations gives ~5.0 µs half-cycle (100 kHz Standard Mode)
+     */
+    volatile uint32_t count = (s_cfg.speed_hz <= 100000) ? 600 : 150;
+    while (count--) {
+        __asm__ volatile("nop");
     }
 }
 

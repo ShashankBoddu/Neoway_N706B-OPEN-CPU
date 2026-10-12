@@ -1,6 +1,6 @@
 # ninja log v5
-11	158	8134970600472701	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/main.obj	b1ea9a3469fe6655
-0	179	8134970600678384	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/eeprom_24cxx.obj	ff23e42e81b133a4
-6	221	8134970601111419	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/i2c_bus.obj	8c2303dc416df0d1
-221	481	8134970603322107	bin/nwy_open_app.elf	486081d91fb25dfe
-221	481	8134970603322107	bin/nwy_open_app.bin	486081d91fb25dfe
+12	159	8134981143960932	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/main.obj	b1ea9a3469fe6655
+6	166	8134981144040910	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/eeprom_24cxx.obj	ff23e42e81b133a4
+0	199	8134981144362237	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/i2c_bus.obj	8c2303dc416df0d1
+199	421	8134981146139557	bin/nwy_open_app.elf	486081d91fb25dfe
+199	421	8134981146139557	bin/nwy_open_app.bin	486081d91fb25dfe
