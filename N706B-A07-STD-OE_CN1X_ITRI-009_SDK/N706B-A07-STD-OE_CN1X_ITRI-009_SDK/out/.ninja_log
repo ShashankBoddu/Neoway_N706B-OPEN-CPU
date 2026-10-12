@@ -1,6 +1,7 @@
 # ninja log v5
-12	159	8134981143960932	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/main.obj	b1ea9a3469fe6655
-6	166	8134981144040910	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/eeprom_24cxx.obj	ff23e42e81b133a4
-0	199	8134981144362237	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/i2c_bus.obj	8c2303dc416df0d1
-199	421	8134981146139557	bin/nwy_open_app.elf	486081d91fb25dfe
-199	421	8134981146139557	bin/nwy_open_app.bin	486081d91fb25dfe
+13	189	8135126123822731	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/GNSS_Location/src/main.obj	36b155a865cf615
+1	198	8135126123835102	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/GNSS_Location/src/eeprom_24cxx.obj	dd203d4cd20bcbac
+7	268	8135126124614804	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/GNSS_Location/src/gnss_mgr.obj	58ec8d62f48e309b
+20	279	8135126124743835	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/GNSS_Location/src/i2c_bus.obj	bcd937695aaec442
+280	578	8135126127270626	bin/nwy_open_app.elf	e2963fea62dc0e8f
+280	578	8135126127270626	bin/nwy_open_app.bin	e2963fea62dc0e8f
