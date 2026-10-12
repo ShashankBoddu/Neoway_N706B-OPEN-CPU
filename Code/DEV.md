@@ -1010,6 +1010,69 @@ To eliminate race conditions, direction contention, and kernel panics across dee
   - Built cleanly using `build_Network_Mqtt_Rs485_DeepSleep.bat` (Exit code 0).
   - Target packages generated: `nwy_open_app.zip` and `nwy_open_app_fota.pkt`.
 
+### [2026-10-11] - Industrial SD Card SPI & FatFs Storage Engine Implementation (ESP32 Gateway Parity)
+* **Subsystem Scope:** SD Card SPI Hardware Driver, Level Shifter (U6 `74AVC4T774`), Chan's FatFs (R0.12c), High-Level Storage Manager (`nwy_sd_card`), Standalone Build Pipeline
+* **Description & Context:**
+  Implemented a dedicated, production-grade microSD storage system over SPI (`SPI1` / `SSP0`) for the Neoway N706B Cat-1 OpenCPU module in a new standalone project folder: `Code/SD_Card_Storage`. Designed with full architectural and behavioral parity to the reference ESP32 Gateway storage subsystem (`FLoRa_1ch_LTE_GW/ESP_code/main/storage/sd_card.h`).
+* **Hardware Interconnect & Level Shifting:**
+  - N706B IO runs at 1.8V (`VDD_EXT`), microSD socket runs at 3.3V/VBAT through Level Shifter U6 (`74AVC4T774GUX`):
+    - Pin 83 (`GPIO_00` / GPIO 0) -> Q10 Gate/Drain Power Switch -> MicroSD VCC rail (3.3V)
+    - Pin 79 (`SSP0_FRM` / GPIO 34) -> A1 -> B1 (`VBATSPI_CS`) -> SD Pin 1 (CS)
+    - Pin 101 (`SSP0_SCLK`) -> A2 -> B2 (`VBATSPI_CLK`) -> SD Pin 5 (CLK)
+    - Pin 100 (`SSP0_TXD`) -> A3 -> B3 (`VBATSPI_MOSI`) -> SD Pin 2 (MOSI)
+    - Pin 108 (`SSP0_RXD`) <- A4 <- B4 (`VBATSPI_MISO`) <- SD Pin 7 (MISO)
+  - Dedicated GPIO 34 software Chip Select control guarantees SD SPI transaction framing across command, response, and multi-sector token phases.
+  - GPIO 0 controls power to the SD card VCC via Q10 MOSFET; asserted HIGH before SPI communication.
+* **Engineering Architecture:**
+  1. **Low-Level Protocol Engine (`sd_spi.c` / `sd_spi.h`):**
+     - Low-speed initialization (400 kHz) executing CMD0 -> CMD8 -> ACMD41 loop -> CMD58 OCR.
+     - Automatically switches SPI clock to 12 MHz for operational read/write.
+     - Automatically detects SDHC/SDXC (Block Addressing) vs SDSC (Byte Addressing).
+     - Full CID/CSD metadata parser (product name, serial number, manufacture date, physical capacity).
+     - 16-byte aligned DMA bounce buffers (`__attribute__((aligned(16)))`) ensuring zero Crane ASR1605 DMA cache faults.
+  2. **Filesystem Integration (`ff.c` / `diskio.c` / `ffconf.h`):**
+     - Integrated Chan's FatFs (R0.12c) configured for FAT16/FAT32, 512-byte sectors, safe file locks (`_FS_LOCK = 5`), and auto-formatting (`f_mkfs`).
+  3. **High-Level Storage Manager (`nwy_sd_card.c` / `nwy_sd_card.h`):**
+     - FreeRTOS recursive mutex protection (`nwy_sdcard_lock` / `nwy_sdcard_unlock`).
+     - Functions matching ESP32 storage class: `exists`, `create_dir`, `remove_dir`, `remove_dir_recursive`, `delete_file`, `read_file`, `write_file`, `append_file`, `get_total_space`, `get_free_space`.
+     - Automatically creates and verifies default directory tree (`/unpublish`, `/unpublish/data`, `/TC_config`, `/TU_config`, `/tu_cache`, `/bin`, `/bin/tc`, `/bin/tu`, `/unpublish/head.txt`, `/unpublish/tail.txt`).
+  4. **Boot Verification Suite (`main.c`):**
+     - 6-Phase verification on boot: Card ID -> Directory Parity -> Write/Read Checksum -> Telemetry Append Stream -> 32 KB Throughput Benchmark -> Re-entrant Mutex test.
+* **Verification & Validation (V&V):**
+  - Compiled and linked with SDK GNU ARM Toolchain (`build_SD_Card_Storage.bat`).
+  - Generated release packages in `Code/SD_Card_Storage/release/`:
+    - `nwy_open_app.zip` (2.6 MB Aboot package)
+    - `nwy_open_app_fota.pkt` (69 KB FOTA package)
+
+### [2026-10-12] - Industrial I2C EEPROM Storage Subsystem (Puya P24C128D-SSH-MIR)
+* **Subsystem Scope:** I2C Hardware & Software Bit-Bang Driver (`i2c_bus`), 9-Clock Bus Lockup Recovery, Puya P24C128D EEPROM Core (`eeprom_24cxx`), Automatic 64-byte Page Boundary Chunking, Acknowledge Polling, CRC-32 Structured Record Storage, Standalone Build Pipeline (`Code/EEPROM_I2C_Storage`).
+* **Hardware Interconnect & Electrical Parameters:**
+  - **EEPROM Model:** Puya Semiconductor `P24C128D-SSH-MIR` (128 Kbit / 16 KByte I2C EEPROM).
+  - **Power Domain:** `VDD_EXT` (1.8V Direct Domain).
+  - **Pin 67 (`I2C2_SCL` / GPIO 10):** SCL Clock (Pin 6 of U7) with R25 4.7kΩ pull-up to `VDD_EXT`.
+  - **Pin 66 (`I2C2_SDA` / GPIO 11):** SDA Bi-directional Data (Pin 5 of U7) with R26 4.7kΩ pull-up to `VDD_EXT`.
+  - **Address Pins:** `E0`, `E1`, `E2` connected directly to GND -> 7-bit Slave Address: `0x50` (Write: `0xA0`, Read: `0xA1`).
+  - **Write Control (`WCB` / Pin 7):** Floating (internal pull-down to GND enables writes).
+  - **Operating Frequency:** 400 kHz Fast Mode.
+* **Engineering Architecture & Reliability Safeguards:**
+  1. **9-Clock Bus Unstick Recovery (`i2c_bus_recover`):**
+     - Automatically verifies `SDA` line state before controller handoff. If a previous brownout left an I2C slave holding `SDA` low, clocks up to 9 cycles on SCL until `SDA` goes high, followed by a clean STOP condition.
+  2. **Dual-Engine Execution (Hardware I2C2 + Jitter-Free Soft Bit-Bang Fallback):**
+     - Integrates native Crane ASR1605 `I2C2` hardware controller with seamless fallback to deterministic software bit-bang on GPIO 10 / GPIO 11.
+  3. **Automatic 64-Byte Page-Boundary Chunking:**
+     - Mathematical boundary calculations prevent internal address roll-over corruption during multi-byte and multi-page writes.
+  4. **Non-Blocking Acknowledge Polling (ACK Polling):**
+     - Replaces blind 5ms blocking delays with immediate address polling, advancing as soon as the internal physical flash/EEPROM write cycle completes ($t_{WR} \le 5\text{ ms}$).
+  5. **Structured Config Records with IEEE 802.3 CRC-32:**
+     - Provides crash-proof configuration storage with self-validating magic and CRC-32 checksums.
+  6. **P24C128D Factory 128-bit Serial Number & ID Page Reader:**
+     - Reads the unique factory-burned 16-byte identifier at security address `0x58`.
+* **Verification & Validation (V&V):**
+  - Compiled and linked with SDK GNU ARM Toolchain (`build_EEPROM_I2C.bat`) with Exit Code 0.
+  - Generated release packages in `Code/EEPROM_I2C_Storage/release/`:
+    - `nwy_open_app.zip` (2.6 MB Aboot package)
+    - `nwy_open_app_fota.pkt` (63 KB FOTA package)
+
 ---
 
 ## 11. Standard Industrial Entry Template for Future Logs

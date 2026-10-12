@@ -1,17 +1,6 @@
 # ninja log v5
-10	290	8134385324816563	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_gpio.obj	92c469b4fa4e2063
-1	316	8134385325012355	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_adc.obj	da9ca794829516f1
-38	435	8134385326359292	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_os.obj	d57cc065ddb1c69d
-64	445	8134385326409517	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_pm.obj	4a0ce265c72c4aed
-28	471	8134385326698615	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_mqtt.obj	5239a8e91d2a73ca
-75	477	8134385326870194	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_rs485.obj	b6b3638dc97d4d5e
-49	483	8134385326888387	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_sim.obj	488ebecbc049ad70
-19	484	8134385326877803	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_net.obj	f7e0c72c4f5351a9
-103	513	8134385327270346	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_sntp.obj	fb4f4df3c2e07350
-160	527	8134385327365541	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_ssl.obj	fe2dfec8409b3e95
-113	528	8134385327405550	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_sms.obj	ce14777f1d37f6a5
-140	536	8134385327553765	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_uart.obj	b66198abcbd4922a
-129	546	8134385327687748	CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/Network_Mqtt_Rs485_DeepSleep/src/hal/nwy_hal_socket.obj	9605d01f9c789d16
-209	706	8134385329307292	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/Network_Mqtt_Rs485_DeepSleep/src/main.obj	f96c64ef942aa6b8
-707	1125	8134385332627665	bin/nwy_open_app.elf	e1bffab2a74508a9
-707	1125	8134385332627665	bin/nwy_open_app.bin	e1bffab2a74508a9
+11	158	8134970600472701	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/main.obj	b1ea9a3469fe6655
+0	179	8134970600678384	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/eeprom_24cxx.obj	ff23e42e81b133a4
+6	221	8134970601111419	CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/EEPROM_I2C_Storage/src/i2c_bus.obj	8c2303dc416df0d1
+221	481	8134970603322107	bin/nwy_open_app.elf	486081d91fb25dfe
+221	481	8134970603322107	bin/nwy_open_app.bin	486081d91fb25dfe
