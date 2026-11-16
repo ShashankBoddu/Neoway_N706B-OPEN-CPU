@@ -22,6 +22,12 @@ static FIL                 s_csv_file;
 static bool                s_file_is_open = false;
 static nwy_osi_mutex_t     s_collector_mutex = NULL;
 
+static char                s_alert_phone[32] = DEFAULT_ALERT_PHONE;
+static bool                s_boot_alert_sent = false;
+static bool                s_alert_sensor_error_sent = false;
+static bool                s_alert_sd_error_sent = false;
+static bool                s_alert_sd_low_sent = false;
+
 /* -------------------------------------------------------------------------
  * HELPER STRING UTILITIES
  * ------------------------------------------------------------------------- */
@@ -62,6 +68,58 @@ static void sanitize_label(char *dest, const char *src, size_t max_len)
         strncpy(dest, "UNSPECIFIED", max_len - 1);
         dest[max_len - 1] = '\0';
     }
+}
+
+/* -------------------------------------------------------------------------
+ * PROACTIVE ALERT SMS DISPATCHER (LATCHED - SENT ONCE PER EVENT)
+ * ------------------------------------------------------------------------- */
+void data_collector_set_alert_phone(const char *phone)
+{
+    if (!phone) return;
+    strncpy(s_alert_phone, phone, sizeof(s_alert_phone) - 1);
+    s_alert_phone[sizeof(s_alert_phone) - 1] = '\0';
+    trim_whitespace(s_alert_phone);
+    nwy_hal_uart_printf(1, LOG_TAG "Alert recipient phone updated to: %s\r\n", s_alert_phone);
+}
+
+const char *data_collector_get_alert_phone(void)
+{
+    return s_alert_phone;
+}
+
+void data_collector_send_alert(const char *alert_msg)
+{
+    if (!alert_msg || alert_msg[0] == '\0') return;
+    if (s_alert_phone[0] == '\0') return;
+
+    nwy_hal_uart_printf(1, LOG_TAG "DISPATCHING ALERT SMS to %s: \"%s\"\r\n", s_alert_phone, alert_msg);
+    bool sent = nwy_hal_sms_send(1, s_alert_phone, alert_msg);
+    if (!sent) {
+        nwy_hal_uart_printf(1, LOG_TAG "WARNING: Alert SMS send failed to %s!\r\n", s_alert_phone);
+    }
+}
+
+void data_collector_send_boot_status(bool bme_ok, bool sd_ok)
+{
+    if (s_boot_alert_sent) return; /* Enforce strictly once on startup */
+    s_boot_alert_sent = true;
+
+    char msg[160];
+    uint64_t free_bytes = nwy_sdcard_get_free_space();
+    float free_gb = (float)free_bytes / (1024.0f * 1024.0f * 1024.0f);
+
+    if (bme_ok && sd_ok) {
+        snprintf(msg, sizeof(msg),
+                 "[BME688 READY] Online! Sensor:OK(0x76), SD:OK(%.1fGB), State:IDLE. Send 'START <LABEL>' (e.g. START BADFOOD)",
+                 free_gb);
+    } else {
+        snprintf(msg, sizeof(msg),
+                 "[BME688 ALERT] BOOT: %s%s Check hardware wiring!",
+                 !bme_ok ? "Sensor Missing (0x76)! " : "",
+                 !sd_ok ? "SD Card Mount Failed! " : "");
+    }
+
+    data_collector_send_alert(msg);
 }
 
 /* -------------------------------------------------------------------------
@@ -151,6 +209,9 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
 
     s_status.sample_count = 0;
     s_status.state = COLLECTOR_STATE_RECORDING;
+    s_alert_sensor_error_sent = false;
+    s_alert_sd_error_sent = false;
+    s_alert_sd_low_sent = false;
 
     nwy_hal_uart_printf(1, LOG_TAG "RECORDING STARTED: %s | File: %s\r\n", s_status.current_label, file_path);
 
@@ -285,11 +346,16 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
     }
     cmd_upper[i] = '\0';
 
-    if (strncmp(cmd_upper, "START", 5) == 0 || strncmp(cmd_upper, "RECORD", 6) == 0) {
+    if (strncmp(cmd_upper, "START", 5) == 0 ||
+        strncmp(cmd_upper, "RECORD", 6) == 0 ||
+        strncmp(cmd_upper, "COLLECT", 7) == 0 ||
+        strncmp(cmd_upper, "DATA", 4) == 0) {
+        
         const char *label_part = cmd + 5;
-        if (strncmp(cmd_upper, "RECORD", 6) == 0) {
-            label_part = cmd + 6;
-        }
+        if (strncmp(cmd_upper, "RECORD", 6) == 0) label_part = cmd + 6;
+        else if (strncmp(cmd_upper, "COLLECT", 7) == 0) label_part = cmd + 7;
+        else if (strncmp(cmd_upper, "DATA", 4) == 0) label_part = cmd + 4;
+
         while (*label_part && isspace((unsigned char)*label_part)) {
             label_part++;
         }
@@ -303,8 +369,25 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
     else if (strcmp(cmd_upper, "STOP") == 0) {
         data_collector_stop(reply, sizeof(reply));
     }
-    else if (strcmp(cmd_upper, "STATUS") == 0 || strcmp(cmd_upper, "STATE") == 0) {
-        data_collector_get_status(NULL, reply, sizeof(reply));
+    else if (strncmp(cmd_upper, "STATUS", 6) == 0 || strncmp(cmd_upper, "STATE", 5) == 0) {
+        const char *extra = cmd + 6;
+        if (strncmp(cmd_upper, "STATE", 5) == 0) extra = cmd + 5;
+        while (*extra && isspace((unsigned char)*extra)) extra++;
+
+        if (*extra != '\0') {
+            /* User asked: e.g. "STATUS BADFOOD" or "STATUS TOILET_CLEAN" */
+            if (s_status.state == COLLECTOR_STATE_RECORDING) {
+                snprintf(reply, sizeof(reply),
+                         "STATUS: RUNNING '%s' (%lu samples). To collect '%s', send STOP then START %s.",
+                         s_status.current_label, (unsigned long)s_status.sample_count, extra, extra);
+            } else {
+                snprintf(reply, sizeof(reply),
+                         "STATUS: IDLE. Ready! To collect dataset for '%s', send: START %s",
+                         extra, extra);
+            }
+        } else {
+            data_collector_get_status(NULL, reply, sizeof(reply));
+        }
     }
     else if (strncmp(cmd_upper, "INTERVAL", 8) == 0) {
         const char *sec_str = cmd + 8;
@@ -312,13 +395,28 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
         uint32_t interval = (uint32_t)atoi(sec_str);
         data_collector_set_interval(interval, reply, sizeof(reply));
     }
+    else if (strncmp(cmd_upper, "ALERT", 5) == 0) {
+        const char *phone_arg = cmd + 5;
+        while (*phone_arg && isspace((unsigned char)*phone_arg)) phone_arg++;
+        if (*phone_arg != '\0') {
+            data_collector_set_alert_phone(phone_arg);
+            snprintf(reply, sizeof(reply), "Alerts recipient updated to: %s", s_alert_phone);
+        } else {
+            snprintf(reply, sizeof(reply), "Current alerts recipient: %s. Send 'ALERT <PHONE>' to change.", s_alert_phone);
+        }
+    }
     else if (strcmp(cmd_upper, "HELP") == 0 || strcmp(cmd_upper, "?") == 0) {
         snprintf(reply, sizeof(reply),
-                 "Commands:\nSTART <LABEL> (e.g. START TOILET_CLEAN)\nSTOP\nSTATUS\nINTERVAL <SEC>\nHELP");
+                 "Commands:\nSTART <LABEL> (e.g. START BADFOOD, TOILET_CLEAN)\nSTOP\nSTATUS\nINTERVAL <SEC>\nALERT <PHONE>\nHELP");
     }
     else {
-        snprintf(reply, sizeof(reply),
-                 "Unknown command '%s'. Send 'HELP' for available commands.", cmd);
+        /* User sent a raw text label without 'START', e.g. "BADFOOD" or "TOILET_DIRTY" */
+        if (strlen(cmd) >= 2) {
+            data_collector_start(cmd, sender_phone, reply, sizeof(reply));
+        } else {
+            snprintf(reply, sizeof(reply),
+                     "Unknown command '%s'. Send 'START <LABEL>' (e.g. START BADFOOD) or 'HELP'.", cmd);
+        }
     }
 
     /* Transmit two-way SMS reply back to sender */
@@ -353,6 +451,15 @@ void data_collector_worker_task(void *param)
             int8_t rslt = bme68x_perform_10step_scan(s_bme_dev, r_gas, &temp, &hum, &pres);
 
             if (rslt == BME68X_OK) {
+                if (s_alert_sensor_error_sent) {
+                    s_alert_sensor_error_sent = false; /* Sensor recovered */
+                    char alert[160];
+                    snprintf(alert, sizeof(alert),
+                             "[BME688 INFO] Sensor recovered! Recording resumed for '%s'.",
+                             s_status.current_label);
+                    data_collector_send_alert(alert);
+                }
+
                 if (s_collector_mutex) nwy_sdk_mutex_lock(s_collector_mutex, 1000);
 
                 s_status.sample_count++;
@@ -375,8 +482,33 @@ void data_collector_worker_task(void *param)
 
                 if (s_file_is_open) {
                     UINT bw = 0;
-                    f_write(&s_csv_file, csv_row, (UINT)strlen(csv_row), &bw);
-                    f_sync(&s_csv_file); /* Guarantees immediate persistence to NAND flash */
+                    FRESULT wr_res = f_write(&s_csv_file, csv_row, (UINT)strlen(csv_row), &bw);
+                    FRESULT sync_res = f_sync(&s_csv_file); /* Guarantees immediate persistence to NAND flash */
+                    if (wr_res != FR_OK || sync_res != FR_OK || bw == 0) {
+                        if (!s_alert_sd_error_sent) {
+                            s_alert_sd_error_sent = true;
+                            char alert[160];
+                            snprintf(alert, sizeof(alert),
+                                     "[BME688 ALERT] MicroSD write failed (err %d/%d). Recording paused!",
+                                     wr_res, sync_res);
+                            data_collector_send_alert(alert);
+                        }
+                    }
+                }
+
+                /* Check SD card space every 20 samples */
+                if ((s_status.sample_count % 20) == 0) {
+                    uint64_t free_sp = nwy_sdcard_get_free_space();
+                    if (free_sp < (50ULL * 1024 * 1024) && free_sp > 0) {
+                        if (!s_alert_sd_low_sent) {
+                            s_alert_sd_low_sent = true;
+                            char alert[160];
+                            snprintf(alert, sizeof(alert),
+                                     "[BME688 ALERT] MicroSD nearly full (<50MB). Recording stopped!");
+                            data_collector_send_alert(alert);
+                            data_collector_stop(NULL, 0);
+                        }
+                    }
                 }
 
                 if (s_collector_mutex) nwy_sdk_mutex_unlock(s_collector_mutex);
@@ -387,6 +519,14 @@ void data_collector_worker_task(void *param)
                                     temp, hum, pres, r_gas[0], r_gas[9]);
             } else {
                 nwy_hal_uart_printf(1, LOG_TAG "BME688 scan error code: %d\r\n", rslt);
+                if (!s_alert_sensor_error_sent) {
+                    s_alert_sensor_error_sent = true;
+                    char alert[160];
+                    snprintf(alert, sizeof(alert),
+                             "[BME688 ALERT] Sensor I2C read error (code %d) on '%s'. Check wiring!",
+                             rslt, s_status.current_label);
+                    data_collector_send_alert(alert);
+                }
             }
 
             /* Calculate sleep duration to maintain configured sampling rate */

@@ -1384,6 +1384,12 @@ The complete engineering progression from factory baseline down to record-breaki
     - Signaling: Signals `g_sms_sem` binary semaphore. Dedicated `sms_worker_task` handles parsing outside ISR context.
     - Automatic two-way SMS confirmation replies sent back to the originator phone number.
     - Immediate `nwy_hal_sms_delete(1, idx)` ensures SIM storage slots never become exhausted.
+    - **Proactive Alert System (Destination: `+918074638788`):**
+      - Anti-Spam Latching: All alert triggers are latched and dispatched strictly once per event (never continuously).
+      - Boot Online Status: Dispatches one-time boot status upon SIM network attachment (`[BME688 READY] Online! Sensor:OK(0x76), SD:OK(%.1fGB), State:IDLE`).
+      - Sensor Read Failure & Recovery: Dispatches a single alert if I2C fails during recording, and a recovery confirmation upon restoration.
+      - MicroSD Protection: Latches single alert if write/sync fails or available space drops below 50 MB, safely halting sampling to prevent dataset corruption.
+    - **Universal Label Parser:** Supports arbitrary label specimen recording (`START <LABEL>`, `RECORD <LABEL>`, `COLLECT <LABEL>`, `DATA <LABEL>`, or direct raw labels like `BADFOOD`), and provides context-aware guidance on `STATUS <LABEL>`.
   - **Host-Side TinyML Training Pipeline (`tools/train_classifier.py`):**
     - Loads multiple CSV datasets, logs gas features ($R_0 \dots R_9$), applies $\log_{10}(R)$ feature normalization, trains Decision Tree / Random Forest models, and exports pure C code (`bme688_model.h`).
 * **Verification & Validation (V&V):**

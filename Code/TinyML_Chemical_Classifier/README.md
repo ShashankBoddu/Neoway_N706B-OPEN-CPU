@@ -61,19 +61,38 @@ The system is controlled in real time via **3GPP SMS text messages** to start/st
 
 ---
 
-## 3. Two-Way SMS Command Protocol
+## 3. Two-Way SMS Command Protocol & Proactive Alerts
 
-The device uses an event-driven 3GPP SMS receiver. Messages received from any authorized phone are parsed, executed, deleted from SIM memory, and confirmed back via an outbound reply SMS.
+The device communicates via 3GPP cellular SMS. Incoming messages are parsed outside ISR context, executed immediately, and confirmed back to the sender handset.
 
-### Command Dictionary
+### A. Proactive Alert System (Destination: `+918074638788`)
+
+> [!NOTE]
+> **Anti-Spam Latching:** Alerts are dispatched **strictly once per event** (not continuously). A state must recover before another alert can trigger.
+
+1. **Boot Notification (Sent once on boot):**
+   `[BME688 READY] Online! Sensor:OK(0x76), SD:OK(14.8GB), State:IDLE. Send 'START <LABEL>' (e.g. START BADFOOD)`
+2. **Sensor Fault Alert (Sent once if I2C fails during a run):**
+   `[BME688 ALERT] Sensor I2C read error (code -3) on 'BADFOOD'. Check wiring!`
+3. **Sensor Recovery Notice (Sent once upon recovery):**
+   `[BME688 INFO] Sensor recovered! Recording resumed for 'BADFOOD'.`
+4. **Storage Space Alert (Sent once if SD free < 50MB):**
+   `[BME688 ALERT] MicroSD nearly full (<50MB). Recording stopped!`
+
+### B. Command Dictionary (Universal Label Collection)
+
+You can collect data for **any environmental or odor condition** (e.g., `BADFOOD`, `TOILET_CLEAN`, `TOILET_DIRTY`, `IPA_SOLUTION`, `SPOILED_MILK`, `AMMONIA`):
 
 | SMS Command | Example | Description | Device SMS Reply Example |
 |:---|:---|:---|:---|
-| `START <LABEL>` | `START TOILET_CLEAN` | Starts a new specimen dataset file with the specified classification label. | `[BME688] RECORDING STARTED! File: 0:/dataset_TOILET_CLEAN_001.csv, Interval: 3s` |
-| `STOP` | `STOP` | Stops the active recording session and syncs the CSV file safely to the SD card. | `[BME688] RECORDING STOPPED. Samples: 142. File: 0:/dataset_TOILET_CLEAN_001.csv` |
-| `STATUS` | `STATUS` | Queries active state, sensor readings, and storage availability. | `[BME688 STATUS] State: RECORDING, Label: TOILET_CLEAN, Samples: 35, SD Free: 14820 MB, Temp: 26.4C, Gas: 184.2 kOhm` |
-| `INTERVAL <SEC>` | `INTERVAL 5` | Configures the scanning interval in seconds (1 to 3600 s). | `[BME688] Scan interval updated to 5 seconds.` |
-| `HELP` | `HELP` | Returns a list of supported SMS commands. | `Commands: START <LABEL>, STOP, STATUS, INTERVAL <SEC>, HELP` |
+| `START <LABEL>` | `START BADFOOD` | Starts a new specimen dataset file with any custom label. | `STARTED: Dataset 'BADFOOD'. File: dataset_BADFOOD_001.csv. Sampling every 3s.` |
+| `<LABEL>` *(Direct)*| `BADFOOD` | Typing the label directly also starts recording automatically! | `STARTED: Dataset 'BADFOOD'. File: dataset_BADFOOD_001.csv. Sampling every 3s.` |
+| `STOP` | `STOP` | Stops the active recording session and syncs the CSV file safely to the SD card. | `STOPPED: Session 'BADFOOD' finished! Total samples: 142. File: dataset_BADFOOD_001.csv.` |
+| `STATUS` | `STATUS` | Queries active state, sensor readings, and storage availability. | `STATUS: RUNNING \| Label: BADFOOD \| Count: 35 \| T: 26.4C \| H: 48.1% \| R0: 184.2k \| SD: 14.8GB free` |
+| `STATUS <LABEL>` | `STATUS BADFOOD` | Checks readiness to collect for a specific label. | `STATUS: IDLE. Ready! To start recording data for 'BADFOOD', send: START BADFOOD` |
+| `INTERVAL <SEC>` | `INTERVAL 5` | Configures the scanning interval in seconds (2 to 300 s). | `INTERVAL: Sampling rate set to 5 seconds.` |
+| `ALERT <PHONE>` | `ALERT +918074638788` | Queries or updates the destination phone number for proactive alerts. | `Alerts recipient updated to: +918074638788` |
+| `HELP` | `HELP` | Returns a list of supported SMS commands. | `Commands: START <LABEL>, STOP, STATUS, INTERVAL <SEC>, ALERT <PHONE>, HELP` |
 
 ---
 

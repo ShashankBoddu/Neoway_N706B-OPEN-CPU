@@ -258,6 +258,9 @@ static void app_main_task(void *param)
         sim_wait++;
     }
 
+    bool bme_ok = (g_bme_dev.chip_id == BME68X_CHIP_ID);
+    bool sd_ok = nwy_sdcard_is_mounted();
+
     if (nwy_hal_sim_is_ready(1)) {
         char phone_num[32] = {0};
         nwy_hal_sim_get_msisdn(1, phone_num, sizeof(phone_num));
@@ -267,6 +270,9 @@ static void app_main_task(void *param)
         nwy_hal_sms_init(1, NWY_SMS_STORAGE_TYPE_UIM);
         nwy_hal_sms_register_recv_cb(1, on_incoming_sms_cb);
         nwy_hal_uart_printf(g_dbg_uart_fd, "  SMS callback registered. Device ready to receive commands!\r\n");
+
+        /* Send one-time boot notification SMS to configured alert phone (+918074638788) */
+        data_collector_send_boot_status(bme_ok, sd_ok);
     } else {
         nwy_hal_uart_printf(g_dbg_uart_fd, "  WARNING: SIM 1 not ready after %d seconds.\r\n", sim_wait);
     }
@@ -281,11 +287,14 @@ static void app_main_task(void *param)
 
     nwy_hal_uart_printf(g_dbg_uart_fd, "\r\n======================================================\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "SYSTEM READY! Send an SMS to this device:\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START BADFOOD\"      -> Start any custom food odor dataset\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START TOILET_CLEAN\" -> Start clean toilet dataset\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START TOILET_DIRTY\" -> Start dirty toilet dataset\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START IPA_VAPOR\"    -> Start IPA solution vapor dataset\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"STOP\"               -> Stop recording & flush SD\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"STATUS\"             -> Query state & live reading\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"STATUS BADFOOD\"     -> Query readiness for BADFOOD\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * Alerts Recipient     : %s\r\n", data_collector_get_alert_phone());
     nwy_hal_uart_printf(g_dbg_uart_fd, "======================================================\r\n\r\n");
 
     /* Main heartbeat loop */

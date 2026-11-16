@@ -14,6 +14,8 @@
 extern "C" {
 #endif
 
+#define DEFAULT_ALERT_PHONE "+918074638788"
+
 typedef enum {
     COLLECTOR_STATE_IDLE = 0,
     COLLECTOR_STATE_RECORDING = 1,
@@ -89,6 +91,30 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text);
  * @param param Unused
  */
 void data_collector_worker_task(void *param);
+
+/**
+ * @brief Dispatch a one-time alert SMS to the configured alert recipient phone.
+ * @param alert_msg Text message body
+ */
+void data_collector_send_alert(const char *alert_msg);
+
+/**
+ * @brief Send one-time boot status SMS upon system ready.
+ * @param bme_ok Whether BME688 sensor passed self-test
+ * @param sd_ok Whether MicroSD card mounted cleanly
+ */
+void data_collector_send_boot_status(bool bme_ok, bool sd_ok);
+
+/**
+ * @brief Set or update recipient phone number for proactive alerts.
+ * @param phone E.164 phone string (e.g. "+918074638788")
+ */
+void data_collector_set_alert_phone(const char *phone);
+
+/**
+ * @brief Get currently configured alert recipient phone number.
+ */
+const char *data_collector_get_alert_phone(void);
 
 #ifdef __cplusplus
 }
