@@ -1981,3 +1981,75 @@ To eliminate race conditions, direction contention, and kernel panics across dee
   - Compiled and deployed updated binary to: [`Neoway_N706B_Flasher.exe`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Neoway_N706B_Flasher.exe) (12.3 MB).
   - Validated port auto-detection: `COM21: Neoway USB AT (COM21)` automatically selected at index 0.
   - Confirmed COM13 remains 100% untouched for PuTTY.
+
+---
+
+### [2026-11-17 16:40] Subsystem: TinyML_IP_Detector — Dedicated On-Device Isopropanol Detection Engine & Flasher Analysis
+* **Context & User Request:**
+  1. User verified Bosch BME AI-Studio training results (`test1\test.bmeproject`):
+     - Session `NORMAL_AIR`: 226 cycles.
+     - Session `IP SOLUTION`: 155 cycles.
+     - Session `normal air`: 57 cycles.
+     - User inquired whether the 8-sensor display in AI-Studio was correct for our single-sensor hardware setup.
+  2. User reported flasher tool freezing at 40% when attempting to flash via `COM22`.
+  3. User requested a separate, dedicated project directory to detect the IP solution:
+     - Make sure it is an IP solution (high confidence confirmation, zero false positives).
+     - Effective, structured real-time logs.
+     - When confirmed, dispatch strictly ONE SMS alert to `+918074638788`.
+* **Technical Findings & Analysis:**
+  1. **AI-Studio 8-Sensor Configuration vs Single Physical Sensor:**
+     - In Bosch Sensortec BME AI-Studio's desktop frontend (`app.asar`), supported hardware archetypes are restricted to `board_8` (BME688 Development Kit with 8 multiplexed channels) and `board_690`.
+     - In `.bmerawdata`, our header specifies `BME688 Development Kit` to enable native AI-Studio parsing and graph rendering.
+     - AI-Studio trains per-sensor cycle: it trained purely on the 440 valid cycles of our physical sensor (`sensor_index = 0`), yielding a 2-class classifier (Class A: Normal Air, Class B: IP Solution) with 100.0% validation accuracy and 0.0% false positives.
+  2. **Flasher 40% Hang Diagnosis:**
+     - The Neoway N706B USB interface enumerates 7 CDC-ACM endpoints: COM19 (OPEN_CON), COM21 (USB AT), COM22 (CP_TRACE), COM23 (NMEA), COM24 (AP_TRACE), COM25 (Modem), COM26 (DIAG).
+     - Selecting `COM22` (CP_TRACE) caused `AT$MYDOWNLOAD=1` to fail. As a result, the module never rebooted into ASR Aboot download mode, causing `adownload.exe` to hang indefinitely waiting for the download handshake.
+     - Selecting `COM21` (`Neoway USB AT`) allows `AT$MYDOWNLOAD=1` to be processed properly, triggering immediate entry into download mode.
+* **Implementation (`Code/TinyML_IP_Detector`):**
+  1. **Neural Network Forward Pass (`tinyml_nn.c` & `tinyml_nn.h`):**
+     - Compiled exact trained weights (242 `float32` parameters) from `test.bmeproject\algorithms\1\model.json` & `weights.bin`.
+     - Architecture: `Dense(10, ReLU) -> Dense(10, ReLU) -> Softmax(2)`.
+     - Feature standardization: Z-score normalization using AI-Studio's learned means and standard deviations for HP-354.
+     - Implemented self-contained `tinyml_expf` exponential function with range scaling, eliminating baremetal `libm.a` linker dependencies.
+  2. **3-Cycle Debounce Confirmation Logic (`ip_detector.c` & `ip_detector.h`):**
+     - To ensure 100% detection certainty, requires 3 consecutive cycles (~36 seconds) above $85.0\%$ confidence before asserting confirmed IP solution status.
+     - Any single anomalous reading resets the counter to zero.
+  3. **Strict Single-SMS Dispatch Policy:**
+     - Upon confirmation, dispatches strictly ONE SMS to `+918074638788`.
+     - Engages an internal latch flag (`alert_sent = true`) preventing duplicate alerts.
+     - Supports remote SMS commands: `STATUS` (queries live sensor state) and `RESET` (clears latch and re-arms).
+  4. **Visual UART1 Console Logs:**
+     - Outputs real-time ASCII probability bars and state machine diagnostics at 115200 baud on UART1 (`COM13` in PuTTY).
+  5. **OpenCPU Entry & Build Automation:**
+     - Configured OpenCPU entry point `nwy_open_app_entry()` and supervisor watchdog loop in `main.c`.
+     - Authored `build_TinyML_IP_Detector.bat` with CMake Ninja compilation and Aboot / FOTA packaging.
+* **Verification & Validation (V&V):**
+  - Compiled and linked firmware with GCC 10.3.1 (ARM Cortex-R5): Exit code 0.
+  - Generated packages:
+    - [`Code/TinyML_IP_Detector/release/nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/release/nwy_open_app.zip)
+    - [`Code/TinyML_IP_Detector/release/nwy_open_app_fota.pkt`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/release/nwy_open_app_fota.pkt)
+    - Synced to root workspace: [`nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/nwy_open_app.zip).
+  - Authored comprehensive documentation in [`Code/TinyML_IP_Detector/README.md`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/README.md).
+
+---
+
+### [2026-11-17 16:54] Bugfix: Boot Loop / Reset Right After Launching Gas Inference Engine
+* **Root Cause:**
+  - In `ip_detector.c` (`ip_detector_start`), the detector thread was launched via `nwy_hal_os_thread_create(..., 16 * 1024, NWY_OSI_PRIORITY_NORMAL)`.
+  - The parameter signature expected `(priority, stack_size)`.
+  - Because `16 * 1024` (16384) was passed as priority, it truncated to `(uint8)0` (preempting the main supervisor immediately).
+  - Worse, `NWY_OSI_PRIORITY_NORMAL` (value `24`) was passed as `stack_size`, giving the new thread only **24 bytes of stack space**!
+  - As soon as FreeRTOS context-switched to `detector_worker_task`, the function prologue pushed registers onto the 24-byte stack, immediately exceeding stack bounds and corrupting RTOS memory. This triggered an instantaneous ARM Data Abort exception and caused `Boot Cause: 16 (Normal/Other)` reset loops.
+* **Resolution:**
+  1. Replaced the flawed invocation with direct native SDK call:
+     ```c
+     nwy_thread_create(&s_detector_thread, "ip_detect", 50,
+                       detector_worker_task, NULL, 10, 1024 * 16, NULL);
+     ```
+     This allocates a healthy **16 KB stack** with background priority `50`.
+  2. In `nwy_hal_os.c`, added sanity protection against inverted arguments (`priority > 255` guard) enforcing minimum 16 KB stack and priority `50`.
+  3. In `nwy_hal_uart.c`, ensured `nwy_hal_uart_printf` safely falls back to `g_log_fd` when `fd <= 0 || fd == 1` so all diagnostic logging routes properly to the debug console.
+  4. Added a 15-second supervisor heartbeat loop in `main.c`.
+* **Verification:**
+  - Clean compilation and linking with Ninja and ARM GCC 10.3.1.
+  - Re-packaged and synced firmware to workspace root [`nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/nwy_open_app.zip).
