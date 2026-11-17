@@ -333,6 +333,34 @@ void i2c_bus_deinit(void)
     s_is_initialized = false;
 }
 
+int i2c_bus_reset(void)
+{
+    if (!i2c_bus_lock(s_cfg.timeout_ms)) return -1;
+
+    i2c_log("  [I2C BUS] Resetting I2C bus subsystem...");
+    if (s_hw_i2c_fd >= 0) {
+        nwy_i2c_deinit(s_hw_i2c_fd);
+        s_hw_i2c_fd = -1;
+    }
+
+    /* Release stuck bus lines with 9 clocks */
+    i2c_bus_recover(s_cfg.scl_gpio, s_cfg.sda_gpio);
+
+    /* Reinitialize hardware I2C controller */
+    if (s_cfg.mode != I2C_MODE_SW) {
+        if (hw_i2c_init_controller()) {
+            s_active_engine = I2C_MODE_HW;
+            i2c_log("  [I2C BUS] HW controller re-initialized.");
+        } else {
+            s_active_engine = I2C_MODE_SW;
+            i2c_log("  [I2C BUS] HW controller re-init failed, using SW bit-bang.");
+        }
+    }
+
+    i2c_bus_unlock();
+    return 0;
+}
+
 bool i2c_bus_ping(uint8_t dev_addr_7bit)
 {
     if (!s_is_initialized) {
@@ -344,9 +372,17 @@ bool i2c_bus_ping(uint8_t dev_addr_7bit)
     bool ack = false;
 
     if (s_active_engine == I2C_MODE_HW && s_hw_i2c_fd >= 0) {
-        nwy_error_e err = nwy_i2c_raw_put_byte(s_hw_i2c_fd, (dev_addr_7bit << 1) | 0, 1, 1);
-        if (err == NWY_SUCCESS) {
+        /* 1. Try reading Chip ID register (0xD0) via hardware I2C */
+        uint8_t dummy_id = 0;
+        nwy_error_e err = nwy_i2c_read(s_hw_i2c_fd, dev_addr_7bit, 0xD0, &dummy_id, 1);
+        if (err >= 0) {
             ack = true;
+        } else {
+            /* 2. Try raw single byte addressing ping */
+            err = nwy_i2c_raw_put_byte(s_hw_i2c_fd, (dev_addr_7bit << 1) | 0, 1, 1);
+            if (err >= 0) {
+                ack = true;
+            }
         }
     }
 
@@ -365,40 +401,38 @@ int i2c_bus_write(uint8_t dev_addr_7bit, const uint8_t *data, uint16_t len)
     if (data == NULL || len == 0) return -1;
     if (!i2c_bus_lock(s_cfg.timeout_ms)) return -2;
 
-    int ret = 0;
+    int ret = -1;
 
+    /* 1. Primary: Neoway Hardware I2C Controller */
     if (s_active_engine == I2C_MODE_HW && s_hw_i2c_fd >= 0) {
-        nwy_error_e err = nwy_i2c_raw_put_byte(s_hw_i2c_fd, (dev_addr_7bit << 1) | 0, 1, (len == 0) ? 1 : 0);
-        if (err != NWY_SUCCESS) {
-            ret = -3;
-        } else {
-            for (uint16_t i = 0; i < len; i++) {
-                int stop = (i == (len - 1)) ? 1 : 0;
-                err = nwy_i2c_raw_put_byte(s_hw_i2c_fd, data[i], 0, stop);
-                if (err != NWY_SUCCESS) {
-                    ret = -4;
-                    break;
-                }
-            }
-        }
+        unsigned short ofst = data[0];
+        unsigned char *payload = (len > 1) ? (unsigned char *)&data[1] : NULL;
+        unsigned short payload_len = (len > 1) ? (len - 1) : 0;
 
-        if (ret != 0 && s_cfg.mode == I2C_MODE_AUTO) {
-            bb_start();
-            if (!bb_write_byte((dev_addr_7bit << 1) | 0)) {
-                bb_stop();
-                ret = -5;
-            } else {
+        nwy_error_e err = nwy_i2c_write(s_hw_i2c_fd, dev_addr_7bit, ofst, payload, payload_len);
+        if (err >= 0) {
+            ret = 0;
+        } else {
+            /* Try raw put byte as secondary HW approach */
+            err = nwy_i2c_raw_put_byte(s_hw_i2c_fd, (dev_addr_7bit << 1) | 0, 1, (len == 0) ? 1 : 0);
+            if (err >= 0) {
                 ret = 0;
                 for (uint16_t i = 0; i < len; i++) {
-                    if (!bb_write_byte(data[i])) {
-                        ret = -6;
+                    int stop = (i == (len - 1)) ? 1 : 0;
+                    err = nwy_i2c_raw_put_byte(s_hw_i2c_fd, data[i], 0, stop);
+                    if (err < 0) {
+                        ret = -4;
                         break;
                     }
                 }
-                bb_stop();
+            } else {
+                ret = -3;
             }
         }
-    } else {
+    }
+
+    /* 2. Fallback: Software Bit-Bang */
+    if (ret != 0 && s_cfg.mode != I2C_MODE_HW) {
         bb_start();
         if (!bb_write_byte((dev_addr_7bit << 1) | 0)) {
             bb_stop();
@@ -424,37 +458,20 @@ int i2c_bus_read(uint8_t dev_addr_7bit, uint8_t *data, uint16_t len)
     if (data == NULL || len == 0) return -1;
     if (!i2c_bus_lock(s_cfg.timeout_ms)) return -2;
 
-    int ret = 0;
+    int ret = -1;
 
+    /* 1. Primary: Neoway Hardware I2C Controller */
     if (s_active_engine == I2C_MODE_HW && s_hw_i2c_fd >= 0) {
-        nwy_error_e err = nwy_i2c_raw_put_byte(s_hw_i2c_fd, (dev_addr_7bit << 1) | 1, 1, 0);
-        if (err != NWY_SUCCESS) {
-            ret = -3;
+        nwy_error_e err = nwy_i2c_read(s_hw_i2c_fd, dev_addr_7bit, 0, data, len);
+        if (err >= 0) {
+            ret = 0;
         } else {
-            for (uint16_t i = 0; i < len; i++) {
-                int stop = (i == (len - 1)) ? 1 : 0;
-                err = nwy_i2c_raw_get_byte(s_hw_i2c_fd, &data[i], 0, stop);
-                if (err != NWY_SUCCESS) {
-                    ret = -4;
-                    break;
-                }
-            }
+            ret = -3;
         }
+    }
 
-        if (ret != 0 && s_cfg.mode == I2C_MODE_AUTO) {
-            bb_start();
-            if (!bb_write_byte((dev_addr_7bit << 1) | 1)) {
-                bb_stop();
-                ret = -5;
-            } else {
-                ret = 0;
-                for (uint16_t i = 0; i < len; i++) {
-                    data[i] = bb_read_byte(i < (len - 1));
-                }
-                bb_stop();
-            }
-        }
-    } else {
+    /* 2. Fallback: Software Bit-Bang */
+    if (ret != 0 && s_cfg.mode != I2C_MODE_HW) {
         bb_start();
         if (!bb_write_byte((dev_addr_7bit << 1) | 1)) {
             bb_stop();
@@ -479,56 +496,25 @@ int i2c_bus_write_read(uint8_t dev_addr_7bit,
     if (tx_data == NULL || tx_len == 0 || rx_data == NULL || rx_len == 0) return -1;
     if (!i2c_bus_lock(s_cfg.timeout_ms)) return -2;
 
-    int ret = 0;
+    int ret = -1;
 
+    /* 1. Primary: Neoway Hardware I2C Register Read */
     if (s_active_engine == I2C_MODE_HW && s_hw_i2c_fd >= 0) {
-        nwy_error_e err = nwy_i2c_raw_put_byte(s_hw_i2c_fd, (dev_addr_7bit << 1) | 0, 1, 0);
-        if (err != NWY_SUCCESS) {
-            ret = -3;
-        } else {
-            for (uint16_t i = 0; i < tx_len; i++) {
-                err = nwy_i2c_raw_put_byte(s_hw_i2c_fd, tx_data[i], 0, 0);
-                if (err != NWY_SUCCESS) { ret = -4; break; }
-            }
-            if (ret == 0) {
-                err = nwy_i2c_raw_put_byte(s_hw_i2c_fd, (dev_addr_7bit << 1) | 1, 1, 0);
-                if (err != NWY_SUCCESS) {
-                    ret = -5;
-                } else {
-                    for (uint16_t i = 0; i < rx_len; i++) {
-                        int stop = (i == (rx_len - 1)) ? 1 : 0;
-                        err = nwy_i2c_raw_get_byte(s_hw_i2c_fd, &rx_data[i], 0, stop);
-                        if (err != NWY_SUCCESS) { ret = -6; break; }
-                    }
-                }
-            }
+        unsigned short ofst = tx_data[0];
+        if (tx_len > 1) {
+            ofst = ((unsigned short)tx_data[0] << 8) | tx_data[1];
         }
 
-        if (ret != 0 && s_cfg.mode == I2C_MODE_AUTO) {
-            bb_start();
-            if (!bb_write_byte((dev_addr_7bit << 1) | 0)) {
-                bb_stop();
-                ret = -7;
-            } else {
-                for (uint16_t i = 0; i < tx_len; i++) {
-                    if (!bb_write_byte(tx_data[i])) { bb_stop(); ret = -8; break; }
-                }
-                if (ret == 0) {
-                    bb_start();
-                    if (!bb_write_byte((dev_addr_7bit << 1) | 1)) {
-                        bb_stop();
-                        ret = -9;
-                    } else {
-                        for (uint16_t i = 0; i < rx_len; i++) {
-                            rx_data[i] = bb_read_byte(i < (rx_len - 1));
-                        }
-                        bb_stop();
-                        ret = 0;
-                    }
-                }
-            }
+        nwy_error_e err = nwy_i2c_read(s_hw_i2c_fd, dev_addr_7bit, ofst, rx_data, rx_len);
+        if (err >= 0) {
+            ret = 0;
+        } else {
+            ret = -3;
         }
-    } else {
+    }
+
+    /* 2. Fallback: Software Bit-Bang */
+    if (ret != 0 && s_cfg.mode != I2C_MODE_HW) {
         bb_start();
         if (!bb_write_byte((dev_addr_7bit << 1) | 0)) {
             bb_stop();
@@ -537,7 +523,7 @@ int i2c_bus_write_read(uint8_t dev_addr_7bit,
             for (uint16_t i = 0; i < tx_len; i++) {
                 if (!bb_write_byte(tx_data[i])) { bb_stop(); ret = -8; break; }
             }
-            if (ret == 0) {
+            if (ret != -8) {
                 bb_start();
                 if (!bb_write_byte((dev_addr_7bit << 1) | 1)) {
                     bb_stop();
@@ -549,6 +535,96 @@ int i2c_bus_write_read(uint8_t dev_addr_7bit,
                     bb_stop();
                     ret = 0;
                 }
+            }
+        }
+    }
+
+    i2c_bus_unlock();
+    return ret;
+}
+
+int i2c_bus_read_reg(uint8_t dev_addr_7bit, uint8_t reg_addr, uint8_t *data, uint16_t len)
+{
+    if (data == NULL || len == 0) return -1;
+    if (!i2c_bus_lock(s_cfg.timeout_ms)) return -2;
+
+    int ret = -1;
+
+    /* 1. Primary: Neoway Hardware I2C Controller Read */
+    if (s_active_engine == I2C_MODE_HW && s_hw_i2c_fd >= 0) {
+        nwy_error_e err = nwy_i2c_read(s_hw_i2c_fd, dev_addr_7bit, reg_addr, data, len);
+        if (err >= 0) {
+            ret = 0;
+        } else {
+            ret = -3;
+        }
+    }
+
+    /* 2. Fallback: Software Bit-Bang with Repeated START */
+    if (ret != 0 && s_cfg.mode != I2C_MODE_HW) {
+        bb_start();
+        if (!bb_write_byte((dev_addr_7bit << 1) | 0)) {
+            bb_stop();
+            ret = -4;
+        } else {
+            if (!bb_write_byte(reg_addr)) {
+                bb_stop();
+                ret = -5;
+            } else {
+                bb_start(); /* Repeated START */
+                if (!bb_write_byte((dev_addr_7bit << 1) | 1)) {
+                    bb_stop();
+                    ret = -6;
+                } else {
+                    for (uint16_t i = 0; i < len; i++) {
+                        data[i] = bb_read_byte(i < (len - 1));
+                    }
+                    bb_stop();
+                    ret = 0;
+                }
+            }
+        }
+    }
+
+    i2c_bus_unlock();
+    return ret;
+}
+
+int i2c_bus_write_reg(uint8_t dev_addr_7bit, uint8_t reg_addr, const uint8_t *data, uint16_t len)
+{
+    if (!i2c_bus_lock(s_cfg.timeout_ms)) return -2;
+
+    int ret = -1;
+
+    /* 1. Primary: Neoway Hardware I2C Controller Write */
+    if (s_active_engine == I2C_MODE_HW && s_hw_i2c_fd >= 0) {
+        nwy_error_e err = nwy_i2c_write(s_hw_i2c_fd, dev_addr_7bit, reg_addr, (unsigned char *)data, len);
+        if (err >= 0) {
+            ret = 0;
+        } else {
+            ret = -3;
+        }
+    }
+
+    /* 2. Fallback: Software Bit-Bang */
+    if (ret != 0 && s_cfg.mode != I2C_MODE_HW) {
+        bb_start();
+        if (!bb_write_byte((dev_addr_7bit << 1) | 0)) {
+            bb_stop();
+            ret = -4;
+        } else {
+            if (!bb_write_byte(reg_addr)) {
+                bb_stop();
+                ret = -5;
+            } else {
+                ret = 0;
+                for (uint16_t i = 0; i < len; i++) {
+                    if (!bb_write_byte(data[i])) {
+                        ret = -6;
+                        break;
+                    }
+                }
+                bb_stop();
             }
         }
     }

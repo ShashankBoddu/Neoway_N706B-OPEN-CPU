@@ -59,20 +59,14 @@ void sd_log(const char *fmt, ...)
 static int8_t bme_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     uint8_t dev_addr = *(uint8_t *)intf_ptr;
-    int ret = i2c_bus_write_read(dev_addr, &reg_addr, 1, reg_data, (uint16_t)len);
+    int ret = i2c_bus_read_reg(dev_addr, reg_addr, reg_data, (uint16_t)len);
     return (ret == 0) ? BME68X_OK : BME68X_E_COM_FAIL;
 }
 
 static int8_t bme_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len, void *intf_ptr)
 {
     uint8_t dev_addr = *(uint8_t *)intf_ptr;
-    uint8_t tx_buf[64];
-    if (len + 1 > sizeof(tx_buf)) return BME68X_E_INVALID_LENGTH;
-
-    tx_buf[0] = reg_addr;
-    memcpy(&tx_buf[1], reg_data, len);
-
-    int ret = i2c_bus_write(dev_addr, tx_buf, (uint16_t)(len + 1));
+    int ret = i2c_bus_write_reg(dev_addr, reg_addr, reg_data, (uint16_t)len);
     return (ret == 0) ? BME68X_OK : BME68X_E_COM_FAIL;
 }
 
@@ -153,7 +147,7 @@ static void print_system_banner(void)
     nwy_hal_uart_printf(g_dbg_uart_fd, "==============================================================\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "*  NEOWAY N706B — TINYML BME688 GAS SCANNER & DATA COLLECTOR *\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "==============================================================\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, " Firmware Ver : 1.0.0-TINYML-DATA-COLLECTOR\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, " Firmware Ver : 0.0.8\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, " Build Timestamp: %s %s\r\n", __DATE__, __TIME__);
     nwy_hal_uart_printf(g_dbg_uart_fd, " Boot Cause   : %d (%s)\r\n", boot_reason, reason_str);
     nwy_hal_uart_printf(g_dbg_uart_fd, " Sensor Target: SmartElex BME688 (Bosch MEMS AI Gas Scanner)\r\n");
@@ -218,14 +212,31 @@ static void app_main_task(void *param)
         g_bme_dev.delay_us = bme_delay_us;
         g_bme_dev.amb_temp = 25.0f;
 
+        /* Test direct Chip ID read before init */
+        uint8_t pre_id = 0;
+        int pre_ret = bme_i2c_read(BME68X_REG_CHIP_ID, &pre_id, 1, &g_bme_addr);
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  Direct Read reg 0xD0 (Chip ID): 0x%02X (status=%d)\r\n", pre_id, pre_ret);
+
         int8_t rslt = bme68x_init(&g_bme_dev);
-        if (rslt == BME68X_OK) {
-            nwy_hal_uart_printf(g_dbg_uart_fd, "  Bosch BME688 initialized successfully!\r\n");
+        if (rslt != BME68X_OK) {
+            /* Retry init with bus reset in case of power-up transient */
+            for (int r = 1; r <= 3; r++) {
+                nwy_hal_uart_printf(g_dbg_uart_fd, "  [INIT RETRY #%d] Resetting bus and retrying bme68x_init...\r\n", r);
+                i2c_bus_reset();
+                nwy_hal_os_thread_sleep(50);
+                rslt = bme68x_init(&g_bme_dev);
+                if (rslt == BME68X_OK) break;
+            }
+        }
+
+        if (rslt == BME68X_OK && g_bme_dev.chip_id == BME68X_CHIP_ID) {
+            nwy_hal_uart_printf(g_dbg_uart_fd, "  [BME688 READY] Bosch BME688 initialized successfully!\r\n");
             nwy_hal_uart_printf(g_dbg_uart_fd, "  Chip ID: 0x%02X (Valid), Variant: %s\r\n",
                                 g_bme_dev.chip_id,
                                 (g_bme_dev.variant_id == BME68X_VARIANT_GAS_HIGH) ? "BME688 (Gas High)" : "BME680 (Gas Low)");
         } else {
-            nwy_hal_uart_printf(g_dbg_uart_fd, "  ERROR: bme68x_init failed with error %d\r\n", rslt);
+            nwy_hal_uart_printf(g_dbg_uart_fd, "  ERROR: bme68x_init failed with error %d (chip_id=0x%02X)\r\n", rslt, g_bme_dev.chip_id);
+            nwy_hal_uart_printf(g_dbg_uart_fd, "  Data collection will remain locked until sensor is connected.\r\n");
         }
     } else {
         nwy_hal_uart_printf(g_dbg_uart_fd, "  ERROR: No I2C ACK from BME688! Check wiring on VBATI2C1_SCL / VBATI2C1_SDA.\r\n");
@@ -303,12 +314,22 @@ static void app_main_task(void *param)
         nwy_hal_os_thread_sleep(10000); /* 10s heartbeat */
         hb_counter++;
 
+        /* Active runtime sensor connection verification */
+        bool bme_online = bme68x_check_connection(&g_bme_dev);
+
+        /* Auto-hotplug detection: If previously offline and now detected, auto-initialize */
+        if (bme_online && g_bme_dev.chip_id != BME68X_CHIP_ID) {
+            nwy_hal_uart_printf(g_dbg_uart_fd, "[HOTPLUG] BME688 sensor plugged in! Auto-initializing...\r\n");
+            data_collector_check_sensor_health();
+        }
+
         collector_status_t cur_status;
         data_collector_get_status(&cur_status, NULL, 0);
 
-        nwy_hal_uart_printf(g_dbg_uart_fd, "[HEARTBEAT #%lu] State: %s | Samples: %lu | SD: %s\r\n",
+        nwy_hal_uart_printf(g_dbg_uart_fd, "[HEARTBEAT #%lu] State: %s | Sensor: %s | Samples: %lu | SD: %s\r\n",
                             (unsigned long)hb_counter,
                             (cur_status.state == COLLECTOR_STATE_RECORDING) ? "RECORDING" : "IDLE",
+                            bme_online ? "OK (0x76)" : "DISCONNECTED",
                             (unsigned long)cur_status.sample_count,
                             nwy_sdcard_is_mounted() ? "OK" : "DISCONNECTED");
     }

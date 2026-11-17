@@ -17,9 +17,13 @@ static const float s_lookup_k2_range[16] = {
     -0.1f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
 };
 
-/* Standard HP-354 TinyML Multi-Heater Gas Scanning Profile */
-static const uint16_t s_hp354_temp_steps[10] = {200, 240, 280, 300, 320, 340, 360, 380, 400, 200};
-static const uint16_t s_hp354_dur_steps[10]  = {140, 140, 140, 140, 140, 140, 140, 140, 140, 140};
+/* Official Bosch HP-354 Multi-Heater Gas Scanning Profile
+ * Steps: 320°C (700ms), 100°C (280ms), 100°C (1400ms), 100°C (4032ms),
+ *        200°C (700ms), 200°C (700ms), 200°C (700ms),
+ *        320°C (700ms), 320°C (700ms), 320°C (700ms)
+ * Total duration: 10,612 ms (~10.8s) per scan */
+static const uint16_t s_hp354_temp_steps[10] = {320, 100, 100, 100, 200, 200, 200, 320, 320, 320};
+static const uint16_t s_hp354_dur_steps[10]  = {700, 280, 1400, 4032, 700, 700, 700, 700, 700, 700};
 
 /* =========================================================================
  * INTERNAL MATH & COMPENSATION FUNCTIONS
@@ -210,16 +214,27 @@ int8_t bme68x_init(bme68x_dev_t *dev)
     /* 1. Issue Soft Reset */
     uint8_t reset_cmd = BME68X_CMD_SOFT_RESET;
     dev->write(BME68X_REG_RESET, &reset_cmd, 1, dev->intf_ptr);
-    dev->delay_us(10000, dev->intf_ptr); /* 10 ms reset settling */
+    dev->delay_us(25000, dev->intf_ptr); /* 25 ms reset settling */
 
-    /* 2. Read & Validate Chip ID (0x61) */
+    /* 2. Read & Validate Chip ID (0x61) with retries */
     uint8_t chip_id = 0;
-    if (dev->read(BME68X_REG_CHIP_ID, &chip_id, 1, dev->intf_ptr) != 0) {
-        return BME68X_E_COM_FAIL;
+    int8_t rslt = BME68X_E_COM_FAIL;
+    for (int retry = 0; retry < 5; retry++) {
+        if (dev->read(BME68X_REG_CHIP_ID, &chip_id, 1, dev->intf_ptr) == 0) {
+            if (chip_id == BME68X_CHIP_ID) {
+                rslt = BME68X_OK;
+                break;
+            }
+        }
+        dev->delay_us(10000, dev->intf_ptr);
     }
+
     dev->chip_id = chip_id;
-    if (chip_id != BME68X_CHIP_ID) {
-        return BME68X_E_DEV_NOT_FOUND;
+    if (rslt != BME68X_OK) {
+        if (chip_id != 0 && chip_id != BME68X_CHIP_ID) {
+            return BME68X_E_DEV_NOT_FOUND;
+        }
+        return BME68X_E_COM_FAIL;
     }
 
     /* 3. Read Variant ID (BME688 returns 0x01 / BME680 returns 0x00) */
@@ -299,6 +314,14 @@ int8_t bme68x_set_op_mode(uint8_t op_mode, bme68x_dev_t *dev)
     return BME68X_OK;
 }
 
+bool bme68x_check_connection(bme68x_dev_t *dev)
+{
+    if (dev == NULL || dev->read == NULL) return false;
+    uint8_t chip_id = 0;
+    int8_t rslt = dev->read(BME68X_REG_CHIP_ID, &chip_id, 1, dev->intf_ptr);
+    return (rslt == BME68X_OK && chip_id == BME68X_CHIP_ID);
+}
+
 int8_t bme68x_get_data(uint8_t op_mode, bme68x_data_t *data, uint8_t *n_data, bme68x_dev_t *dev)
 {
     if (data == NULL || n_data == NULL || dev == NULL) return BME68X_E_NULL_PTR;
@@ -307,13 +330,20 @@ int8_t bme68x_get_data(uint8_t op_mode, bme68x_data_t *data, uint8_t *n_data, bm
     uint8_t buff[17];
     *n_data = 0;
 
-    /* Read field 0 data block: 0x1D to 0x2D */
-    if (dev->read(BME68X_REG_MEAS_STATUS_0, buff, sizeof(buff), dev->intf_ptr) != 0) {
-        return BME68X_E_COM_FAIL;
+    /* Read field 0 data block: 0x1D to 0x2D with bounded retry for conversion ready */
+    bool ready = false;
+    for (int retry = 0; retry < 5; retry++) {
+        if (dev->read(BME68X_REG_MEAS_STATUS_0, buff, sizeof(buff), dev->intf_ptr) != 0) {
+            return BME68X_E_COM_FAIL;
+        }
+        if (buff[0] & BME68X_NEW_DATA_BIT) {
+            ready = true;
+            break;
+        }
+        dev->delay_us(10000, dev->intf_ptr); /* wait 10 ms for ADC completion */
     }
 
-    uint8_t status = buff[0];
-    if (!(status & BME68X_NEW_DATA_BIT)) {
+    if (!ready) {
         return BME68X_W_NO_NEW_DATA;
     }
 
@@ -347,7 +377,7 @@ int8_t bme68x_get_data(uint8_t op_mode, bme68x_data_t *data, uint8_t *n_data, bm
     }
 
     data->status = gas_status;
-    data->gas_index = status & 0x0F;
+    data->gas_index = buff[0] & 0x0F;
     *n_data = 1;
 
     return BME68X_OK;
@@ -358,6 +388,11 @@ int8_t bme68x_perform_10step_scan(bme68x_dev_t *dev, float r_gas_out[10],
 {
     if (dev == NULL || r_gas_out == NULL) return BME68X_E_NULL_PTR;
 
+    /* Fast presence pre-check */
+    if (!bme68x_check_connection(dev)) {
+        return BME68X_E_DEV_NOT_FOUND;
+    }
+
     /* Ensure oversampling defaults: Temp 2x, Pres 4x, Hum 1x, Filter Size 3 */
     bme68x_conf_t conf;
     conf.os_temp = BME68X_OS_2X;
@@ -365,7 +400,9 @@ int8_t bme68x_perform_10step_scan(bme68x_dev_t *dev, float r_gas_out[10],
     conf.os_hum  = BME68X_OS_1X;
     conf.filter  = BME68X_FILTER_SIZE_3;
     conf.odr     = 0;
-    bme68x_set_conf(&conf, dev);
+    if (bme68x_set_conf(&conf, dev) != BME68X_OK) {
+        return BME68X_E_COM_FAIL;
+    }
 
     /* Sequential execution through all 10 HP-354 steps */
     for (uint8_t step = 0; step < 10; step++) {
@@ -373,8 +410,10 @@ int8_t bme68x_perform_10step_scan(bme68x_dev_t *dev, float r_gas_out[10],
         uint8_t gas_wait = calc_gas_wait(s_hp354_dur_steps[step]);
 
         /* Set step 0 register */
-        dev->write(BME68X_REG_RES_HEAT_0, &res_heat, 1, dev->intf_ptr);
-        dev->write(BME68X_REG_GAS_WAIT_0, &gas_wait, 1, dev->intf_ptr);
+        if (dev->write(BME68X_REG_RES_HEAT_0, &res_heat, 1, dev->intf_ptr) != BME68X_OK ||
+            dev->write(BME68X_REG_GAS_WAIT_0, &gas_wait, 1, dev->intf_ptr) != BME68X_OK) {
+            return BME68X_E_COM_FAIL;
+        }
 
         /* Arm gas heater */
         uint8_t ctrl_gas_0 = BME68X_ENABLE_HEATER;
@@ -384,10 +423,13 @@ int8_t bme68x_perform_10step_scan(bme68x_dev_t *dev, float r_gas_out[10],
         dev->write(BME68X_REG_CTRL_GAS_1, &ctrl_gas_1, 1, dev->intf_ptr);
 
         /* Trigger Forced Mode */
-        bme68x_set_op_mode(BME68X_FORCED_MODE, dev);
+        if (bme68x_set_op_mode(BME68X_FORCED_MODE, dev) != BME68X_OK) {
+            return BME68X_E_COM_FAIL;
+        }
 
-        /* Dwell delay: 140ms + ~25ms ADC settling time = 165ms */
-        dev->delay_us(165000, dev->intf_ptr);
+        /* Dwell delay: heater duration + ~25ms ADC settling time */
+        uint32_t dwell_us = ((uint32_t)s_hp354_dur_steps[step] + 25) * 1000;
+        dev->delay_us(dwell_us, dev->intf_ptr);
 
         /* Read back field 0 */
         bme68x_data_t sample;
@@ -402,8 +444,8 @@ int8_t bme68x_perform_10step_scan(bme68x_dev_t *dev, float r_gas_out[10],
                 if (pres) *pres = sample.pressure;
             }
         } else {
-            /* Fallback dummy resistance if reading failed */
-            r_gas_out[step] = (step > 0) ? r_gas_out[step - 1] : 50000.0f;
+            /* Strict industrial-grade failure: Do NOT fake or corrupt dataset! */
+            return BME68X_E_COM_FAIL;
         }
     }
 

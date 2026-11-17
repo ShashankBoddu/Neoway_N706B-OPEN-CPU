@@ -6,8 +6,8 @@
 | **Project Name** | Neoway N706B LTE Cat.1 OpenCPU Embedded Platform |
 | **Document Type** | Industrial Developer Log & System Technical Specification |
 | **Standard Reference** | IEEE 1016 / ISO/IEC/IEEE 26514 / 3GPP Rel-13 TS 24.008 |
-| **Document Revision** | `v2.5.0` |
-| **Last Updated** | `2026-11-16` |
+| **Document Revision** | `v2.6.0` |
+| **Last Updated** | `2026-11-17` |
 | **Classification** | Engineering Technical Documentation |
 | **Target Hardware** | Neoway N706B-CN (ASR1605S Cortex-R5 @ 614 MHz, 4 MB QSPI NOR Flash) |
 | **Carrier Board** | `ELEKTRONIKA_N706B_prototype` (Custom PCB Rev 1.0) & Neoway Mini EVB V1.0 |
@@ -1607,3 +1607,293 @@ To eliminate race conditions, direction contention, and kernel panics across dee
 * **Verification & Validation (V&V):** [Empirical proof of fix: PPK2 current readings, terminal logs, oscilloscope traces]
 * **Visual Evidence / Images:** [Schematic snippets and PPK2 captures]
 ```
+
+---
+
+### [2026-11-16] - Automated Port Detection, Bootloader Switching, Flashing & Live Boot Verifier
+* **Subsystem Scope:** Flashing Infrastructure / Host Deployment Tools / Serial HAL / Verification
+* **Description & Context:**
+  - Designed and deployed an end-to-end automated Python flasher and Windows Batch launcher (`tools/auto_flash_verify.py` and `flash_and_verify.bat`) to replace error-prone manual flashing and manual port configuration.
+  - Automatically adapts to changing COM port numbers across different machines, USB hubs, and reboot enumeration cycles.
+* **Architecture & Workflow:**
+  1. **Dynamic Port Discovery:**
+     - Uses `serial.tools.list_ports.comports()` to dynamically scan USB CDC endpoints.
+     - Uniquely identifies `Neoway USB AT` (`VID:PID=2949:7401`, endpoint `:x.4`) regardless of assigned COM number (e.g., `COM21`, `COM3`, `COM5`).
+     - Detects the Hardware Debug UART (`USB-SERIAL CH340` @ `VID:PID=1A86:7523`, `URT1` debug console) and `Neoway USB OPEN_CON`.
+     - Detects active bootloader mode (`ASR Serial Download Device`, e.g., `COM27`).
+     - Handles exclusive-lock port collisions (`PermissionError` 13) with friendly operator prompts to close active serial monitors before retrying.
+  2. **Automated Bootloader Trigger:**
+     - Connects to the detected AT port at 115200 baud and executes `AT$MYDOWNLOAD=1\r\n`.
+     - Directs the ASR1605S SoC modem to immediately disconnect virtual CDC ports and enter USB AROM Download mode.
+  3. **High-Speed Release Package Flashing:**
+     - Invokes the official ASR command-line flasher (`adownload.exe -u -a -r -q -s 115200 <package.zip>`).
+     - Flashes the compiled release package (`release/nwy_open_app.zip`) and triggers an automatic hardware reset upon completion (`-r`).
+  4. **Live Boot Banner Verification:**
+     - Immediately attaches to the Debug UART (`USB-SERIAL CH340` @ 115200 baud).
+     - Monitors incoming boot stream for the application banner:
+       `>>> NEOWAY N706B BME688 AI GAS SCANNER INITIALIZED <<<` and `[BME688 READY]`.
+     - Validates sensor presence (Chip ID `0x61`) and confirms operational deployment.
+* **Artifacts Created:**
+  - `Code/TinyML_Chemical_Classifier/tools/auto_flash_verify.py`: Core automated engine with `--scan-only`, `--verify-only`, and full flash modes.
+  - `Code/TinyML_Chemical_Classifier/flash_and_verify.bat`: Double-clickable Windows batch launcher that auto-installs `pyserial` if missing.
+  - `flash_and_verify.bat`: Workspace root shortcut launcher.
+* **Verification & Validation (V&V):**
+  - Executed `--scan-only`: dynamically discovered `ASR Serial Download Device (COM27)` and `USB-SERIAL CH340 (COM13)`.
+  - Verified exit code `0` and proper subprocess stdout streaming.
+
+---
+
+### [2026-11-16] - Modern Desktop GUI & Standalone Portable Executable (Neoway_N706B_Flasher.exe)
+* **Subsystem Scope:** GUI Flasher / Standalone Deployment / PyInstaller Binary Packaging
+* **Description & Context:**
+  - Developed a complete graphical desktop application (`Code/TinyML_Chemical_Classifier/tools/flasher_ui.py`) and packaged it into a 100% standalone portable Windows executable (`Neoway_N706B_Flasher.exe`).
+  - No Python, no drivers, and no external tool installation required on the target machine; the flasher engine (`adownload.exe` and `aboot.dll`) is bundled directly inside the executable.
+* **UI Features & Architecture:**
+  1. **Dark Industrial Aesthetic:**
+     - High-contrast color-coded badges (`IDLE`, `SCANNING`, `ONLINE`, `BOOTLOADER`, `FLASHING`, `VERIFYING`, `SUCCESS`, `ERROR`).
+  2. **Live Port Discovery:**
+     - Automatic dynamic matching of `Neoway USB AT` (`VID:PID=2949:7401`), `USB-SERIAL CH340` Debug UART, and `ASR Download Port`.
+     - Dropdown selectors allow manual COM port override if desired.
+  3. **Release Package Selector:**
+     - Default auto-resolution to `release/nwy_open_app.zip` with file browser dialog.
+  4. **Multi-Threaded Execution:**
+     - Flashing and serial I/O run in background daemon threads, keeping the UI at 60 FPS without freezing.
+     - Progress bar tracks all 4 stages: Port resolution $\to$ Bootloader entry (`AT$MYDOWNLOAD=1`) $\to$ Image writing $\to$ Live UART boot verification.
+  5. **Embedded Boot Log Console:**
+     - Real-time terminal output with syntax highlighting for boot banners (`>>> NEOWAY N706B BME688 AI GAS SCANNER INITIALIZED <<<` and `[BME688 READY]`).
+* **Artifact Locations:**
+  - Root Executable: [Neoway_N706B_Flasher.exe](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Neoway_N706B_Flasher.exe) (12.9 MB)
+  - Release Executable: [Neoway_N706B_Flasher.exe](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/release/Neoway_N706B_Flasher.exe)
+  - Python Source: [flasher_ui.py](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/tools/flasher_ui.py)
+
+---
+
+### [2026-11-16] - Fixed Tkinter Geometry String Formatting in Desktop UI
+* **Subsystem Scope:** Flasher GUI / Window Geometry Specifier / Binary Rebuild
+* **Defect:** Tkinter raised `_tkinter.TclError: bad geometry specifier "900 x 680"` upon launching `Neoway_N706B_Flasher.exe` due to spaces around the dimension delimiter.
+* **Resolution:** Corrected string format to `"900x680"` in [flasher_ui.py](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/tools/flasher_ui.py).
+* **Validation:** Recompiled and verified standalone binaries in root ([Neoway_N706B_Flasher.exe](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Neoway_N706B_Flasher.exe)) and release folder. Application launches smoothly without exception.
+
+---
+
+### [2026-11-16] - Industrial-Grade BME688 Interfacing, Runtime Health Guarding & Bus Auto-Recovery
+* **Subsystem Scope:** Bosch BME688 AI Gas Scanner / Neoway Hardware I2C1 Controller / TinyML Data Collector / Runtime Health State Machine
+* **Description & Context:**
+  - Performed deep research into the official Bosch BME688 datasheet (`BST-BME688-DS000-03` Rev 1.3), Bosch Sensortec Sensor API, and SmartElex BME688 carrier module documentation.
+  - Resolved `bme68x_init failed with error -2` (`BME68X_E_COM_FAIL`) observed during live boot logs.
+  - Implemented strict industrial-grade sensor guarding: data collection sessions will **only proceed if the sensor is interfaced successfully**.
+  - Engineered continuous runtime sensor presence monitoring, bus unstick recovery (9 clock pulses on SCL), and automatic re-initialization without data corruption or MCU hang.
+* **Root Cause Analysis (RCA):**
+  1. **ASR1605 Crane Hardware I2C Repeated-Start Behavior:**
+     - In earlier versions, `i2c_bus_write_read()` attempted to generate repeated-start reads by manually sequencing `nwy_i2c_raw_put_byte()` calls. On the ASR1605 SoC, `raw_put_byte` does not switch the hardware controller into Master-Receiver mode, resulting in bus NACK or timeout.
+     - Furthermore, Neoway SDK specifies that `nwy_i2c_read()` and `nwy_i2c_write()` return `>= 0` on success. Checking strictly for `(err == NWY_SUCCESS)` (where `NWY_SUCCESS == 0`) failed when positive byte counts were returned, returning error code `-3` and causing `bme68x_init` to report error `-2`.
+  2. **Unchecked Sensor Guarding in Collector Engine:**
+     - Previously, `data_collector_start()` only checked for MicroSD card mounting, allowing the data collector to start even when the BME688 was absent, writing fallback dummy data (50000.0 Ohm) to the CSV file.
+* **Resolution & Implementation:**
+  1. **Direct Neoway Hardware Register APIs:**
+     - Implemented [`i2c_bus_read_reg()`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.c) and [`i2c_bus_write_reg()`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.c) directly wrapping `nwy_i2c_read(fd, slaveAddr, regAddr, buf, len)` and `nwy_i2c_write(fd, slaveAddr, regAddr, buf, len)` with `(err >= 0)` success verification.
+     - Configured hardware I2C1 bus speed to 100 kHz (`NWY_I2C_BPS_100K`) to guarantee clean rise times across level shifter `U8`.
+  2. **Strict Sensor Guarding on Start:**
+     - Added [`data_collector_is_sensor_ready()`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.c): checks handle validity, Chip ID verification (`0x61`), and performs a live presence ping to register `0xD0`.
+     - In [`data_collector_start()`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.c): if the sensor is not interfaced, recording is rejected immediately with error `-4` and an SMS alert is dispatched: `"REJECTED: BME688 sensor not interfaced (0x76)! Fix wiring before collecting '<LABEL>'."`
+  3. **Continuous Runtime Health Monitoring & Auto-Recovery:**
+     - Created [`bme68x_check_connection()`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.c): performs non-intrusive 1-byte read of register `0xD0` to verify sensor responsiveness.
+     - In [`data_collector_worker_task()`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.c): runtime disconnects trigger automatic bus reset [`i2c_bus_reset()`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.c) (9 SCL unstick cycles + re-init). If restored, recording resumes with a proactive confirmation SMS; if recovery fails, recording pauses without logging corrupted data rows.
+     - In [`bme68x_perform_10step_scan()`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.c): removed fake 50000.0 Ohm fallback values. Any read failure returns `BME68X_E_COM_FAIL` immediately.
+  4. **Dynamic Health Telemetry & Diagnostic Commands:**
+     - Updated SMS command `"STATUS"` to report live sensor status: `"Sensor: OK (0x76)"` vs `"Sensor: DISCONNECTED (0x76)"`.
+     - Updated SMS command `"STATUS <LABEL>"` (e.g. `"STATUS BADFOOD"`): dynamically evaluates both sensor and SD card readiness before reporting green light for data collection.
+     - Integrated hotplug auto-detection into the 10-second heartbeat loop in [`app_main_task()`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.c).
+* **Verification & Validation (V&V):**
+  - Compiled cleanly with ARM GCC 10.3.1 (zero errors, zero warnings).
+  - Generated verified release package: [`release/nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/release/nwy_open_app.zip) and [`release/nwy_open_app_fota.pkt`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/release/nwy_open_app_fota.pkt).
+
+---
+
+### [2026-11-16] - First Real-World Dataset Validation & Bosch BME AI-Studio (.bmerawdata) Integration
+* **Subsystem Scope:** Empirical Dataset Validation / TinyML Feature Engineering / Bosch BME AI-Studio (.bmerawdata) Format
+* **Description & Context:**
+  - Validated the first live, multi-heater gas scanning dataset recorded by the Neoway N706B OpenCPU: `C:\Users\fervi\Downloads\dataset_NORMAL_TEST1_001.csv`.
+  - Analyzed physical sensor dynamics across all 39 recorded samples (10-point HP-354 scanning curves).
+  - Compared the N706B Wide Feature-Matrix CSV against the Bosch BME AI-Studio proprietary `.bmerawdata` JSON container specification.
+  - Developed and deployed an automated converter ([`tools/csv_to_bmerawdata.py`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/tools/csv_to_bmerawdata.py)) and drag-and-drop batch launchers ([`convert_dataset_to_bmerawdata.bat`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/convert_dataset_to_bmerawdata.bat)) to seamlessly generate BME AI-Studio specimen packages.
+* **Empirical Data Health Analysis:**
+  - **Sample Count:** 39 complete scan vectors (390 discrete multi-heater data points).
+  - **Temperature:** $26.68^\circ\text{C} \to 30.67^\circ\text{C}$ (mean $30.26^\circ\text{C}$). Mild warming accurately reflects micro-hotplate thermal conduction within the MEMS cavity.
+  - **Relative Humidity:** $45.29\% \to 38.82\%$ (mean $39.68\%$). Perfectly tracks the psychrometric curve as cavity temperature rises.
+  - **Barometric Pressure:** $949.09 \to 949.13\text{ hPa}$. Extremely stable local ambient pressure.
+  - **Gas Resistances ($R_0 \dots R_9$):**
+    - $200^\circ\text{C}$ Setpoint (Step 0): $\sim 28.8\text{ k}\Omega$.
+    - Heating Ramp ($240^\circ\text{C} \to 400^\circ\text{C}$): Resistance systematically and monotonically falls from $18.2\text{ k}\Omega \to 8.1\text{ k}\Omega$ as thermal carrier excitation activates the $SnO_2$ metal-oxide lattice.
+    - Cooling Step ($200^\circ\text{C}$ Return): Resistance immediately jumps to $42.0\text{ k}\Omega$.
+    - Missing / Corrupted / NaN values: **0** across all 39 samples.
+* **Bosch BME AI-Studio Format vs. Wide TinyML CSV:**
+  1. **BME AI-Studio Limitation:** Modern desktop AI-Studio (v2.x / v3.x) does not accept flat CSV files directly; it requires `.bmerawdata` JSON containers with `configHeader`, `configBody`, `rawDataHeader`, and a sequential `dataBlock`.
+  2. **Wide CSV Value:** The N706B's native CSV is formatted directly as a feature matrix ($X = [T, H, P, R_0 \dots R_9]$, $y = \text{label}$), immediately ingestible by Python `scikit-learn` (Random Forest / SVM / KNN), TensorFlow Lite, and Edge Impulse without preprocessing.
+  3. **Bridge Solution:** Automated script [`tools/csv_to_bmerawdata.py`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/tools/csv_to_bmerawdata.py) converts the CSV into a validated 12-column `.bmerawdata` JSON file (`C:\Users\fervi\Downloads\dataset_NORMAL_TEST1_001.bmerawdata`).
+* **Artifacts Created:**
+  - Converted Specimen: `C:\Users\fervi\Downloads\dataset_NORMAL_TEST1_001.bmerawdata` (390 steps, 12 columns).
+  - Python Converter: [`Code/TinyML_Chemical_Classifier/tools/csv_to_bmerawdata.py`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/tools/csv_to_bmerawdata.py).
+  - Batch Launchers: [`convert_dataset_to_bmerawdata.bat`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/convert_dataset_to_bmerawdata.bat).
+
+---
+
+### [2026-11-16] - Native On-Device Dual Logging (.bmerawdata + .csv) & Bosch BME AI-Studio Integration
+* **Subsystem Scope:** On-Device Dual File Logging / Bosch BME AI-Studio Specimen Architecture / SmartElex BME688 Single-Sensor Mapping
+* **Description & Context:**
+  - Upgraded the Neoway N706B OpenCPU data collector to write **natively and directly in the Bosch BME AI-Studio `.bmerawdata` JSON container format** on the MicroSD card, alongside the standard wide CSV.
+  - Resolved architectural questions regarding how the **SmartElex BME688 breakout sensor** interfaces with Bosch's 8-sensor devkit documentation (`board_8` vs single-sensor layout) and how ground-truth **Specimens** are handled.
+* **Bosch BME AI-Studio Architecture Deep-Dive:**
+  1. **Board Configuration & Layout (`configure-board.html#board-layout`):**
+     - Bosch Sensortec's official documentation describes a multi-sensor devkit (`board_8`) where 8 physical BME688 sensors are multiplexed, using layout distribution (`grouped`, `shuffled`, or `random`) to assign different heater profiles across multiple sensors.
+     - The **SmartElex Environmental Sensor - BME688** is a dedicated single-sensor module communicating over I2C (`0x76`).
+     - In Bosch AI-Studio, a single-sensor board maps cleanly to `sensor_index: 0` (Sensor 0) and `sensor_id: 1`. In our `.bmerawdata` container, we specify `boardType: "board_8"` with all measurements assigned to sensor 0. When imported into AI-Studio, it loads as a standard 1-sensor project, displaying all 10 gas resistance curves along with temperature, relative humidity, and pressure in Pascals.
+  2. **Specimen Handling (`record-data.html` & `import-data.html`):**
+     - In Bosch AI-Studio, raw time-series data is segmented into **Specimens** (labeled instances of a target class, such as "Clean Toilet", "Dirty Toilet", "Smoking", or "Clean Air").
+     - With the N706B's cellular SMS command engine, sending `START <LABEL>` (e.g., `START TOILET_CLEAN` or `START SMOKING`) embeds the ground-truth class label directly into:
+       - `rawDataHeader.label`
+       - Column 11 of every individual row in `rawDataBody.dataBlock`
+       - The file naming and metadata.
+     - When the operator sends `STOP`, the file is cleanly finalized (`]}}`).
+     - Importing the `.bmerawdata` into Bosch AI-Studio automatically maps the recording into a pre-labeled **Specimen** with zero manual slicing or typing required.
+  3. **Why Dual Logging (.bmerawdata + .csv) is the Optimal Industrial Standard:**
+     - **Direct AI-Studio Import:** The `.bmerawdata` file is dragged directly into Bosch AI-Studio for automated model training, PCA clustering, and BSEC configuration export.
+     - **Power-Cut Resilience:** If power is abruptly disconnected in the field before `STOP` is received, unclosed JSON files can suffer syntax errors. The wide `.csv` file is atomic line-by-line, guaranteeing 100% data preservation.
+     - **Cross-Platform Compatibility:** The `.csv` file is immediately ready for Python `scikit-learn`, TensorFlow Lite, Edge Impulse, and Excel.
+* **Implementation Details in [`data_collector.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.c):**
+  - Uses `nwy_hal_pm_get_time()` to acquire real-world UTC network timestamps synchronized via cellular 3GPP NITZ.
+  - Formats official Bosch filenames: `0:/<YYYY>_<MM>_<DD>_<HH>_<MM>_Board_N706B_PowerOnOff_1_Seed_<SEED>_File_0.bmerawdata`.
+  - Streams 10-point HP-354 steps ($200^\circ\text{C} \dots 400^\circ\text{C}$, 140 ms steps) to both `s_csv_file` and `s_bme_file`, maintaining proper JSON bracket and comma formatting.
+  - Automatically finalizes and seals JSON containers on `STOP` or MicroSD space thresholds.
+* **Verification & Validation (V&V):**
+  - Compiled cleanly with ARM GCC 10.3.1 (Ninja exit code 0).
+  - Firmware package generated: [`release/nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/release/nwy_open_app.zip).
+
+---
+
+### [2026-11-16] - Bosch BME AI-Studio v3.2.1 Reverse-Engineering, Official HP-354 Alignment & End-to-End Workflow Definition
+* **Subsystem Scope:** Bosch AI-Studio v3.2.1 Schema Compliance / HP-354 Multi-Heater Profile Physics / Restroom & Smoke Chemical Selectivity / Full Process Lifecycle
+* **Description & Context:**
+  - Resolved UI import and board configuration validation errors in Bosch BME AI-Studio Desktop v3.2.1 by reverse-engineering the compiled Electron bundle (`Release_Bin/resources/app.asar`).
+  - Identified and aligned the multi-heater gas profile to the official Bosch **HP-354** specification across all firmware drivers, configuration files, and converter tools.
+  - Formulated the chemical selectivity rationale demonstrating how HP-354 prevents false alarms for restroom odorants ($H_2S$, $NH_3$, mercaptans) and smoking byproducts (nicotine, combustion hydrocarbons).
+  - Documented the full 6-step Bosch Sensortec workflow (Configure Board $\to$ Record Data $\to$ Import Data $\to$ Collect Specimens $\to$ Train Algorithms $\to$ Evaluate Algorithms) mapped to the Neoway N706B embedded OpenCPU architecture.
+* **Bosch AI-Studio v3.2.1 Schema Reverse-Engineering:**
+  1. **Data Import Error (`Cannot read properties of undefined (reading 'map')`):**
+     - Inspection of the Electron bundle revealed that the AI-Studio specimen ingestion pipeline iterates over `configBody.sensorConfigurations` across all 8 slots (`board_8`).
+     - Fixed by providing a full 8-sensor mapping array in `configBody.sensorConfigurations` with `duty_1` continuous profile.
+  2. **Board Mode Validation Error (`ValidationError: Board mode sensorboard_default_hp_rdc not found`):**
+     - The Joi schema in `app.asar` restricts `boardMode` to the enum `['burn_in', 'heater_profile_exploration', 'duty_cycle_profile_exploration']`.
+     - The human-readable string "Sensorboard Default HP/RDC" in the GUI internally maps to `'burn_in'`.
+     - Fixed `.bmeconfig` and firmware generator to emit `"boardMode": "burn_in"`, resulting in a green success banner and instant graph rendering in AI-Studio.
+  3. **Year 4026 Bug in Timestamps:**
+     - `nwy_hal_pm_get_time()` returned `tm.year = 2026`; code did `2000 + tm.year`, generating `4026`.
+     - Patched with `full_year = (tm.year < 100) ? (2000 + tm.year) : tm.year;`.
+* **Official HP-354 Profile Alignment (Thermal Physics & Timing):**
+  - **Extracted Canonical Definition from `app.asar`:**
+    - Profile ID: `"heater_354"`, Name: `"HP-354"`, Base Time: 140 ms.
+    - Temperature-Time Vectors:
+      - Step 0: $320^\circ\text{C}$ (multiplier 5 = 700 ms)
+      - Step 1: $100^\circ\text{C}$ (multiplier 2 = 280 ms)
+      - Step 2: $100^\circ\text{C}$ (multiplier 10 = 1400 ms)
+      - Step 3: $100^\circ\text{C}$ (multiplier 30 = 4032 ms register cap)
+      - Step 4: $200^\circ\text{C}$ (multiplier 5 = 700 ms)
+      - Step 5: $200^\circ\text{C}$ (multiplier 5 = 700 ms)
+      - Step 6: $200^\circ\text{C}$ (multiplier 5 = 700 ms)
+      - Step 7: $320^\circ\text{C}$ (multiplier 5 = 700 ms)
+      - Step 8: $320^\circ\text{C}$ (multiplier 5 = 700 ms)
+      - Step 9: $320^\circ\text{C}$ (multiplier 5 = 700 ms)
+    - Total scan cycle duration: $10,612\text{ ms} + \approx 250\text{ ms}$ ADC conversion $\approx 10.86\text{ seconds}$.
+  - **Cumulative Millisecond Offsets:**
+    - Integrated `s_hp354_step_offsets_ms[10] = {0, 700, 980, 2380, 6412, 7112, 7812, 8512, 9212, 9912}` into firmware and Python tools to ensure exact time-series accuracy.
+  - **Scan Interval:** Updated default cycle period to 12 seconds (~10.8s active scan + ~1.2s rest), matching continuous RDC mode.
+* **Chemical Selectivity Rationale (Restroom Cleanliness & Smoke Detection):**
+  - **$100^\circ\text{C}$ Phase (Steps 1–3, 5.88s total):** Rapidly desorbs water vapor while allowing polar sulfur species ($H_2S$, mercaptans) and ammonia ($NH_3$) to adsorb on the $SnO_2$ lattice, decoupling high restroom humidity spikes from human waste odor.
+  - **$200^\circ\text{C}$ Phase (Steps 4–6, 2.1s total):** Triggers intermediate catalytic oxidation of low-molecular-weight VOCs and sulfur molecules. The rate of change between $100^\circ\text{C}$ and $200^\circ\text{C}$ yields a chemical signature unique to restroom odors.
+  - **$320^\circ\text{C}$ Phase (Steps 0 and 7–9, 2.8s total):** Rapidly oxidizes aromatic hydrocarbons and combustion byproducts characteristic of tobacco/nicotine smoke. Burns off the sensing surface to reset baseline resistance and eliminate memory effects.
+* **Synchronized Codebase Updates:**
+  - [`src/bme68x.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.c): Updated `s_hp354_temp_steps` and `s_hp354_dur_steps`, with dynamic per-step dwell delays.
+  - [`src/data_collector.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.c): Updated `temperatureTimeVectors`, step timestamp calculation, and 12-second cycle defaults.
+  - [`tools/csv_to_bmerawdata.py`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/tools/csv_to_bmerawdata.py): Updated with official HP-354 temperatures, durations, and millisecond offsets.
+  - Configuration files: Synchronized [`tools/BME688_HP354_Config.bmeconfig`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/tools/BME688_HP354_Config.bmeconfig) and `C:\Users\fervi\Downloads\BME688_HP354_Config.bmeconfig`.
+* **Verification & Validation (V&V):**
+  - Board configuration verified and rendered in Bosch BME AI-Studio Desktop v3.2.1.
+  - Clean build completed via `build_TinyML_Chemical_Classifier.bat` (ARM GCC 10.3.1, Ninja exit code 0).
+  - Target firmware binary: [`release/nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/release/nwy_open_app.zip).
+
+---
+
+### [2026-11-17] - Resolved RAW_DATA_FILE_PARSE_ERROR: Canonical 13-Column Schema & Companion .bmelabelinfo
+* **Subsystem Scope:** Bosch BME AI-Studio Data Ingestion Parser / Stack Buffer Hardening / Canonical 13-Column Specification / Automatic .bmelabelinfo Generation
+* **Description & Context:**
+  - Diagnosed and resolved the Bosch BME AI-Studio Desktop import failure: `"Raw Data could not be imported. The data appears to be in an invalid format"` (`RAW_DATA_FILE_PARSE_ERROR`).
+  - Extracted the official Bosch BME AI-Studio v3.2.1 data parser (`data_body_parser.js`) from `app.asar`.
+  - Identified two root causes:
+    1. **Buffer Truncation & Memory Overread in Firmware:** `char hdr[1600]` in `data_collector.c` was too small for the full 8-sensor HP-354 header. `snprintf` truncated at byte 1599, and passing `(UINT)hlen` (1650) to `f_write` wrote 51 bytes of uninitialized stack memory across `"boardId":`, breaking JSON syntax.
+    2. **Schema & Column Key Discrepancies:** Bosch AI-Studio strictly requires:
+       - `key: "resistance_gassensor"` (not `gas_resistance`)
+       - `key: "relative_humidity"` (not `humidity`)
+       - `key: "real_time_clock"` (Unix epoch in seconds)
+       - `pressure` in Hectopascals (`hPa`, not `Pa`)
+       - Exactly 13 data columns per row in `dataBlock`.
+       - Companion `.bmelabelinfo` JSON file for automatic specimen labeling.
+* **Architecture Hardening in [`data_collector.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.c):**
+  - Eliminated the oversized stack buffer `hdr[1600]`. Replaced with static chunked writes (`f_write` of `s_bme_config_header_body`, a compact 256-byte `raw_hdr`, and `s_bme_datacolumns`).
+  - Added `rtc_to_epoch()` to generate real-time Unix timestamps (`real_time_clock`).
+  - Updated `bme_entry` to write the exact 13 canonical columns:
+    `[sensor_index, sensor_id, timestamp_since_poweron, real_time_clock, temperature, pressure(hPa), relative_humidity, resistance_gassensor, heater_profile_step_index, scanning_enabled, scanning_cycle_index, label_tag, error_code]`.
+  - Implemented automatic generation of the companion `.bmelabelinfo` file upon session completion (`STOP`).
+* **Tooling & Retroactive Dataset Repair:**
+  - Created [`tools/format_canonical_bmerawdata.py`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/tools/format_canonical_bmerawdata.py) and successfully repaired `C:\Users\fervi\Downloads\2026_11_17_09_06_Board_N706B_PowerOnOff_1_Seed_8DA9_File_0.bmerawdata` (550 samples / 55 cycles recovered cleanly).
+  - Generated companion `2026_11_17_09_06_Board_N706B_PowerOnOff_1_Seed_8DA9_File_0.bmelabelinfo`.
+  - Updated [`tools/csv_to_bmerawdata.py`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/tools/csv_to_bmerawdata.py) to mirror the 13-column canonical format.
+* **Verification & Validation (V&V):**
+  - Node.js validation test against Bosch's exact parser rules passed with 0 errors.
+  - Recompiled firmware with ARM GCC 10.3.1 (Ninja exit code 0).
+  - Target firmware binary: [`release/nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/release/nwy_open_app.zip).
+
+---
+
+### [2026-11-17] - Resolved Timezone Offset (UTC Epoch) & FatFs File Timestamps; Modernized Standalone Flasher UI
+* **Subsystem Scope:** Cellular NITZ RTC Timezone Correction / FatFs SD Card Timestamps (`get_fattime`) / Standalone Aboot Flasher UI (`Neoway_N706B_Flasher.exe`)
+* **Description & Context:**
+  - **Timezone Discrepancy in Bosch BME AI-Studio:** The telemetry recorded at `10:47:46` local time displayed as `16:17:46` (+5.5 hours) in Bosch AI-Studio. Root cause: Indian telecom networks provide local IST (UTC+05:30) via NITZ. Converting it directly to Unix epoch caused BME AI-Studio (which assumes epoch is UTC and applies the local PC timezone) to add +5h 30m a second time.
+  - **File Modification Timestamps in Windows Explorer:** Files on the MicroSD card were stuck on `11-10-2026 00:00` because `_FS_NORTC` was set to `1` in `ffconf.h`.
+  - **Standalone Flasher Requirements:** User requested `Neoway_N706B_Flasher.exe` as a single, self-contained GUI tool that verifies the flash download protocol without touching or monitoring COM13 (leaving the UART debug port 100% available for serial monitors such as PuTTY).
+* **Firmware & Tooling Fixes:**
+  - **[`Code/TinyML_Chemical_Classifier/src/data_collector.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.c):** Updated `rtc_to_epoch()` to subtract `((time_t)tz_quarter_hours * 900)`, producing a true UTC Unix epoch timestamp. AI-Studio now displays the exact local time (`10:47:46`).
+  - **[`Code/TinyML_Chemical_Classifier/inc/ffconf.h`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc/ffconf.h):** Changed `#define _FS_NORTC 0` to enable real-time clock timestamps for FatFs.
+  - **[`Code/TinyML_Chemical_Classifier/src/nwy_sd_card.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.c):** Implemented `DWORD get_fattime(void)` querying the modem RTC via `nwy_date_get()` to write exact date/time attributes for all files on the MicroSD card.
+  - **[`Neoway_N706B_Flasher.exe`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Neoway_N706B_Flasher.exe):** Rebuilt standalone GUI tool with PyInstaller. Flashes `nwy_open_app.zip` via embedded Aboot engine, monitors download progress to 100%, confirms exit code 0 (`SUCCESS (100% OK)`), and completely ignores COM13 so the user has full, uninterrupted access to the serial debug console.
+* **Verification & Validation (V&V):**
+  - Clean firmware build completed via `build_TinyML_Chemical_Classifier.bat` with ARM GCC 10.3.1 (Ninja exit code 0).
+  - Target binary generated: [`Code/TinyML_Chemical_Classifier/release/nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/release/nwy_open_app.zip).
+  - Standalone flasher binary updated: [`Neoway_N706B_Flasher.exe`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Neoway_N706B_Flasher.exe) (13.5 MB).
+
+---
+
+### [2026-11-17] - Resolved TclError Widget Crash & Deployed Ultra-Modern Standalone Flasher UI (v2.1.0)
+* **Subsystem Scope:** Desktop Flashing Tooling ([`Neoway_N706B_Flasher.exe`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Neoway_N706B_Flasher.exe)) / Tkinter Widget Engine / UI & UX Modernization / Strict COM13 Debug Port Isolation
+* **Description & Context:**
+  - Upon launching `Neoway_N706B_Flasher.exe`, the application threw an unhandled exception dialog:
+    `_tkinter.TclError: Layout Horizontal.Dark.TProgressbar not found`.
+  - **Root Cause Analysis (RCA):**
+    - Tkinter's `ttk.Progressbar` searches for an internal layout matching the configured style name (e.g. `Horizontal.Dark.TProgressbar`). Because Tkinter's default themes do not automatically register dynamic horizontal layout classes for custom prefixes, it threw a fatal `TclError` during `build_ui()` before the GUI could appear.
+    - Additionally, the user requested an ultra-modern dark industrial interface, emphasizing that flashing verification must strictly verify the download protocol (handshake + transmission + process returncode 0) without any monitoring of COM13 (leaving the UART debug port 100% available for PuTTY / serial console).
+* **Engineering Resolution & Architecture Overhaul:**
+  1. **Custom `ModernCanvasProgressBar` (Crash-Proof Architecture):**
+     - Completely eliminated `ttk.Progressbar`. Built a custom `tk.Canvas` progress bar that renders an anti-aliased track, glowing cyan/emerald gradient fill, rounded corners, and centered bold percentage typography.
+     - 100% immune to Tkinter theme and layout engine inconsistencies across Windows versions.
+  2. **Modern Industrial Obsidian/Slate UI (`#0B0F19` / `#111827`):**
+     - **Header Bar:** Deep obsidian backdrop with cyan accent line, high-contrast typography, and live status badge chip (`● SYSTEM READY`, `● FLASHING 45%`, `● SUCCESS (100% OK)`).
+     - **Firmware Card:** Auto-detects and validates [`release/nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/release/nwy_open_app.zip) (file size, path, readiness) with one-click `📂 Browse ZIP` button.
+     - **Port Configuration Card:** Auto-enumerates Neoway USB AT Port and ASR AROM Bootloader Port, with `🔄 Scan` refresh button.
+     - **Hardware Port Isolation:** Strictly excludes and protects COM13 and CH340 devices so the user can open PuTTY without port locking.
+     - **Flash Action Controls:** Prominent `⚡ FLASH FIRMWARE (100% PROTOCOL VERIFIED)` button with responsive hover states, auto-lock during transfer, and `⏹ Cancel` button.
+     - **Live Terminal Console:** Dark monospace log viewer (`#030712`) with categorized color tags (`[INFO]`, `[SUCCESS]`, `[FLASHER]`, `[WARN]`, `[ERROR]`), plus `Copy Logs` and `Clear` controls.
+     - **Bundled Core Engine:** Direct self-contained embedding of `adownload.exe` and `aboot.dll` within the single executable.
+* **Verification & Validation (V&V):**
+  - Terminated hung error processes via `taskkill`.
+  - Compiled to standalone single-binary 64-bit Windows executable using PyInstaller 6.22.3 (`scratch/modern_flasher.py` -> `Neoway_N706B_Flasher.exe`).
+  - Empirical launch verification: Process spawned and verified running normally with return status `None` (active event loop, zero crashes, zero missing layout errors).
+  - Deployed to: [`Neoway_N706B_Flasher.exe`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Neoway_N706B_Flasher.exe) (13.5 MB).

@@ -4,11 +4,13 @@
  */
 
 #include "data_collector.h"
+#include "i2c_bus.h"
 #include "nwy_sd_card.h"
 #include "ff.h"
 #include "hal/sms/nwy_hal_sms.h"
 #include "hal/uart/nwy_hal_uart.h"
 #include "hal/os/nwy_hal_os.h"
+#include "hal/pm/nwy_hal_pm.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -19,7 +21,10 @@
 static bme68x_dev_t       *s_bme_dev = NULL;
 static collector_status_t  s_status;
 static FIL                 s_csv_file;
-static bool                s_file_is_open = false;
+static FIL                 s_bme_file;
+static bool                s_csv_file_is_open = false;
+static bool                s_bme_file_is_open = false;
+static bool                s_bme_first_entry = true;
 static nwy_osi_mutex_t     s_collector_mutex = NULL;
 
 static char                s_alert_phone[32] = DEFAULT_ALERT_PHONE;
@@ -27,6 +32,117 @@ static bool                s_boot_alert_sent = false;
 static bool                s_alert_sensor_error_sent = false;
 static bool                s_alert_sd_error_sent = false;
 static bool                s_alert_sd_low_sent = false;
+
+/* Official Bosch HP-354 step starting offsets from cycle start (ms)
+ * Step 0: 320°C (700ms)  -> +0ms
+ * Step 1: 100°C (280ms)  -> +700ms
+ * Step 2: 100°C (1400ms) -> +980ms
+ * Step 3: 100°C (4032ms) -> +2380ms
+ * Step 4: 200°C (700ms)  -> +6412ms
+ * Step 5: 200°C (700ms)  -> +7112ms
+ * Step 6: 200°C (700ms)  -> +7812ms
+ * Step 7: 320°C (700ms)  -> +8512ms
+ * Step 8: 320°C (700ms)  -> +9212ms
+ * Step 9: 320°C (700ms)  -> +9912ms */
+static const uint32_t s_hp354_step_offsets_ms[10] = {
+    0, 700, 980, 2380, 6412, 7112, 7812, 8512, 9212, 9912
+};
+
+static uint32_t s_session_rtc_base = 0;
+static uint32_t s_session_start_uptime_ms = 0;
+
+static uint32_t rtc_to_epoch(const nwy_time_t *tm, int tz_quarter_hours)
+{
+    int year = (tm->year < 100) ? (2000 + tm->year) : tm->year;
+    if (year < 1970) return 1731834000;
+
+    static const uint16_t days_before_month[12] = {
+        0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
+    };
+
+    uint32_t days = (uint32_t)((year - 1970) * 365 + ((year - 1969) / 4));
+    int m = tm->mon - 1;
+    if (m >= 0 && m < 12) {
+        days += days_before_month[m];
+        if (m > 1 && (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))) {
+            days++;
+        }
+    }
+    days += (tm->day > 0) ? (uint32_t)(tm->day - 1) : 0;
+    uint32_t local_sec = days * 86400 + (uint32_t)tm->hour * 3600 + (uint32_t)tm->min * 60 + (uint32_t)tm->sec;
+
+    /* Subtract cellular network timezone offset (15-min intervals) to get true UTC Unix epoch */
+    int32_t tz_offset_sec = (int32_t)tz_quarter_hours * 900;
+    return (uint32_t)((int64_t)local_sec - tz_offset_sec);
+}
+
+/* Canonical Bosch BME AI-Studio v3.2.1 Configuration Header & Body */
+static const char s_bme_config_header_body[] =
+    "{\n"
+    "  \"configHeader\": {\n"
+    "    \"dateCreated_ISO\": \"2026-11-17T09:00:00Z\",\n"
+    "    \"appVersion\": \"3.2.1\",\n"
+    "    \"boardType\": \"board_8\",\n"
+    "    \"boardMode\": \"burn_in\",\n"
+    "    \"boardLayout\": \"grouped\"\n"
+    "  },\n"
+    "  \"configBody\": {\n"
+    "    \"heaterProfiles\": [\n"
+    "      {\n"
+    "        \"id\": \"heater_354\",\n"
+    "        \"timeBase\": 140,\n"
+    "        \"temperatureTimeVectors\": [\n"
+    "          [320, 5],\n"
+    "          [100, 2],\n"
+    "          [100, 10],\n"
+    "          [100, 30],\n"
+    "          [200, 5],\n"
+    "          [200, 5],\n"
+    "          [200, 5],\n"
+    "          [320, 5],\n"
+    "          [320, 5],\n"
+    "          [320, 5]\n"
+    "        ]\n"
+    "      }\n"
+    "    ],\n"
+    "    \"dutyCycleProfiles\": [\n"
+    "      {\n"
+    "        \"id\": \"duty_1\",\n"
+    "        \"numberScanningCycles\": 1,\n"
+    "        \"numberSleepingCycles\": 0\n"
+    "      }\n"
+    "    ],\n"
+    "    \"sensorConfigurations\": [\n"
+    "      {\"sensorIndex\": 0, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
+    "      {\"sensorIndex\": 1, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
+    "      {\"sensorIndex\": 2, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
+    "      {\"sensorIndex\": 3, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
+    "      {\"sensorIndex\": 4, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
+    "      {\"sensorIndex\": 5, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
+    "      {\"sensorIndex\": 6, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
+    "      {\"sensorIndex\": 7, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"}\n"
+    "    ]\n"
+    "  },\n";
+
+/* Canonical Bosch BME AI-Studio 13-Column Data Definition */
+static const char s_bme_datacolumns[] =
+    "  \"rawDataBody\": {\n"
+    "    \"dataColumns\": [\n"
+    "      {\"name\": \"Sensor Index\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"sensor_index\", \"colId\": 1},\n"
+    "      {\"name\": \"Sensor ID\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"sensor_id\", \"colId\": 2},\n"
+    "      {\"name\": \"Time Since PowerOn\", \"unit\": \"Milliseconds\", \"format\": \"integer\", \"key\": \"timestamp_since_poweron\", \"colId\": 3},\n"
+    "      {\"name\": \"Real time clock\", \"unit\": \"Unix Timestamp: seconds since Jan 01 1970. (UTC); 0 = missing\", \"format\": \"integer\", \"key\": \"real_time_clock\", \"colId\": 4},\n"
+    "      {\"name\": \"Temperature\", \"unit\": \"DegreesCelcius\", \"format\": \"float\", \"key\": \"temperature\", \"colId\": 5},\n"
+    "      {\"name\": \"Pressure\", \"unit\": \"Hectopascals\", \"format\": \"float\", \"key\": \"pressure\", \"colId\": 6},\n"
+    "      {\"name\": \"Relative Humidity\", \"unit\": \"Percent\", \"format\": \"float\", \"key\": \"relative_humidity\", \"colId\": 7},\n"
+    "      {\"name\": \"Resistance Gassensor\", \"unit\": \"Ohms\", \"format\": \"float\", \"key\": \"resistance_gassensor\", \"colId\": 8},\n"
+    "      {\"name\": \"Heater Profile Step Index\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"heater_profile_step_index\", \"colId\": 9},\n"
+    "      {\"name\": \"Scanning Mode Enabled\", \"unit\": \"\", \"format\": \"boolean\", \"key\": \"scanning_enabled\", \"colId\": 10},\n"
+    "      {\"name\": \"Scanning Cycle Index\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"scanning_cycle_index\", \"colId\": 11},\n"
+    "      {\"name\": \"Label Tag\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"label_tag\", \"colId\": 12},\n"
+    "      {\"name\": \"Error Code\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"error_code\", \"colId\": 13}\n"
+    "    ],\n"
+    "    \"dataBlock\": [";
 
 /* -------------------------------------------------------------------------
  * HELPER STRING UTILITIES
@@ -125,20 +241,58 @@ void data_collector_send_boot_status(bool bme_ok, bool sd_ok)
 /* -------------------------------------------------------------------------
  * INITIALIZATION
  * ------------------------------------------------------------------------- */
+bool data_collector_is_sensor_ready(void)
+{
+    if (s_bme_dev == NULL) return false;
+    if (s_bme_dev->chip_id != BME68X_CHIP_ID) return false;
+    return bme68x_check_connection(s_bme_dev);
+}
+
+int data_collector_check_sensor_health(void)
+{
+    if (s_bme_dev == NULL) return -1;
+
+    if (bme68x_check_connection(s_bme_dev)) {
+        s_status.sensor_interfaced = true;
+        return 0;
+    }
+
+    nwy_hal_uart_printf(1, LOG_TAG "Sensor unresponsive! Performing bus reset & auto-recovery...\r\n");
+    s_status.sensor_interfaced = false;
+
+    /* Reset I2C bus lines and clear any stuck slave state */
+    i2c_bus_reset();
+    nwy_hal_os_thread_sleep(50);
+
+    /* Attempt driver re-initialization */
+    int8_t rslt = bme68x_init(s_bme_dev);
+    if (rslt == BME68X_OK && s_bme_dev->chip_id == BME68X_CHIP_ID) {
+        s_status.sensor_interfaced = true;
+        nwy_hal_uart_printf(1, LOG_TAG "Sensor recovery SUCCESSFUL! Chip ID: 0x%02X\r\n", s_bme_dev->chip_id);
+        return 0;
+    }
+
+    nwy_hal_uart_printf(1, LOG_TAG "Sensor recovery FAILED (err: %d, id: 0x%02X)\r\n", rslt, s_bme_dev->chip_id);
+    return -2;
+}
+
 int data_collector_init(bme68x_dev_t *bme_dev)
 {
     s_bme_dev = bme_dev;
 
     memset(&s_status, 0, sizeof(s_status));
     s_status.state = COLLECTOR_STATE_IDLE;
-    s_status.interval_sec = 3; /* Default 3 seconds between 10-step scans */
+    s_status.interval_sec = 12; /* Default 12 seconds (~10.8s HP-354 scan + 1.2s rest) */
     strncpy(s_status.current_label, "CLEAN_AIR", sizeof(s_status.current_label) - 1);
+    s_status.sensor_interfaced = (bme_dev != NULL && bme_dev->chip_id == BME68X_CHIP_ID);
+    s_status.sd_mounted = nwy_sdcard_is_mounted();
 
     if (s_collector_mutex == NULL) {
         nwy_sdk_mutex_create(&s_collector_mutex);
     }
 
-    nwy_hal_uart_printf(1, LOG_TAG "Engine initialized. Default interval: %d s\r\n", s_status.interval_sec);
+    nwy_hal_uart_printf(1, LOG_TAG "Engine initialized. Default interval: %d s | Sensor: %s\r\n",
+                        s_status.interval_sec, s_status.sensor_interfaced ? "READY" : "OFFLINE");
     return 0;
 }
 
@@ -159,7 +313,7 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
         return -1;
     }
 
-    /* Verify SD Card is mounted */
+    /* Strict Guard 1: Verify SD Card is mounted */
     if (!nwy_sdcard_is_mounted()) {
         if (nwy_sdcard_reinit() != 0) {
             if (reply_buf && reply_max > 0) {
@@ -167,6 +321,20 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
             }
             if (s_collector_mutex) nwy_sdk_mutex_unlock(s_collector_mutex);
             return -2;
+        }
+    }
+
+    /* Strict Guard 2: Verify BME688 sensor is interfaced successfully */
+    if (!data_collector_is_sensor_ready()) {
+        /* Run one auto-recovery attempt in case of transient bus glitch */
+        if (data_collector_check_sensor_health() != 0) {
+            if (reply_buf && reply_max > 0) {
+                snprintf(reply_buf, reply_max,
+                         "REJECTED: BME688 sensor not interfaced (0x76)! Fix wiring before collecting '%s'.",
+                         label ? label : "DATA");
+            }
+            if (s_collector_mutex) nwy_sdk_mutex_unlock(s_collector_mutex);
+            return -4;
         }
     }
 
@@ -198,7 +366,7 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
         return -3;
     }
 
-    s_file_is_open = true;
+    s_csv_file_is_open = true;
 
     /* Write CSV Header */
     const char *header = "timestamp_ms,sample_idx,label,temp_c,humidity_rh,pressure_hpa,"
@@ -206,6 +374,84 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
     UINT bw = 0;
     f_write(&s_csv_file, header, (UINT)strlen(header), &bw);
     f_sync(&s_csv_file);
+
+    /* Construct Bosch BME AI-Studio native (.bmerawdata) filename & JSON header */
+    nwy_time_t tm;
+    int tz = 0;
+    bool time_valid = false;
+    char iso_time[32] = "2026-11-16T12:00:00Z";
+    char iso_prefix[24] = "2026-11-16T12:00:00";
+    char bme_filename[128];
+    uint32_t session_seed = (uint32_t)(nwy_uptime_get() & 0xFFFF);
+
+    s_session_start_uptime_ms = (uint32_t)nwy_uptime_get();
+
+    if (nwy_hal_pm_get_time(&tm, &tz)) {
+        int full_year = (tm.year < 100) ? (2000 + tm.year) : tm.year;
+        if (full_year >= 2024 && tm.mon >= 1 && tm.mon <= 12 && tm.day >= 1 && tm.day <= 31) {
+            time_valid = true;
+            s_session_rtc_base = rtc_to_epoch(&tm, tz);
+            int tz_h = tz / 4;
+            int tz_m = (tz >= 0 ? (tz % 4) : (-tz % 4)) * 15;
+            snprintf(iso_time, sizeof(iso_time), "%04d-%02d-%02dT%02d:%02d:%02d%+03d:%02d",
+                     full_year, tm.mon, tm.day, tm.hour, tm.min, tm.sec, tz_h, tz_m);
+            snprintf(iso_prefix, sizeof(iso_prefix), "%04d-%02d-%02dT%02d:%02d:%02d",
+                     full_year, tm.mon, tm.day, tm.hour, tm.min, tm.sec);
+            snprintf(bme_filename, sizeof(bme_filename),
+                     "0:/%04d_%02d_%02d_%02d_%02d_Board_N706B_PowerOnOff_1_Seed_%04X_File_0.bmerawdata",
+                     full_year, tm.mon, tm.day, tm.hour, tm.min, (unsigned int)session_seed);
+        }
+    }
+    if (!time_valid) {
+        uint32_t up_s = (uint32_t)(nwy_uptime_get() / 1000);
+        s_session_rtc_base = 1731834000 + up_s;
+        snprintf(iso_time, sizeof(iso_time), "2026-11-17T%02u:%02u:%02uZ",
+                 (unsigned int)((up_s / 3600) % 24),
+                 (unsigned int)((up_s / 60) % 60),
+                 (unsigned int)(up_s % 60));
+        snprintf(iso_prefix, sizeof(iso_prefix), "2026-11-17T%02u:%02u:%02u",
+                 (unsigned int)((up_s / 3600) % 24),
+                 (unsigned int)((up_s / 60) % 60),
+                 (unsigned int)(up_s % 60));
+        snprintf(bme_filename, sizeof(bme_filename),
+                 "0:/2026_11_17_%02u_%02u_Board_N706B_PowerOnOff_1_Seed_%04X_File_0.bmerawdata",
+                 (unsigned int)((up_s / 3600) % 24),
+                 (unsigned int)((up_s / 60) % 60),
+                 (unsigned int)session_seed);
+    }
+    strncpy(s_status.current_bme_path, bme_filename, sizeof(s_status.current_bme_path) - 1);
+
+    FRESULT bme_res = f_open(&s_bme_file, bme_filename, FA_CREATE_ALWAYS | FA_WRITE);
+    if (bme_res == FR_OK) {
+        s_bme_file_is_open = true;
+        s_bme_first_entry = true;
+
+        UINT bw_bme = 0;
+        /* Chunk 1: Static configuration header & body */
+        f_write(&s_bme_file, s_bme_config_header_body, (UINT)strlen(s_bme_config_header_body), &bw_bme);
+
+        /* Chunk 2: Dynamic rawDataHeader */
+        char raw_hdr[256];
+        int rlen = snprintf(raw_hdr, sizeof(raw_hdr),
+            "  \"rawDataHeader\": {\n"
+            "    \"counterPowerOnOff\": 1,\n"
+            "    \"seedPowerOnOff\": \"%04X\",\n"
+            "    \"counterFileLimit\": 0,\n"
+            "    \"dateCreated\": \"%u\",\n"
+            "    \"dateCreated_ISO\": \"%s\",\n"
+            "    \"firmwareVersion\": \"2.1.0\",\n"
+            "    \"boardId\": \"Board_N706B\"\n"
+            "  },\n",
+            (unsigned int)session_seed, (unsigned int)s_session_rtc_base, iso_time);
+        f_write(&s_bme_file, raw_hdr, (UINT)rlen, &bw_bme);
+
+        /* Chunk 3: Static canonical dataColumns & opening dataBlock bracket */
+        f_write(&s_bme_file, s_bme_datacolumns, (UINT)strlen(s_bme_datacolumns), &bw_bme);
+        f_sync(&s_bme_file);
+        nwy_hal_uart_printf(1, LOG_TAG "Bosch AI-Studio (.bmerawdata) initialized: %s\r\n", bme_filename);
+    } else {
+        nwy_hal_uart_printf(1, LOG_TAG "WARNING: Could not create .bmerawdata file (err %d)\r\n", bme_res);
+    }
 
     s_status.sample_count = 0;
     s_status.state = COLLECTOR_STATE_RECORDING;
@@ -243,24 +489,60 @@ int data_collector_stop(char *reply_buf, size_t reply_max)
         return 0;
     }
 
-    if (s_file_is_open) {
+    if (s_bme_file_is_open) {
+        const char *footer = "\n    ]\n  }\n}\n";
+        UINT bw_bme = 0;
+        f_write(&s_bme_file, footer, (UINT)strlen(footer), &bw_bme);
+        f_sync(&s_bme_file);
+        f_close(&s_bme_file);
+        s_bme_file_is_open = false;
+
+        /* Generate companion .bmelabelinfo file so Bosch AI-Studio automatically identifies the label */
+        char labelinfo_path[128];
+        strncpy(labelinfo_path, s_status.current_bme_path, sizeof(labelinfo_path) - 1);
+        labelinfo_path[sizeof(labelinfo_path) - 1] = '\0';
+        char *dot = strstr(labelinfo_path, ".bmerawdata");
+        if (dot) {
+            strcpy(dot, ".bmelabelinfo");
+            FIL linfo_file;
+            if (f_open(&linfo_file, labelinfo_path, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK) {
+                char linfo_buf[256];
+                int llen = snprintf(linfo_buf, sizeof(linfo_buf),
+                    "{\n"
+                    "  \"labelInformation\": [\n"
+                    "    {\n"
+                    "      \"labelTag\": 1,\n"
+                    "      \"labelName\": \"%s\",\n"
+                    "      \"labelDescription\": \"Recorded on Neoway N706B\"\n"
+                    "    }\n"
+                    "  ]\n"
+                    "}\n", s_status.current_label);
+                UINT bw_li = 0;
+                f_write(&linfo_file, linfo_buf, (UINT)llen, &bw_li);
+                f_close(&linfo_file);
+                nwy_hal_uart_printf(1, LOG_TAG "Companion label info created: %s\r\n", labelinfo_path);
+            }
+        }
+    }
+
+    if (s_csv_file_is_open) {
         f_sync(&s_csv_file);
         f_close(&s_csv_file);
-        s_file_is_open = false;
+        s_csv_file_is_open = false;
     }
 
     s_status.state = COLLECTOR_STATE_IDLE;
 
-    const char *basename = s_status.current_file_path;
-    if (strncmp(basename, "0:/", 3) == 0) basename += 3;
+    const char *csv_base = s_status.current_file_path;
+    if (strncmp(csv_base, "0:/", 3) == 0) csv_base += 3;
 
     nwy_hal_uart_printf(1, LOG_TAG "RECORDING STOPPED: %s | Total samples: %lu\r\n",
                         s_status.current_label, (unsigned long)s_status.sample_count);
 
     if (reply_buf && reply_max > 0) {
         snprintf(reply_buf, reply_max,
-                 "STOPPED: Session '%s' finished! Total samples: %lu. File saved: %s.",
-                 s_status.current_label, (unsigned long)s_status.sample_count, basename);
+                 "STOPPED: '%s' (%lu samples). Dual saved: %s & .bmerawdata",
+                 s_status.current_label, (unsigned long)s_status.sample_count, csv_base);
     }
 
     if (s_collector_mutex) nwy_sdk_mutex_unlock(s_collector_mutex);
@@ -274,6 +556,11 @@ void data_collector_get_status(collector_status_t *status_out, char *reply_buf, 
 {
     if (s_collector_mutex) nwy_sdk_mutex_lock(s_collector_mutex, 2000);
 
+    bool bme_ok = data_collector_is_sensor_ready();
+    bool sd_ok = nwy_sdcard_is_mounted();
+    s_status.sensor_interfaced = bme_ok;
+    s_status.sd_mounted = sd_ok;
+
     if (status_out) {
         *status_out = s_status;
     }
@@ -282,16 +569,20 @@ void data_collector_get_status(collector_status_t *status_out, char *reply_buf, 
     float free_gb = (float)free_bytes / (1024.0f * 1024.0f * 1024.0f);
 
     if (reply_buf && reply_max > 0) {
-        if (s_status.state == COLLECTOR_STATE_RECORDING) {
+        if (!bme_ok) {
             snprintf(reply_buf, reply_max,
-                     "STATUS: RUNNING | Label: %s | Count: %lu | T: %.1fC | H: %.1f%% | P: %.0fhPa | R0: %.1fk | SD: %.1fGB free",
+                     "STATUS: SENSOR DISCONNECTED (0x76)! State:%s | SD:%s(%.1fGB) | Check I2C wiring!",
+                     (s_status.state == COLLECTOR_STATE_RECORDING) ? "PAUSED" : "IDLE",
+                     sd_ok ? "OK" : "ERR", free_gb);
+        } else if (s_status.state == COLLECTOR_STATE_RECORDING) {
+            snprintf(reply_buf, reply_max,
+                     "STATUS: RUNNING '%s' (%lu) | Sensor:OK | T:%.1fC H:%.1f%% P:%.0fhPa R0:%.1fk | SD:%.1fGB",
                      s_status.current_label, (unsigned long)s_status.sample_count,
                      s_status.last_temperature, s_status.last_humidity, s_status.last_pressure,
                      s_status.last_rgas_0 / 1000.0f, free_gb);
         } else {
             snprintf(reply_buf, reply_max,
-                     "STATUS: IDLE | Last: %s (%lu samples) | T: %.1fC | H: %.1f%% | R0: %.1fk | SD: %.1fGB free",
-                     s_status.current_label, (unsigned long)s_status.sample_count,
+                     "STATUS: IDLE (Ready) | Sensor:OK(0x76) | T:%.1fC H:%.1f%% R0:%.1fk | SD:%.1fGB free",
                      s_status.last_temperature, s_status.last_humidity,
                      s_status.last_rgas_0 / 1000.0f, free_gb);
         }
@@ -305,7 +596,7 @@ void data_collector_get_status(collector_status_t *status_out, char *reply_buf, 
  * ------------------------------------------------------------------------- */
 int data_collector_set_interval(uint32_t interval_sec, char *reply_buf, size_t reply_max)
 {
-    if (interval_sec < 2) interval_sec = 2;       /* 10 steps * 140ms = 1.4s minimum scan time */
+    if (interval_sec < 11) interval_sec = 11;       /* 10 HP-354 steps = ~10.8s minimum scan time */
     if (interval_sec > 300) interval_sec = 300;   /* Max 5 minutes */
 
     if (s_collector_mutex) nwy_sdk_mutex_lock(s_collector_mutex, 2000);
@@ -376,14 +667,25 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
 
         if (*extra != '\0') {
             /* User asked: e.g. "STATUS BADFOOD" or "STATUS TOILET_CLEAN" */
-            if (s_status.state == COLLECTOR_STATE_RECORDING) {
+            bool bme_live = data_collector_is_sensor_ready();
+            bool sd_live = nwy_sdcard_is_mounted();
+            uint64_t free_b = nwy_sdcard_get_free_space();
+            float free_g = (float)free_b / (1024.0f * 1024.0f * 1024.0f);
+
+            if (!bme_live) {
                 snprintf(reply, sizeof(reply),
-                         "STATUS: RUNNING '%s' (%lu samples). To collect '%s', send STOP then START %s.",
+                         "STATUS: NOT READY for '%s'! Sensor not interfaced (0x76). Check wiring.", extra);
+            } else if (!sd_live) {
+                snprintf(reply, sizeof(reply),
+                         "STATUS: NOT READY for '%s'! MicroSD missing/unmounted. Insert card.", extra);
+            } else if (s_status.state == COLLECTOR_STATE_RECORDING) {
+                snprintf(reply, sizeof(reply),
+                         "STATUS: BUSY. Running '%s' (%lu). To collect '%s', send STOP then START %s.",
                          s_status.current_label, (unsigned long)s_status.sample_count, extra, extra);
             } else {
                 snprintf(reply, sizeof(reply),
-                         "STATUS: IDLE. Ready! To collect dataset for '%s', send: START %s",
-                         extra, extra);
+                         "STATUS: READY for '%s'. Sensor: OK(0x76, %.1fC), SD: OK(%.1fGB). Send: START %s",
+                         extra, s_status.last_temperature, free_g, extra);
             }
         } else {
             data_collector_get_status(NULL, reply, sizeof(reply));
@@ -445,9 +747,37 @@ void data_collector_worker_task(void *param)
 
     while (1) {
         if (s_status.state == COLLECTOR_STATE_RECORDING && s_bme_dev != NULL) {
+            /* 1. Runtime continuous sensor health verification */
+            if (!data_collector_is_sensor_ready()) {
+                nwy_hal_uart_printf(1, LOG_TAG "Sensor dropped offline at runtime! Pausing recording...\r\n");
+                s_status.sensor_interfaced = false;
+
+                if (!s_alert_sensor_error_sent) {
+                    s_alert_sensor_error_sent = true;
+                    char alert[160];
+                    snprintf(alert, sizeof(alert),
+                             "[BME688 ALERT] Sensor DISCONNECTED at runtime on '%s'! Recording paused. Recovering...",
+                             s_status.current_label);
+                    data_collector_send_alert(alert);
+                }
+
+                /* Attempt auto-recovery */
+                if (data_collector_check_sensor_health() == 0) {
+                    s_alert_sensor_error_sent = false;
+                    char alert[160];
+                    snprintf(alert, sizeof(alert),
+                             "[BME688 INFO] Sensor connection RESTORED! Recording resumed for '%s'.",
+                             s_status.current_label);
+                    data_collector_send_alert(alert);
+                } else {
+                    nwy_hal_os_thread_sleep(3000);
+                    continue; /* Do not proceed to scan or write corrupted data */
+                }
+            }
+
             uint32_t scan_start_time = (uint32_t)nwy_uptime_get();
 
-            /* Execute 10-step HP-354 Multi-Heater Scanning (takes ~1.65 seconds) */
+            /* 2. Execute 10-step HP-354 Multi-Heater Scanning (takes ~10.8 seconds) */
             int8_t rslt = bme68x_perform_10step_scan(s_bme_dev, r_gas, &temp, &hum, &pres);
 
             if (rslt == BME68X_OK) {
@@ -462,6 +792,7 @@ void data_collector_worker_task(void *param)
 
                 if (s_collector_mutex) nwy_sdk_mutex_lock(s_collector_mutex, 1000);
 
+                s_status.sensor_interfaced = true;
                 s_status.sample_count++;
                 s_status.last_temperature = temp;
                 s_status.last_humidity = hum;
@@ -480,7 +811,7 @@ void data_collector_worker_task(void *param)
                          r_gas[0], r_gas[1], r_gas[2], r_gas[3], r_gas[4],
                          r_gas[5], r_gas[6], r_gas[7], r_gas[8], r_gas[9]);
 
-                if (s_file_is_open) {
+                if (s_csv_file_is_open) {
                     UINT bw = 0;
                     FRESULT wr_res = f_write(&s_csv_file, csv_row, (UINT)strlen(csv_row), &bw);
                     FRESULT sync_res = f_sync(&s_csv_file); /* Guarantees immediate persistence to NAND flash */
@@ -489,11 +820,40 @@ void data_collector_worker_task(void *param)
                             s_alert_sd_error_sent = true;
                             char alert[160];
                             snprintf(alert, sizeof(alert),
-                                     "[BME688 ALERT] MicroSD write failed (err %d/%d). Recording paused!",
+                                     "[BME688 ALERT] MicroSD CSV write failed (err %d/%d). Recording paused!",
                                      wr_res, sync_res);
                             data_collector_send_alert(alert);
                         }
                     }
+                }
+
+                if (s_bme_file_is_open) {
+                    char bme_entry[220];
+                    UINT bw_bme = 0;
+
+                    for (int step = 0; step < 10; step++) {
+                        uint32_t step_time_ms = scan_start_time + s_hp354_step_offsets_ms[step];
+                        uint32_t elapsed_ms = (step_time_ms >= s_session_start_uptime_ms) ? (step_time_ms - s_session_start_uptime_ms) : 0;
+                        uint32_t step_rtc = s_session_rtc_base + (elapsed_ms / 1000);
+                        /* Canonical 13-Column Bosch format:
+                         * [sensor_index, sensor_id, timestamp_since_poweron, real_time_clock,
+                         *  temperature, pressure(hPa), relative_humidity, resistance_gassensor,
+                         *  heater_profile_step_index, scanning_enabled, scanning_cycle_index, label_tag, error_code] */
+                        int elen = snprintf(bme_entry, sizeof(bme_entry),
+                            "%s\n      [0, 1, %u, %u, %.2f, %.2f, %.2f, %.1f, %d, 1, %lu, 1, 0]",
+                            s_bme_first_entry ? "" : ",",
+                            (unsigned int)step_time_ms,
+                            (unsigned int)step_rtc,
+                            temp,
+                            pres, /* pressure in Hectopascals (hPa) */
+                            hum,
+                            r_gas[step],
+                            (int)step,
+                            (unsigned long)s_status.sample_count);
+                        s_bme_first_entry = false;
+                        f_write(&s_bme_file, bme_entry, (UINT)elen, &bw_bme);
+                    }
+                    f_sync(&s_bme_file);
                 }
 
                 /* Check SD card space every 20 samples */
@@ -518,15 +878,18 @@ void data_collector_worker_task(void *param)
                                     (unsigned long)s_status.sample_count, s_status.current_label,
                                     temp, hum, pres, r_gas[0], r_gas[9]);
             } else {
-                nwy_hal_uart_printf(1, LOG_TAG "BME688 scan error code: %d\r\n", rslt);
+                nwy_hal_uart_printf(1, LOG_TAG "BME688 scan error code: %d at runtime\r\n", rslt);
+                s_status.sensor_interfaced = false;
                 if (!s_alert_sensor_error_sent) {
                     s_alert_sensor_error_sent = true;
                     char alert[160];
                     snprintf(alert, sizeof(alert),
-                             "[BME688 ALERT] Sensor I2C read error (code %d) on '%s'. Check wiring!",
+                             "[BME688 ALERT] Sensor I2C error (code %d) on '%s'. Checking bus...",
                              rslt, s_status.current_label);
                     data_collector_send_alert(alert);
                 }
+                /* Attempt auto-recovery */
+                data_collector_check_sensor_health();
             }
 
             /* Calculate sleep duration to maintain configured sampling rate */

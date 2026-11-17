@@ -49,9 +49,9 @@
 
 #define	_FS_TINY	0
 #define _FS_EXFAT	0
-#define _FS_NORTC	1
-#define _NORTC_MON	10
-#define _NORTC_MDAY	11
+#define _FS_NORTC	0
+#define _NORTC_MON	11
+#define _NORTC_MDAY	17
 #define _NORTC_YEAR	2026
 #define	_FS_LOCK	5
 #define _FS_REENTRANT	0

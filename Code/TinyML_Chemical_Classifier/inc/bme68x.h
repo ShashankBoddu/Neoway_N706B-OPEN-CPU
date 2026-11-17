@@ -40,6 +40,14 @@ typedef struct {
 int8_t bme68x_init(bme68x_dev_t *dev);
 
 /**
+ * @brief Fast, non-intrusive runtime health check of BME688 sensor.
+ *        Probes register 0xD0 (Chip ID) and checks for 0x61.
+ * @param dev Pointer to device handle
+ * @return true if sensor is online and healthy, false if disconnected/unresponsive.
+ */
+bool bme68x_check_connection(bme68x_dev_t *dev);
+
+/**
  * @brief Configure sensor oversampling and digital IIR filter.
  * @param conf Pointer to configuration struct
  * @param dev Pointer to device descriptor

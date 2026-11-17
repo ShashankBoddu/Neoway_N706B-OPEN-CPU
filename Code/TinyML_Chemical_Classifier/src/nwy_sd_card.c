@@ -650,3 +650,22 @@ int nwy_sdcard_format(void)
     nwy_sdcard_unlock();
     return (fr == FR_OK) ? 0 : -2;
 }
+
+DWORD get_fattime (void)
+{
+    nwy_time_t tm;
+    int tz = 0;
+    if (nwy_date_get(&tm, &tz) == 0) {
+        int year = (tm.year < 100) ? (2000 + tm.year) : tm.year;
+        if (year >= 1980) {
+            return ((DWORD)(year - 1980) << 25)
+                 | ((DWORD)tm.mon << 21)
+                 | ((DWORD)tm.day << 16)
+                 | ((DWORD)tm.hour << 11)
+                 | ((DWORD)tm.min << 5)
+                 | ((DWORD)(tm.sec / 2));
+        }
+    }
+    return ((DWORD)(2026 - 1980) << 25 | (DWORD)11 << 21 | (DWORD)17 << 16);
+}
+

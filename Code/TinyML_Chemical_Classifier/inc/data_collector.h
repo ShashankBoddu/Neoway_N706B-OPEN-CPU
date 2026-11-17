@@ -24,8 +24,11 @@ typedef enum {
 
 typedef struct {
     collector_state_t state;
+    bool              sensor_interfaced;
+    bool              sd_mounted;
     char              current_label[32];
     char              current_file_path[64];
+    char              current_bme_path[128];
     uint32_t          sample_count;
     uint32_t          interval_sec;
     float             last_temperature;
@@ -41,6 +44,18 @@ typedef struct {
  * @return 0 on success, negative on error.
  */
 int data_collector_init(bme68x_dev_t *bme_dev);
+
+/**
+ * @brief Verify whether the BME688 sensor is successfully interfaced and ready.
+ * @return true if interfaced, false if missing or communication failed.
+ */
+bool data_collector_is_sensor_ready(void);
+
+/**
+ * @brief Perform active runtime sensor health check and auto-recovery.
+ * @return 0 if healthy/recovered, negative if offline.
+ */
+int data_collector_check_sensor_health(void);
 
 /**
  * @brief Start a new dataset recording session.

@@ -21,7 +21,7 @@ extern "C" {
 #define I2C1_BUS_NAME           "I2C1"
 #define I2C1_DEFAULT_SCL_GPIO   49       /* Module Pin 57 (I2C1_SCL -> GPIO 49) */
 #define I2C1_DEFAULT_SDA_GPIO   50       /* Module Pin 58 (I2C1_SDA -> GPIO 50) */
-#define I2C_DEFAULT_SPEED_HZ    400000   /* 400 kHz Fast Mode */
+#define I2C_DEFAULT_SPEED_HZ    100000   /* 100 kHz Standard Mode (Rock-solid for level shifters & sensors) */
 #define I2C_DEFAULT_TIMEOUT_MS  50       /* 50 ms bounded transaction timeout */
 
 /* I2C Engine Drivers */
@@ -89,6 +89,32 @@ int i2c_bus_read(uint8_t dev_addr_7bit, uint8_t *data, uint16_t len);
 int i2c_bus_write_read(uint8_t dev_addr_7bit,
                        const uint8_t *tx_data, uint16_t tx_len,
                        uint8_t *rx_data, uint16_t rx_len);
+
+/**
+ * @brief Reset and reinitialize the I2C bus subsystem (useful for bus hang recovery).
+ * @return 0 on success, negative error code on failure.
+ */
+int i2c_bus_reset(void);
+
+/**
+ * @brief Read consecutive registers starting at reg_addr from a 7-bit slave device.
+ * @param dev_addr_7bit 7-bit slave address (e.g. 0x76 for BME688)
+ * @param reg_addr Starting 8-bit register address (e.g. 0xD0 for Chip ID)
+ * @param data Buffer to receive data read from registers
+ * @param len Number of bytes to read
+ * @return 0 on success, negative error code on failure.
+ */
+int i2c_bus_read_reg(uint8_t dev_addr_7bit, uint8_t reg_addr, uint8_t *data, uint16_t len);
+
+/**
+ * @brief Write consecutive registers starting at reg_addr to a 7-bit slave device.
+ * @param dev_addr_7bit 7-bit slave address (e.g. 0x76 for BME688)
+ * @param reg_addr Starting 8-bit register address
+ * @param data Buffer containing payload data to write
+ * @param len Number of payload bytes to write
+ * @return 0 on success, negative error code on failure.
+ */
+int i2c_bus_write_reg(uint8_t dev_addr_7bit, uint8_t reg_addr, const uint8_t *data, uint16_t len);
 
 /**
  * @brief Recursive mutex lock/unlock for thread safety across multiple FreeRTOS tasks.
