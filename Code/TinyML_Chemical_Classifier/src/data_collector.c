@@ -398,8 +398,8 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
             snprintf(iso_prefix, sizeof(iso_prefix), "%04d-%02d-%02dT%02d:%02d:%02d",
                      full_year, tm.mon, tm.day, tm.hour, tm.min, tm.sec);
             snprintf(bme_filename, sizeof(bme_filename),
-                     "0:/%04d_%02d_%02d_%02d_%02d_Board_N706B_PowerOnOff_1_Seed_%04X_File_0.bmerawdata",
-                     full_year, tm.mon, tm.day, tm.hour, tm.min, (unsigned int)session_seed);
+                     "0:/%04d%02d%02d_%02d%02d_%s_0.bmerawdata",
+                     full_year, tm.mon, tm.day, tm.hour, tm.min, s_status.current_label);
         }
     }
     if (!time_valid) {
@@ -414,10 +414,10 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
                  (unsigned int)((up_s / 60) % 60),
                  (unsigned int)(up_s % 60));
         snprintf(bme_filename, sizeof(bme_filename),
-                 "0:/2026_11_17_%02u_%02u_Board_N706B_PowerOnOff_1_Seed_%04X_File_0.bmerawdata",
+                 "0:/20261117_%02u%02u_%s_0.bmerawdata",
                  (unsigned int)((up_s / 3600) % 24),
                  (unsigned int)((up_s / 60) % 60),
-                 (unsigned int)session_seed);
+                 s_status.current_label);
     }
     strncpy(s_status.current_bme_path, bme_filename, sizeof(s_status.current_bme_path) - 1);
 
@@ -431,8 +431,8 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
         f_write(&s_bme_file, s_bme_config_header_body, (UINT)strlen(s_bme_config_header_body), &bw_bme);
 
         /* Chunk 2: Dynamic rawDataHeader */
-        char raw_hdr[256];
-        int rlen = snprintf(raw_hdr, sizeof(raw_hdr),
+        char raw_hdr[512];
+        snprintf(raw_hdr, sizeof(raw_hdr),
             "  \"rawDataHeader\": {\n"
             "    \"counterPowerOnOff\": 1,\n"
             "    \"seedPowerOnOff\": \"%04X\",\n"
@@ -443,7 +443,7 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
             "    \"boardId\": \"Board_N706B\"\n"
             "  },\n",
             (unsigned int)session_seed, (unsigned int)s_session_rtc_base, iso_time);
-        f_write(&s_bme_file, raw_hdr, (UINT)rlen, &bw_bme);
+        f_write(&s_bme_file, raw_hdr, (UINT)strlen(raw_hdr), &bw_bme);
 
         /* Chunk 3: Static canonical dataColumns & opening dataBlock bracket */
         f_write(&s_bme_file, s_bme_datacolumns, (UINT)strlen(s_bme_datacolumns), &bw_bme);
@@ -518,7 +518,7 @@ int data_collector_stop(char *reply_buf, size_t reply_max)
                     "  ]\n"
                     "}\n", s_status.current_label);
                 UINT bw_li = 0;
-                f_write(&linfo_file, linfo_buf, (UINT)llen, &bw_li);
+                f_write(&linfo_file, linfo_buf, (UINT)strlen(linfo_buf), &bw_li);
                 f_close(&linfo_file);
                 nwy_hal_uart_printf(1, LOG_TAG "Companion label info created: %s\r\n", labelinfo_path);
             }
@@ -851,7 +851,7 @@ void data_collector_worker_task(void *param)
                             (int)step,
                             (unsigned long)s_status.sample_count);
                         s_bme_first_entry = false;
-                        f_write(&s_bme_file, bme_entry, (UINT)elen, &bw_bme);
+                        f_write(&s_bme_file, bme_entry, (UINT)strlen(bme_entry), &bw_bme);
                     }
                     f_sync(&s_bme_file);
                 }

@@ -147,7 +147,7 @@ static void print_system_banner(void)
     nwy_hal_uart_printf(g_dbg_uart_fd, "==============================================================\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "*  NEOWAY N706B — TINYML BME688 GAS SCANNER & DATA COLLECTOR *\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "==============================================================\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, " Firmware Ver : 0.0.8\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, " Firmware Ver : 0.0.9\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, " Build Timestamp: %s %s\r\n", __DATE__, __TIME__);
     nwy_hal_uart_printf(g_dbg_uart_fd, " Boot Cause   : %d (%s)\r\n", boot_reason, reason_str);
     nwy_hal_uart_printf(g_dbg_uart_fd, " Sensor Target: SmartElex BME688 (Bosch MEMS AI Gas Scanner)\r\n");

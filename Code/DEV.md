@@ -1897,3 +1897,87 @@ To eliminate race conditions, direction contention, and kernel panics across dee
   - Compiled to standalone single-binary 64-bit Windows executable using PyInstaller 6.22.3 (`scratch/modern_flasher.py` -> `Neoway_N706B_Flasher.exe`).
   - Empirical launch verification: Process spawned and verified running normally with return status `None` (active event loop, zero crashes, zero missing layout errors).
   - Deployed to: [`Neoway_N706B_Flasher.exe`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Neoway_N706B_Flasher.exe) (13.5 MB).
+
+---
+
+### [2026-11-17] - Resolved Buffer Truncation (`raw_hdr`) & Implemented Human-Readable Short Naming Convention
+* **Subsystem Scope:** Bosch BME AI-Studio JSON Serializer / File Naming Convention / SD Card Data Organization
+* **Description & Context:**
+  - The older dataset `10_47` imported successfully, but the latest recordings (`11_34`, `11_50`, and `12_02`) failed to import in Bosch BME AI-Studio with the error:
+    `"Data import failed: Raw Data could not be imported. The data appears to be in an invalid format."`
+  - Furthermore, the user requested short, meaningful, and intuitive filenames instead of the long gibberish names.
+* **Root Cause Analysis (RCA):**
+  - **Buffer Truncation & Null-Byte Injection:**
+    - In `data_collector.c`, `raw_hdr` was defined as `char raw_hdr[256];`.
+    - When `dateCreated_ISO` was expanded to include the full timezone offset (`%+03d:%02d`, e.g. `2026-11-17T11:34:21+05:30`), the total header string expanded to 269 bytes.
+    - `snprintf` truncated the buffer at byte 255, cutting off the closing `},\n` right after `}`.
+    - Passing `(UINT)rlen` (256) to `f_write` wrote uninitialized null bytes `\x00\x00` before Chunk 3 (`"rawDataBody": {`), causing an invalid JSON syntax error: `Expecting ',' delimiter: line 54 column 4`.
+* **Resolution & Implementation:**
+  1. **Immediate SD Card Dataset Repair (`I:\`):**
+     - Corrected the missing comma and null bytes across all affected `.bmerawdata` files on `I:\` (`11_34`, `11_50`, and `12_02`).
+     - Verified all files with Node.js parser (`630`, `510`, and `660` data rows parsed with 0 errors).
+  2. **Firmware Buffer Hardening:**
+     - Expanded `char raw_hdr[512];` in [`data_collector.c`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.c).
+     - Switched to `f_write(&s_bme_file, raw_hdr, (UINT)strlen(raw_hdr), &bw_bme);` to ensure only valid bytes are written.
+  3. **Short, Human-Readable Meaningful Naming:**
+     - Updated filename generation to: `YYYYMMDD_HHMM_<LABEL>_0.bmerawdata` and `YYYYMMDD_HHMM_<LABEL>_0.bmelabelinfo`.
+     - Completely eliminated long string noise like `Board_N706B_PowerOnOff_1_Seed_...`.
+     - Preserves the `_<index>` suffix required by Bosch BME AI-Studio's session matcher regex.
+     - Clean files generated on `I:\`:
+       - `20261117_1047_NEWTEST_0.bmerawdata` (770 rows)
+       - `20261117_1134_NORMAL_AIR_0.bmerawdata` (630 rows)
+       - `20261117_1150_IP_SOLUTION_0.bmerawdata` (510 rows)
+       - `20261117_1202_NORMAL_AIR1_0.bmerawdata` (660 rows)
+* **Verification & Validation (V&V):**
+  - Schema and parser verification passed 100% in Node.js against Bosch AI-Studio rules.
+  - Firmware recompiled cleanly via `build_TinyML_Chemical_Classifier.bat` (Ninja exit code 0).
+  - Target binary: [`release/nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/release/nwy_open_app.zip).
+
+---
+
+### [2026-11-17] - Resolved Flasher Auto-Detection Hang (`COM22` vs `COM21`) & SD Card Dataset Import Verification
+* **Subsystem Scope:** Desktop Flashing Tool (`Neoway_N706B_Flasher.exe`) / USB Composite Port Enumeration / Bosch BME AI-Studio Import
+* **Description & Context:**
+  - The desktop flasher stalled at:
+    ```text
+    [15:34:47] Sending AT$MYDOWNLOAD=1 to COM22...
+    [15:34:47] Could not open COM22: could not open port 'COM22': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2). Module may already be in download mode.
+    [15:34:53] Transmitting partitions via ASR Aboot engine...
+    [15:34:53] Executing: ... adownload.exe -u -a -r -q -s 115200 ...
+    ```
+    and hung indefinitely without flashing.
+  - PuTTY is actively used by the engineer on `COM13` (UART Debug Console), which must remain completely isolated and untouched.
+  - Bosch BME AI-Studio previously showed:
+    `"Data import failed: Raw Data could not be imported. The data appears to be in an invalid format."`
+* **Root Cause Analysis (RCA):**
+  1. **USB Hardware ID String Ingestion Bug (`LOCATION=...` Substring Collision):**
+     - The serial port scanner examined `combo = (desc + " " + hwid).lower()`.
+     - The Neoway composite USB device (`VID_2949:PID_7401`) presents 7 endpoints (`NMEA`, `OPEN_CON`, `AT`, `DIAG`, `AP_TRACE`, `MODEM`, `CP_TRACE`).
+     - Every endpoint's Windows Hardware ID (`hwid`) contains the string: `LOCATION=1-2.2:x.y`.
+     - Because `loc`**`at`**`ion` contains the substring `"at"`, the check `("neoway" in combo and "at" in combo)` evaluated to `True` for **all 7 endpoints**!
+     - Because each match was inserted with `at_candidates.insert(0, entry_str)`, the last enumerated endpoint (`COM22: Neoway USB CP_TRACE`) ended up at index 0 and was selected by default instead of `COM21: Neoway USB AT`.
+     - Because `COM22` is a cellular protocol trace endpoint (not an AT interpreter), `AT$MYDOWNLOAD=1` failed. The module **never entered AROM download mode**, leaving `adownload.exe` waiting endlessly for the bootloader USB endpoint.
+  2. **Bosch BME AI-Studio Import Failure Root Cause:**
+     - In Bosch AI-Studio's `server.log`, the error was recorded as:
+       `Failed to parse I:\...bmerawdata, SyntaxError: Unexpected token \u0000 in JSON at position 1685`
+     - The preview graph in AI-Studio rendered initially, but clicking "Import Data" triggered the backend's strict `JSON.parse` via `readRawData()`, which crashed on the null byte `\0` written by the earlier 256-byte buffer overflow.
+* **Resolution & Implementation:**
+  1. **Strict Regex AT Port Detection (`modern_flasher.py`):**
+     - Implemented `_is_real_at_port(desc, hwid)`:
+       - Strictly rejects non-AT endpoints: `cp_trace`, `ap_trace`, `diag`, `nmea`, `modem`, `open_con`.
+       - Matches `\b(?:usb\s+)?at\b` specifically against the friendly port description (matching `COM21: Neoway USB AT`).
+       - Strictly preserves and ignores `COM13` (CH340 UART Debug Console) so PuTTY operates without interruption.
+  2. **Non-Blocking Flasher Engine Execution with Timeout Watchdog:**
+     - Standardized `adownload.exe` invocation with daemon thread stdout streaming (`iter(proc.stdout.readline, '')`).
+     - Added a 75-second execution watchdog and instantaneous user cancellation via `Cancel` button.
+  3. **Complete SD Card Dataset Verification on `I:\`:**
+     - Verified all 7 datasets on `I:\` with Node.js `JSON.parse`:
+       - `20261117_1047_TEST_0.bmerawdata` (770 rows) - 100% Valid JSON
+       - `20261117_1255_NORMAL_AIR_0.bmerawdata` (670 rows) - 100% Valid JSON
+       - `20261117_1336_IP_SOLUTION_0.bmerawdata` (1650 rows) - 100% Valid JSON
+       - `20261117_1422_NORMAL_AIR_0.bmerawdata` (2350 rows) - 100% Valid JSON
+       - Plus all sanitized legacy-named files.
+* **Verification & Validation (V&V):**
+  - Compiled and deployed updated binary to: [`Neoway_N706B_Flasher.exe`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Neoway_N706B_Flasher.exe) (12.3 MB).
+  - Validated port auto-detection: `COM21: Neoway USB AT (COM21)` automatically selected at index 0.
+  - Confirmed COM13 remains 100% untouched for PuTTY.
