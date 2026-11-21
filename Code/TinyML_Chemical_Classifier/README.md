@@ -79,20 +79,65 @@ The device communicates via 3GPP cellular SMS. Incoming messages are parsed outs
 4. **Storage Space Alert (Sent once if SD free < 50MB):**
    `[BME688 ALERT] MicroSD nearly full (<50MB). Recording stopped!`
 
-### B. Command Dictionary (Universal Label Collection)
+### B. Command Dictionary (Universal Label Collection, Remote SD, & FOTA)
 
-You can collect data for **any environmental or odor condition** (e.g., `BADFOOD`, `TOILET_CLEAN`, `TOILET_DIRTY`, `IPA_SOLUTION`, `SPOILED_MILK`, `AMMONIA`):
+You can collect data for **any environmental or odor condition** (e.g., `BADFOOD`, `TOILET_CLEAN`, `TOILET_DIRTY`, `IPA_SOLUTION`, `SPOILED_MILK`, `AMMONIA`), remotely list and download MicroSD files via HTTP, or perform secure FOTA updates:
 
 | SMS Command | Example | Description | Device SMS Reply Example |
 |:---|:---|:---|:---|
 | `START <LABEL>` | `START BADFOOD` | Starts a new specimen dataset file with any custom label. | `STARTED: Dataset 'BADFOOD'. File: dataset_BADFOOD_001.csv. Sampling every 3s.` |
 | `<LABEL>` *(Direct)*| `BADFOOD` | Typing the label directly also starts recording automatically! | `STARTED: Dataset 'BADFOOD'. File: dataset_BADFOOD_001.csv. Sampling every 3s.` |
-| `STOP` | `STOP` | Stops the active recording session and syncs the CSV file safely to the SD card. | `STOPPED: Session 'BADFOOD' finished! Total samples: 142. File: dataset_BADFOOD_001.csv.` |
+| `STOP` | `STOP` | Stops the active recording session and syncs the CSV & BME files safely to the SD card. | `STOPPED: 'BADFOOD' (142 samples). Dual saved: dataset_BADFOOD_001.csv & .bmerawdata` |
 | `STATUS` | `STATUS` | Queries active state, sensor readings, and storage availability. | `STATUS: RUNNING \| Label: BADFOOD \| Count: 35 \| T: 26.4C \| H: 48.1% \| R0: 184.2k \| SD: 14.8GB free` |
-| `STATUS <LABEL>` | `STATUS BADFOOD` | Checks readiness to collect for a specific label. | `STATUS: IDLE. Ready! To start recording data for 'BADFOOD', send: START BADFOOD` |
+| `LIST` or `SD LIST` | `LIST` | Scans MicroSD card and returns file count and filenames via SMS. | `SD Files (3):\n1. 20261117_1336_IP_0.bmerawdata (14K)\n2. 20261117_1336_IP_0.bmelabelinfo (1K)...` |
+| `UPLOAD LATEST` | `UPLOAD LATEST` | Streams newest session files (`.bmerawdata` & `.bmelabelinfo`) to HTTP server. | `UPLOAD: Queued latest session files to server. Transferring in background...` |
+| `UPLOAD ALL` | `UPLOAD ALL` | Iterates and uploads all `.bmerawdata`, `.bmelabelinfo`, and `.csv` files on SD card. | `UPLOAD: Queued ALL dataset files to server. Transferring in background...` |
+| `UPLOAD <FILE>` | `UPLOAD IPA_0.bmerawdata` | Uploads a specific dataset file to the configured HTTP server. | `UPLOAD: Queued 'IPA_0.bmerawdata' to server. Transferring in background...` |
+| `SERVER <URL>` | `SERVER http://192.168.1.100:8080/upload` | Queries or sets the target HTTP server endpoint for remote SD uploads. | `SERVER: Upload URL set to http://192.168.1.100:8080/upload` |
+| `FOTA <URL> <SZ> <SIG>`| `FOTA http://... 124422 3044...` | Downloads, verifies (SHA-256 + ECDSA), flashes, and reboots to new firmware! | `FOTA: Downloading 124422 bytes from http://... Verifying signature...` |
 | `INTERVAL <SEC>` | `INTERVAL 5` | Configures the scanning interval in seconds (2 to 300 s). | `INTERVAL: Sampling rate set to 5 seconds.` |
 | `ALERT <PHONE>` | `ALERT +918074638788` | Queries or updates the destination phone number for proactive alerts. | `Alerts recipient updated to: +918074638788` |
-| `HELP` | `HELP` | Returns a list of supported SMS commands. | `Commands: START <LABEL>, STOP, STATUS, INTERVAL <SEC>, ALERT <PHONE>, HELP` |
+| `HELP` | `HELP` | Returns a list of supported SMS commands. | `Commands: START <LBL>, STOP, STATUS, LIST, UPLOAD <TARGET>, SERVER <URL>, FOTA <URL> <SZ> <SIG>, INTERVAL, ALERT` |
+
+---
+
+## 4. Remote SD Card Access & HTTP Receiver Tool
+
+A dedicated multi-threaded Python server is included in `tools/http_receiver_server.py`. It serves two purposes:
+1. **HTTP Receiver**: Receives dataset files pushed by the Neoway N706B and saves them to `tools/received_datasets/`.
+2. **FOTA Host**: Serves compiled firmware binaries (`nwy_open_app_fota.pkt`) for over-the-air updates.
+
+### Running the Receiver:
+```cmd
+python tools/http_receiver_server.py --port 8080
+```
+The server displays its LAN IP and the exact SMS command to configure the device:
+```
+SERVER http://<YOUR_IP>:8080/upload
+```
+
+---
+
+## 5. Secure FOTA (Firmware Over-The-Air) Updating
+
+The firmware integrates the standalone **ECDSA secp256r1 + SHA-256** crypto engine (`src/crypto/`) ported from `Code/FOTA_Test`.
+
+### Step-by-Step OTA Workflow:
+1. Recompile firmware: `build_TinyML_Chemical_Classifier.bat`.
+2. Run the automated signer:
+   ```cmd
+   python tools/fota_signer.py
+   ```
+3. The script signs `release/nwy_open_app_fota.pkt` with `tools/fota_private_key.pem` and displays the exact ready-to-send SMS command:
+   ```
+   FOTA http://<YOUR_IP>:8080/nwy_open_app_fota.pkt 124422 30440220...
+   ```
+4. Send this SMS to the device handset. The device will:
+   - Connect to the HTTP server over LTE data.
+   - Download chunks, compute on-the-fly SHA-256, and write directly into FOTA partition.
+   - Cryptographically verify the ECDSA signature against the baked-in raw public key.
+   - Send confirmation SMS to operator: `"FOTA SUCCESS: 124422 bytes verified! Rebooting into new firmware..."`
+   - Reboot and apply the update via bootloader!
 
 ---
 

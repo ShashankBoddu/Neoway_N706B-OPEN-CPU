@@ -427,8 +427,8 @@ int8_t bme68x_perform_10step_scan(bme68x_dev_t *dev, float r_gas_out[10],
             return BME68X_E_COM_FAIL;
         }
 
-        /* Dwell delay: heater duration + ~25ms ADC settling time */
-        uint32_t dwell_us = ((uint32_t)s_hp354_dur_steps[step] + 25) * 1000;
+        /* Dwell delay: heater duration + 10ms ADC settling time (optimized for fast cycle rate) */
+        uint32_t dwell_us = ((uint32_t)s_hp354_dur_steps[step] + 10) * 1000;
         dev->delay_us(dwell_us, dev->intf_ptr);
 
         /* Read back field 0 */

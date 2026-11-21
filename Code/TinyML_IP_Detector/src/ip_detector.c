@@ -48,18 +48,23 @@ static void format_prob_bar(char *buf, size_t buf_sz, float prob)
     buf[32] = '\0';
 }
 
-/* Print prominent, high-visibility cycle summary */
+/* Print prominent, high-visibility cycle summary with physical compensation diagnostics */
 static void print_cycle_log(uint32_t cycle, float temp, float pres, float hum,
-                            const float r_gas[10], const tinyml_result_t *res)
+                            const float r_gas[10], const tinyml_result_t *res,
+                            bool is_true_ip, bool is_breath)
 {
     char bar_air[36];
     char bar_ip[36];
     format_prob_bar(bar_air, sizeof(bar_air), res->class_probabilities[0]);
     format_prob_bar(bar_ip, sizeof(bar_ip), res->class_probabilities[1]);
 
+    bool hum_pass = (hum <= IP_MAX_HUMIDITY);
+    bool s1_pass  = (r_gas[1] < IP_MAX_LOW_TEMP_GAS_OHMS);
+    bool s0_pass  = (r_gas[0] < IP_MAX_HOT_TEMP_GAS_OHMS);
+
     nwy_hal_uart_printf(1, "\r\n");
     nwy_hal_uart_printf(1, "+-----------------------------------------------------------------------------+\r\n");
-    nwy_hal_uart_printf(1, "| [CYCLE #%04lu] BME688 TINYML GAS INFERENCE ENGINE                            |\r\n", (unsigned long)cycle);
+    nwy_hal_uart_printf(1, "| [CYCLE #%04lu] BME688 TINYML GAS INFERENCE ENGINE (FAST-SCAN MODE)           |\r\n", (unsigned long)cycle);
     nwy_hal_uart_printf(1, "| Temp: %5.2f C  |  Pres: %6.2f hPa  |  Hum: %5.2f %%  |  Profile: HP-354 (140ms)|\r\n", temp, pres, hum);
     nwy_hal_uart_printf(1, "+-----------------------------------------------------------------------------+\r\n");
     nwy_hal_uart_printf(1, "| Gas Steps (kOhm):                                                           |\r\n");
@@ -70,18 +75,28 @@ static void print_cycle_log(uint32_t cycle, float temp, float pres, float hum,
                         r_gas[5] / 1000.0f, r_gas[6] / 1000.0f, r_gas[7] / 1000.0f,
                         r_gas[8] / 1000.0f, r_gas[9] / 1000.0f);
     nwy_hal_uart_printf(1, "+-----------------------------------------------------------------------------+\r\n");
-    nwy_hal_uart_printf(1, "| Neural Network Classification Probabilities:                                |\r\n");
+    nwy_hal_uart_printf(1, "| Neural Network Classification:                                              |\r\n");
     nwy_hal_uart_printf(1, "|   NORMAL AIR  : %5.1f %%  %s                           |\r\n", res->class_probabilities[0] * 100.0f, bar_air);
-    nwy_hal_uart_printf(1, "|   IP SOLUTION : %5.1f %%  %s                           |\r\n", res->class_probabilities[1] * 100.0f, bar_ip);
+    nwy_hal_uart_printf(1, "|   IP RAW PROB : %5.1f %%  %s                           |\r\n", res->class_probabilities[1] * 100.0f, bar_ip);
+    nwy_hal_uart_printf(1, "+-----------------------------------------------------------------------------+\r\n");
+    nwy_hal_uart_printf(1, "| Chemical Physical Discrimination Matrix:                                    |\r\n");
+    nwy_hal_uart_printf(1, "|  * Moisture Guard (RH <= %4.1f%%)   : [%s] (Current: %4.1f%%)                |\r\n",
+                        IP_MAX_HUMIDITY, hum_pass ? "PASS" : "FAIL - BREATH", hum);
+    nwy_hal_uart_printf(1, "|  * Low-Temp Solvent (S1 < %4.0fk): [%s] (Current: %5.1fk)               |\r\n",
+                        IP_MAX_LOW_TEMP_GAS_OHMS / 1000.0f, s1_pass ? "PASS" : "FAIL - BREATH", r_gas[1] / 1000.0f);
+    nwy_hal_uart_printf(1, "|  * Hot Catalytic Sat (S0 < %4.0fk) : [%s] (Current: %5.1fk)               |\r\n",
+                        IP_MAX_HOT_TEMP_GAS_OHMS / 1000.0f, s0_pass ? "PASS" : "FAIL - BREATH", r_gas[0] / 1000.0f);
     nwy_hal_uart_printf(1, "+-----------------------------------------------------------------------------+\r\n");
 
-    if (res->predicted_class == CLASS_IP_SOLUTION && res->confidence >= IP_CONFIDENCE_THRESHOLD) {
+    if (is_true_ip) {
         if (s_status.consecutive_ip_cycles >= IP_CONFIRM_CYCLES) {
-            nwy_hal_uart_printf(1, "| STATUS: [*** CRITICAL ALERT ***] IP SOLUTION CONFIRMED (Latch: ACTIVE)     |\r\n");
+            nwy_hal_uart_printf(1, "| STATUS: [*** CRITICAL ALERT ***] TRUE IP SOLUTION CONFIRMED (Latch: ACTIVE) |\r\n");
         } else {
-            nwy_hal_uart_printf(1, "| STATUS: [!] IP SOLUTION DETECTED (Confirming: %lu/%d Cycles)                |\r\n",
+            nwy_hal_uart_printf(1, "| STATUS: [!] TRUE IP SOLUTION DETECTED (Confirming: %lu/%d Cycles)             |\r\n",
                                 (unsigned long)s_status.consecutive_ip_cycles, IP_CONFIRM_CYCLES);
         }
+    } else if (is_breath) {
+        nwy_hal_uart_printf(1, "| STATUS: [REJECTED] MOUTH BREATH / MOISTURE INTERFERENCE (Suppressed - Not IP)|\r\n");
     } else {
         nwy_hal_uart_printf(1, "| STATUS: [OK] Normal Ambient Air Detected                                    |\r\n");
     }
@@ -96,12 +111,12 @@ static void dispatch_single_sms_alert(float confidence, float temp, float hum)
     }
 
     nwy_hal_uart_printf(1, "\r\n===============================================================================\r\n");
-    nwy_hal_uart_printf(1, ">>> [CRITICAL EVENT] IP SOLUTION CONFIRMED! DISPATCHING ONE-TIME SMS... <<<\r\n");
+    nwy_hal_uart_printf(1, ">>> [CRITICAL EVENT] TRUE IP SOLUTION CONFIRMED! DISPATCHING ONE-TIME SMS... <<<\r\n");
     nwy_hal_uart_printf(1, ">>> Destination Phone: %s\r\n", s_status.alert_phone);
 
     char sms_body[160];
     snprintf(sms_body, sizeof(sms_body),
-             "CRITICAL ALERT: IP Solution (Isopropanol) CONFIRMED on Neoway N706B! Conf: %.1f%%, T: %.1fC, RH: %.1f%%. Gas Scanner Unit 1.",
+             "CRITICAL ALERT: True IP Solution (Isopropanol) CONFIRMED on Neoway N706B! Conf: %.1f%%, T: %.1fC, RH: %.1f%%. Chemical Scanner Unit 1.",
              confidence * 100.0f, temp, hum);
 
     bool ok = nwy_hal_sms_send(1, s_status.alert_phone, sms_body);
@@ -121,21 +136,21 @@ static void dispatch_single_sms_alert(float confidence, float temp, float hum)
 static void detector_worker_task(void *param)
 {
     (void)param;
-    nwy_hal_uart_printf(1, LOG_TAG "Background worker thread started. Beginning HP-354 scans...\r\n");
+    nwy_hal_uart_printf(1, LOG_TAG "Background worker thread started. Continuous fast scanning active...\r\n");
 
-    /* Initial 3-second stabilization pause */
-    nwy_hal_os_thread_sleep(3000);
+    /* Fast 500ms initial stabilization pause */
+    nwy_hal_os_thread_sleep(500);
 
     while (s_thread_running) {
         float r_gas[TINYML_NUM_STEPS];
         float temp = 0.0f, hum = 0.0f, pres = 0.0f;
 
-        /* Execute 10-step HP-354 Multi-Heater Gas Scan (~10.8 seconds) */
+        /* Execute 10-step HP-354 Multi-Heater Gas Scan (~10.7 seconds) */
         int8_t rslt = bme68x_perform_10step_scan(s_bme_dev, r_gas, &temp, &hum, &pres);
 
         if (rslt != BME68X_OK) {
             nwy_hal_uart_printf(1, LOG_TAG "Warning: Sensor scan returned error %d. Retrying...\r\n", rslt);
-            nwy_hal_os_thread_sleep(2000);
+            nwy_hal_os_thread_sleep(500);
             continue;
         }
 
@@ -150,20 +165,49 @@ static void detector_worker_task(void *param)
             s_status.last_normal_confidence = nn_result.class_probabilities[0];
             s_status.last_ip_confidence = nn_result.class_probabilities[1];
 
-            /* Debounce Logic: Require 3 consecutive cycles above threshold */
-            if (nn_result.predicted_class == CLASS_IP_SOLUTION &&
-                nn_result.confidence >= IP_CONFIDENCE_THRESHOLD) {
+            /* --- MULTI-TIER CHEMICAL COMPENSATION & VALIDATION --- */
+            /* 1. Humidity Guard: Breath produces RH > 60-95%; Real IP vapor in ambient air is <= 56% */
+            bool humidity_ok = (hum <= IP_MAX_HUMIDITY);
+
+            /* 2. Low-Temperature Chemical Resistance (Steps 1-3 @ 100°C):
+             * In Real IP, solvent vapor drops S1-S3 to < 100 kOhm (bottle test: 20-58 kOhm).
+             * In Breath, water vapor leaves S1-S3 high at 600 - 850 kOhm! */
+            bool low_temp_ok = (r_gas[1] < IP_MAX_LOW_TEMP_GAS_OHMS && r_gas[2] < IP_MAX_LOW_TEMP_GAS_OHMS);
+
+            /* 3. Catalytic Saturation (Hot Steps 0, 7, 8, 9 @ 320°C):
+             * In Real IP, strong reduction brings hot steps to <= 20 kOhm (bottle test: 5.7 kOhm).
+             * In Breath, hot steps stay higher at 38 - 70 kOhm! */
+            bool hot_temp_ok = (r_gas[0] < IP_MAX_HOT_TEMP_GAS_OHMS && r_gas[7] < IP_MAX_HOT_TEMP_GAS_OHMS);
+
+            /* 4. Neural Network High Confidence:
+             * Real IP bottle is 99.7%; breath is only 86.3%.
+             * Requiring >= 95.0% eliminates breath right at the classifier level. */
+            bool nn_confident = (nn_result.predicted_class == CLASS_IP_SOLUTION &&
+                                 nn_result.confidence >= IP_CONFIDENCE_THRESHOLD);
+
+            bool is_true_ip = nn_confident && humidity_ok && low_temp_ok && hot_temp_ok;
+            bool is_breath = (nn_result.class_probabilities[1] > 0.50f) && (!humidity_ok || !low_temp_ok || !hot_temp_ok);
+
+            if (is_true_ip) {
                 s_status.consecutive_ip_cycles++;
 
                 if (s_status.consecutive_ip_cycles >= IP_CONFIRM_CYCLES) {
                     s_status.state = DETECTOR_STATE_ALERT_LATCHED;
-                    /* Confirmed IP Solution -> Dispatch strictly ONE SMS */
+                    /* Confirmed True IP Solution -> Dispatch strictly ONE SMS */
                     dispatch_single_sms_alert(nn_result.confidence, temp, hum);
                 } else {
                     s_status.state = DETECTOR_STATE_CONFIRMING;
                 }
+            } else if (is_breath) {
+                /* Suppress mouth breath / moisture interference immediately */
+                if (s_status.consecutive_ip_cycles > 0) {
+                    nwy_hal_uart_printf(1, LOG_TAG "Breath/moisture interference detected. Resetting confirmation counter (%lu -> 0).\r\n",
+                                        (unsigned long)s_status.consecutive_ip_cycles);
+                }
+                s_status.consecutive_ip_cycles = 0;
+                s_status.state = DETECTOR_STATE_INTERFERENCE_REJECTED;
             } else {
-                /* Reset debounce counter if reading returns to normal */
+                /* Clean Ambient Air */
                 if (s_status.consecutive_ip_cycles > 0) {
                     nwy_hal_uart_printf(1, LOG_TAG "Air normalized. Resetting confirmation counter (%lu -> 0).\r\n",
                                         (unsigned long)s_status.consecutive_ip_cycles);
@@ -175,11 +219,11 @@ static void detector_worker_task(void *param)
             }
 
             /* Print detailed UART log */
-            print_cycle_log(s_status.cycle_count, temp, pres, hum, r_gas, &nn_result);
+            print_cycle_log(s_status.cycle_count, temp, pres, hum, r_gas, &nn_result, is_true_ip, is_breath);
         }
 
-        /* Rest between cycles (~1.2 seconds) */
-        nwy_hal_os_thread_sleep(1200);
+        /* Reduced idle time: immediately begin next scan with only 100ms rest */
+        nwy_hal_os_thread_sleep(100);
     }
 
     nwy_hal_uart_printf(1, LOG_TAG "Background worker thread exited.\r\n");

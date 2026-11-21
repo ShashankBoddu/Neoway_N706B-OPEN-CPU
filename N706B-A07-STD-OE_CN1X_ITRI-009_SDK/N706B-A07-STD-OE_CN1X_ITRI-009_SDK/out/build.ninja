@@ -38,133 +38,233 @@ include rules.ninja
 
 build cmake_object_order_depends_target_nwy_open_app: phony || CMakeFiles/nwy_open_app.dir
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/bme68x.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/bme68x.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\bme68x.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\bme68x.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/gpio/nwy_hal_gpio.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/gpio/nwy_hal_gpio.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ccsbcs.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ccsbcs.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\gpio\nwy_hal_gpio.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\ccsbcs.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\gpio
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/net/nwy_hal_net.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/net/nwy_hal_net.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/crypto/sha256.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/crypto/sha256.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\net\nwy_hal_net.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\crypto\sha256.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\net
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\crypto
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/os/nwy_hal_os.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/os/nwy_hal_os.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/crypto/uECC.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/crypto/uECC.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\os\nwy_hal_os.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\crypto\uECC.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\os
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\crypto
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/pm/nwy_hal_pm.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/pm/nwy_hal_pm.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\pm\nwy_hal_pm.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\data_collector.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\pm
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/sim/nwy_hal_sim.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/sim/nwy_hal_sim.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/diskio.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/diskio.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\sim\nwy_hal_sim.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\diskio.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\sim
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/sms/nwy_hal_sms.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/sms/nwy_hal_sms.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\sms\nwy_hal_sms.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\ff.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\sms
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/sntp/nwy_hal_sntp.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/sntp/nwy_hal_sntp.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\sntp\nwy_hal_sntp.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\fota\nwy_hal_secure_fota.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\sntp
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\fota
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/uart/nwy_hal_uart.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/uart/nwy_hal_uart.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/gpio/nwy_hal_gpio.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/gpio/nwy_hal_gpio.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\uart\nwy_hal_uart.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\gpio\nwy_hal_gpio.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\hal\uart
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\gpio
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/i2c_bus.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/i2c_bus.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/net/nwy_hal_net.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/net/nwy_hal_net.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\i2c_bus.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\net\nwy_hal_net.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\net
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/ip_detector.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/ip_detector.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/os/nwy_hal_os.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/os/nwy_hal_os.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\ip_detector.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\os\nwy_hal_os.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\os
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/main.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/main.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/pm/nwy_hal_pm.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/pm/nwy_hal_pm.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\main.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\pm\nwy_hal_pm.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\pm
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
-build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/tinyml_nn.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/tinyml_nn.c || cmake_object_order_depends_target_nwy_open_app
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/sim/nwy_hal_sim.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/sim/nwy_hal_sim.c || cmake_object_order_depends_target_nwy_open_app
   DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
-  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src\tinyml_nn.obj.d
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\sim\nwy_hal_sim.obj.d
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
-  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/inc
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir
-  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_IP_Detector\src
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\sim
+  TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
+  TARGET_PDB = bin\nwy_open_app.pdb
+
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/sms/nwy_hal_sms.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/sms/nwy_hal_sms.c || cmake_object_order_depends_target_nwy_open_app
+  DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\sms\nwy_hal_sms.obj.d
+  FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
+  OBJECT_DIR = CMakeFiles\nwy_open_app.dir
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\sms
+  TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
+  TARGET_PDB = bin\nwy_open_app.pdb
+
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/sntp/nwy_hal_sntp.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/sntp/nwy_hal_sntp.c || cmake_object_order_depends_target_nwy_open_app
+  DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\sntp\nwy_hal_sntp.obj.d
+  FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
+  OBJECT_DIR = CMakeFiles\nwy_open_app.dir
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\sntp
+  TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
+  TARGET_PDB = bin\nwy_open_app.pdb
+
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/socket/nwy_hal_socket.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/socket/nwy_hal_socket.c || cmake_object_order_depends_target_nwy_open_app
+  DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\socket\nwy_hal_socket.obj.d
+  FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
+  OBJECT_DIR = CMakeFiles\nwy_open_app.dir
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\socket
+  TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
+  TARGET_PDB = bin\nwy_open_app.pdb
+
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.c || cmake_object_order_depends_target_nwy_open_app
+  DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\ssl\nwy_hal_ssl.obj.d
+  FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
+  OBJECT_DIR = CMakeFiles\nwy_open_app.dir
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\ssl
+  TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
+  TARGET_PDB = bin\nwy_open_app.pdb
+
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.c || cmake_object_order_depends_target_nwy_open_app
+  DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\uart\nwy_hal_uart.obj.d
+  FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
+  OBJECT_DIR = CMakeFiles\nwy_open_app.dir
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\hal\uart
+  TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
+  TARGET_PDB = bin\nwy_open_app.pdb
+
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.c || cmake_object_order_depends_target_nwy_open_app
+  DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\i2c_bus.obj.d
+  FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
+  OBJECT_DIR = CMakeFiles\nwy_open_app.dir
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src
+  TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
+  TARGET_PDB = bin\nwy_open_app.pdb
+
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.c || cmake_object_order_depends_target_nwy_open_app
+  DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\main.obj.d
+  FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
+  OBJECT_DIR = CMakeFiles\nwy_open_app.dir
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src
+  TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
+  TARGET_PDB = bin\nwy_open_app.pdb
+
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.c || cmake_object_order_depends_target_nwy_open_app
+  DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\nwy_sd_card.obj.d
+  FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
+  OBJECT_DIR = CMakeFiles\nwy_open_app.dir
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src
+  TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
+  TARGET_PDB = bin\nwy_open_app.pdb
+
+build CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.c || cmake_object_order_depends_target_nwy_open_app
+  DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src\remote_sd_manager.obj.d
+  FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
+  OBJECT_DIR = CMakeFiles\nwy_open_app.dir
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\05119b2ad5dbefbada3c2f2e1d7f4ffe\Code\TinyML_Chemical_Classifier\src
+  TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
+  TARGET_PDB = bin\nwy_open_app.pdb
+
+build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj: C_COMPILER__nwy_open_app E$:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.c || cmake_object_order_depends_target_nwy_open_app
+  DEFINES = -DFEATURE_NWY -DFEATURE_NWY_OPEN_MQTT
+  DEP_FILE = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src\sd_spi.obj.d
+  FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
+  INCLUDES = -I../include -I../include/mbedtls -I../include/mbedtls/include -IE:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/inc
+  OBJECT_DIR = CMakeFiles\nwy_open_app.dir
+  OBJECT_FILE_DIR = CMakeFiles\nwy_open_app.dir\E_\projects\DevelopmentLevelCode\Neoway_N706B\Code\TinyML_Chemical_Classifier\src
   TARGET_COMPILE_PDB = CMakeFiles\nwy_open_app.dir\
   TARGET_PDB = bin\nwy_open_app.pdb
 
@@ -176,7 +276,7 @@ build CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/
 #############################################
 # Link the executable bin\nwy_open_app.elf
 
-build bin/nwy_open_app.elf bin/nwy_open_app.bin: C_EXECUTABLE_LINKER__nwy_open_app CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/bme68x.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/gpio/nwy_hal_gpio.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/net/nwy_hal_net.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/os/nwy_hal_os.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/pm/nwy_hal_pm.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/sim/nwy_hal_sim.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/sms/nwy_hal_sms.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/sntp/nwy_hal_sntp.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/hal/uart/nwy_hal_uart.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/i2c_bus.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/ip_detector.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/main.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_IP_Detector/src/tinyml_nn.obj | ../build/nwy_open_stub.a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a
+build bin/nwy_open_app.elf bin/nwy_open_app.bin: C_EXECUTABLE_LINKER__nwy_open_app CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ccsbcs.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/crypto/sha256.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/crypto/uECC.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/diskio.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/gpio/nwy_hal_gpio.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/net/nwy_hal_net.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/os/nwy_hal_os.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/pm/nwy_hal_pm.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/sim/nwy_hal_sim.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/sms/nwy_hal_sms.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/sntp/nwy_hal_sntp.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/socket/nwy_hal_socket.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj | ../build/nwy_open_stub.a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a
   FLAGS = -DFEATURE_NWY_OPEN_APP -DFEATURE_NWY_ASR_PLAT -mcpu=cortex-R5 -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=soft -Os -g -fshort-wchar -fno-builtin -Wall -ffunction-sections -fdata-sections -std=c99 -Wl,--gc-sections -TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds -nostdlib
   LINK_LIBRARIES = -Wl,--whole-archive  ../build/nwy_open_stub.a  -Wl,--no-whole-archive  ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a  ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a  ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a  -Wl,-Map=E:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/out/bin/nwy_open_app.map
   OBJECT_DIR = CMakeFiles\nwy_open_app.dir

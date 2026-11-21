@@ -12,6 +12,9 @@
 #include "i2c_bus.h"
 #include "nwy_sd_card.h"
 #include "data_collector.h"
+#include "remote_sd_manager.h"
+#include "hal/nwy_hal_secure_fota.h"
+#include "hal/net/nwy_hal_net.h"
 #include "hal/sms/nwy_hal_sms.h"
 #include "hal/sim/nwy_hal_sim.h"
 #include "hal/uart/nwy_hal_uart.h"
@@ -36,8 +39,12 @@ static uint8_t             g_bme_addr = BME688_I2C_ADDR;
 static int                 g_dbg_uart_fd = -1;
 
 /* FreeRTOS Tasks and Synchronization */
+#define SMS_QUEUE_CAPACITY 16
 static nwy_osi_semaphore_t g_sms_sem = NULL;
-static volatile int        g_pending_sms_index = -1;
+static nwy_osi_mutex_t     g_sms_q_mutex = NULL;
+static int                 g_sms_queue[SMS_QUEUE_CAPACITY];
+static volatile int        g_sms_q_head = 0;
+static volatile int        g_sms_q_tail = 0;
 static nwy_osi_thread_t    g_collector_thread = NULL;
 static nwy_osi_thread_t    g_sms_worker_thread = NULL;
 
@@ -86,7 +93,18 @@ static void bme_delay_us(uint32_t period_us, void *intf_ptr)
 static void on_incoming_sms_cb(int sim_id, int sms_index)
 {
     (void)sim_id;
-    g_pending_sms_index = sms_index;
+    if (g_sms_q_mutex) nwy_sdk_mutex_lock(g_sms_q_mutex, 100);
+    int next_head = (g_sms_q_head + 1) % SMS_QUEUE_CAPACITY;
+    if (next_head != g_sms_q_tail) {
+        g_sms_queue[g_sms_q_head] = sms_index;
+        g_sms_q_head = next_head;
+    } else {
+        if (g_dbg_uart_fd >= 0) {
+            nwy_hal_uart_printf(g_dbg_uart_fd, "[SMS QUEUE] Warning: Queue full, dropping SMS index %d\r\n", sms_index);
+        }
+    }
+    if (g_sms_q_mutex) nwy_sdk_mutex_unlock(g_sms_q_mutex);
+
     if (g_sms_sem) {
         nwy_hal_os_semaphore_release(g_sms_sem);
     }
@@ -104,10 +122,15 @@ static void sms_worker_task(void *param)
         /* Block indefinitely until an incoming SMS releases g_sms_sem */
         nwy_hal_os_semaphore_acquire(g_sms_sem, 0xFFFFFFFF);
 
-        if (g_pending_sms_index >= 0) {
-            int idx = g_pending_sms_index;
-            g_pending_sms_index = -1;
+        int idx = -1;
+        if (g_sms_q_mutex) nwy_sdk_mutex_lock(g_sms_q_mutex, 100);
+        if (g_sms_q_head != g_sms_q_tail) {
+            idx = g_sms_queue[g_sms_q_tail];
+            g_sms_q_tail = (g_sms_q_tail + 1) % SMS_QUEUE_CAPACITY;
+        }
+        if (g_sms_q_mutex) nwy_sdk_mutex_unlock(g_sms_q_mutex);
 
+        if (idx >= 0) {
             nwy_sms_recv_info_type_t sms_data;
             memset(&sms_data, 0, sizeof(sms_data));
 
@@ -261,7 +284,8 @@ static void app_main_task(void *param)
 
     /* 7. Initialize SIM & Arm 3GPP SMS Engine */
     nwy_hal_uart_printf(g_dbg_uart_fd, "[6/6] Arming 3GPP Cellular SMS Engine on SIM 1...\r\n");
-    nwy_hal_os_semaphore_create(&g_sms_sem, 0, 1);
+    nwy_sdk_mutex_create(&g_sms_q_mutex);
+    nwy_hal_os_semaphore_create(&g_sms_sem, 0, SMS_QUEUE_CAPACITY);
 
     int sim_wait = 0;
     while (!nwy_hal_sim_is_ready(1) && sim_wait < 15) {
@@ -271,6 +295,11 @@ static void app_main_task(void *param)
 
     bool bme_ok = (g_bme_dev.chip_id == BME68X_CHIP_ID);
     bool sd_ok = nwy_sdcard_is_mounted();
+
+    /* 8. Initialize Cellular LTE Mode & Remote SD Uploader Engine */
+    nwy_hal_uart_printf(g_dbg_uart_fd, "[5/7] Initializing Remote SD Manager & Cellular Subsystems...\r\n");
+    nwy_hal_net_set_mode(1, NWY_NW_MODE_MASK_LTE);
+    remote_sd_manager_init();
 
     if (nwy_hal_sim_is_ready(1)) {
         char phone_num[32] = {0};
@@ -282,13 +311,17 @@ static void app_main_task(void *param)
         nwy_hal_sms_register_recv_cb(1, on_incoming_sms_cb);
         nwy_hal_uart_printf(g_dbg_uart_fd, "  SMS callback registered. Device ready to receive commands!\r\n");
 
+        /* Start LTE Data Call for Remote SD HTTP Uploads and FOTA */
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  Starting Cellular Data Call on CID 1...\r\n");
+        nwy_hal_net_start_data_call(1, 1, NULL);
+
         /* Send one-time boot notification SMS to configured alert phone (+918074638788) */
         data_collector_send_boot_status(bme_ok, sd_ok);
     } else {
         nwy_hal_uart_printf(g_dbg_uart_fd, "  WARNING: SIM 1 not ready after %d seconds.\r\n", sim_wait);
     }
 
-    /* 8. Launch Background Worker Threads */
+    /* 9. Launch Background Worker Threads */
     nwy_hal_uart_printf(g_dbg_uart_fd, "Launching background FreeRTOS workers...\r\n");
     nwy_thread_create(&g_collector_thread, "data_collector", 50,
                       data_collector_worker_task, NULL, 10, 1024 * 16, NULL);
@@ -298,14 +331,22 @@ static void app_main_task(void *param)
 
     nwy_hal_uart_printf(g_dbg_uart_fd, "\r\n======================================================\r\n");
     nwy_hal_uart_printf(g_dbg_uart_fd, "SYSTEM READY! Send an SMS to this device:\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START BADFOOD\"      -> Start any custom food odor dataset\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START TOILET_CLEAN\" -> Start clean toilet dataset\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START TOILET_DIRTY\" -> Start dirty toilet dataset\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START IPA_VAPOR\"    -> Start IPA solution vapor dataset\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"STOP\"               -> Stop recording & flush SD\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"STATUS\"             -> Query state & live reading\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"STATUS BADFOOD\"     -> Query readiness for BADFOOD\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * Alerts Recipient     : %s\r\n", data_collector_get_alert_phone());
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  --- DATA COLLECTION ---\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START BADFOOD\"       -> Start custom odor collection\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START IPA_VAPOR\"     -> Start IP solution collection\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"STOP\"                -> Stop recording & flush SD\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"STATUS\"              -> Live sensor & SD diagnostics\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  --- REMOTE SD ACCESS ---\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"LIST\" or \"SD LIST\"  -> List all files on MicroSD card\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"UPLOAD LATEST\"       -> HTTP POST newest dataset to server\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"UPLOAD ALL\"          -> HTTP POST all datasets to server\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"UPLOAD <FILE>\"       -> HTTP POST specific file\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"SERVER <URL>\"        -> Set HTTP upload endpoint\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  --- SECURE FOTA UPDATE ---\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"FOTA <URL> <SZ> <SIG>\" -> Download, verify & apply update\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  --- CONFIGURATION ---\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * Alerts Recipient      : %s\r\n", data_collector_get_alert_phone());
+    nwy_hal_uart_printf(g_dbg_uart_fd, "  * HTTP Upload Server    : %s\r\n", remote_sd_get_server_url());
     nwy_hal_uart_printf(g_dbg_uart_fd, "======================================================\r\n\r\n");
 
     /* Main heartbeat loop */
@@ -323,15 +364,23 @@ static void app_main_task(void *param)
             data_collector_check_sensor_health();
         }
 
+        /* Check cellular IP status */
+        char cur_ip[32] = "N/A";
+        bool ip_connected = nwy_hal_net_get_ip(1, 1, cur_ip, sizeof(cur_ip));
+        if (!ip_connected && nwy_hal_sim_is_ready(1) && (hb_counter % 6 == 0)) {
+            /* Retry data call every minute if disconnected */
+            nwy_hal_net_start_data_call(1, 1, NULL);
+        }
+
         collector_status_t cur_status;
         data_collector_get_status(&cur_status, NULL, 0);
 
-        nwy_hal_uart_printf(g_dbg_uart_fd, "[HEARTBEAT #%lu] State: %s | Sensor: %s | Samples: %lu | SD: %s\r\n",
+        nwy_hal_uart_printf(g_dbg_uart_fd, "[HEARTBEAT #%lu] State: %s | Sensor: %s | SD: %s | IP: %s\r\n",
                             (unsigned long)hb_counter,
                             (cur_status.state == COLLECTOR_STATE_RECORDING) ? "RECORDING" : "IDLE",
                             bme_online ? "OK (0x76)" : "DISCONNECTED",
-                            (unsigned long)cur_status.sample_count,
-                            nwy_sdcard_is_mounted() ? "OK" : "DISCONNECTED");
+                            nwy_sdcard_is_mounted() ? "OK" : "DISCONNECTED",
+                            ip_connected ? cur_ip : "DISCONNECTED");
     }
 }
 

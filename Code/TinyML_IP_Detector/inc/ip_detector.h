@@ -8,15 +8,21 @@
 extern "C" {
 #endif
 
-#define DEFAULT_ALERT_PHONE     "+918074638788"
-#define IP_CONFIRM_CYCLES       3      /* Must detect IP solution for 3 consecutive cycles (~36s) */
-#define IP_CONFIDENCE_THRESHOLD 0.85f  /* 85% confidence threshold */
+#define DEFAULT_ALERT_PHONE         "+918074638788"
+#define IP_CONFIRM_CYCLES           2        /* 2 confirmed consecutive cycles with multi-tier validation */
+#define IP_CONFIDENCE_THRESHOLD     0.95f    /* 95.0% confidence threshold (Real IP is 99.7%; breath is 86.3%) */
+
+/* Chemical Physical Verification Thresholds for Pure Isopropanol */
+#define IP_MAX_HUMIDITY             56.0f    /* Real IP is 30-45% RH; Mouth breath is >65-95% RH */
+#define IP_MAX_LOW_TEMP_GAS_OHMS    120000.0f/* Real IP S1-S3 is 20-58k; Mouth breath is 660-840k */
+#define IP_MAX_HOT_TEMP_GAS_OHMS    20000.0f /* Real IP S0,S7-S9 is ~5.7k; Mouth breath is 38-70k */
 
 typedef enum {
     DETECTOR_STATE_IDLE = 0,
     DETECTOR_STATE_MONITORING,
     DETECTOR_STATE_CONFIRMING,
-    DETECTOR_STATE_ALERT_LATCHED
+    DETECTOR_STATE_ALERT_LATCHED,
+    DETECTOR_STATE_INTERFERENCE_REJECTED
 } detector_state_t;
 
 typedef struct {

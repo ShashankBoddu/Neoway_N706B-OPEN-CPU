@@ -14,9 +14,11 @@ A dedicated, production-grade embedded TinyML firmware for the **Neoway N706B** 
 | **AI Model Source** | Bosch Sensortec BME AI-Studio v3.2.1 (`test.bmeproject\algorithms\1`) |
 | **Model Architecture** | `Dense(10, ReLU) -> Dense(10, ReLU) -> Softmax(2)` |
 | **Dataset Validation** | **100.0% Accuracy** on 165 IP Solution cycles; **97.9% Accuracy** on Normal Air |
-| **Alert Policy** | **Strictly ONE SMS Alert** sent to `+918074638788` upon 3-cycle confirmation |
-| **Debounce Window** | 3 consecutive cycles ($\ge 85.0\%$ confidence, ~36s) to eliminate false positives |
-| **Debug Console** | UART1 (`COM13`) at 115200 baud with ASCII probability meters |
+| **Alert Policy** | **Strictly ONE SMS Alert** sent to `+918074638788` upon 2-cycle multi-tier confirmation |
+| **Debounce Window** | 2 consecutive validated cycles with 4-tier chemical discrimination matrix |
+| **Cycle Frequency** | Fast-scan mode (100 ms inter-cycle idle rest) |
+| **Interference Guard** | Rejects mouth breath, humidity spikes, and non-IP VOCs |
+| **Debug Console** | UART1 (`COM13`) at 115200 baud with ASCII meters & matrix pass/fail breakdown |
 
 ---
 

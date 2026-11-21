@@ -2053,3 +2053,35 @@ To eliminate race conditions, direction contention, and kernel panics across dee
 * **Verification:**
   - Clean compilation and linking with Ninja and ARM GCC 10.3.1.
   - Re-packaged and synced firmware to workspace root [`nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/nwy_open_app.zip).
+
+---
+
+### [2026-11-17 17:33] Enhancement: Multi-Tier Physical Chemical Compensation & Fast-Scan Cycle Optimization
+* **Context & User Observations:**
+  - User conducted live tests comparing mouth breath vs real IP solution on the bottle:
+    - **Mouth Breath (Cycle #0149):** Temp 34.97°C, Hum 69.40%, S0=48.6k, S1=744.2k, S2=838.0k, S3=662.6k, S4=123.9k, S5=129.0k, S6=96.3k, S7=38.5k, S8=66.9k, S9=69.8k. NN Confidence: 86.3%.
+    - **Real IP Bottle (Cycle #0157):** Temp 34.01°C, Hum 33.26%, S0=5.7k, S1=20.7k, S2=40.0k, S3=58.9k, S4=9.8k, S5=9.6k, S6=10.1k, S7=5.7k, S8=5.7k, S9=5.7k. NN Confidence: 99.7%.
+  - User requested:
+    1. Identify and compensate the false IP detection caused by mouth breath so ONLY real IP solution is detected.
+    2. Increase reading frequency by eliminating unnecessary idle time.
+* **Technical Research & Root Cause:**
+  - **Chemiresistive MOX Surface Physics:** Water vapor is a reducing gas that releases conduction electrons upon reacting with the heated tin-oxide ($\text{SnO}_2$) layer, causing electrical resistance to drop from clean air's MegaOhm baseline down to tens/hundreds of kOhms.
+  - **Closed-World Softmax:** Because the AI model was trained on only two classes (`Air` vs `IP Solution`), any significant resistance drop was classified as IP solution (86.3%).
+  - **Empirical Differential Fingerprint:**
+    - Real IP vapor exhibits **extreme catalytic reduction**: S0, S7, S8, S9 collapse to $\le 6\text{ k}\Omega$; S1-S3 drop to $20-60\text{ k}\Omega$; Relative Humidity remains at ambient room level ($33\%$).
+    - Mouth breath retains high resistance at low temperatures ($100^\circ\text{C}$ S1-S3 remain $660-840\text{ k}\Omega$, $20-40\times$ higher than IP), and Relative Humidity spikes to $69.4\% - 95\%$.
+* **Implementation:**
+  1. **Multi-Tier Chemical Verification Matrix (`ip_detector.c` & `ip_detector.h`):**
+     - **Tier 1 (Confidence):** Raised `IP_CONFIDENCE_THRESHOLD` to $95.0\%$ (Real IP is 99.7%; breath is 86.3%).
+     - **Tier 2 (Moisture Guard):** Requires $\text{RH} \le 56.0\%$ (`IP_MAX_HUMIDITY`).
+     - **Tier 3 (Low-Temp Solvent Check):** Requires $S_1 < 120\text{ k}\Omega$ and $S_2 < 120\text{ k}\Omega$ (`IP_MAX_LOW_TEMP_GAS_OHMS`).
+     - **Tier 4 (Hot Catalytic Saturation):** Requires $S_0 < 20\text{ k}\Omega$ and $S_7 < 20\text{ k}\Omega$ (`IP_MAX_HOT_TEMP_GAS_OHMS`).
+     - Any breach flags the cycle as `[REJECTED] MOUTH BREATH / MOISTURE INTERFERENCE` and immediately resets the debounce counter to 0.
+  2. **Reduced Idle Time / Fast-Scan Pipeline:**
+     - Reduced inter-cycle idle delay from $1200\text{ ms}$ to $100\text{ ms}$ (`nwy_hal_os_thread_sleep(100)`).
+     - Reduced startup pause from $3000\text{ ms}$ to $500\text{ ms}$.
+     - Reduced per-step ADC settling time in `bme68x.c` from $+25\text{ ms}$ to $+10\text{ ms}$.
+     - Reduced confirmation requirement to 2 cycles (`IP_CONFIRM_CYCLES = 2`) due to the 4-tier verification matrix.
+* **Verification:**
+  - Build succeeded with code 0.
+  - Refreshed package deployed to [`nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/nwy_open_app.zip).

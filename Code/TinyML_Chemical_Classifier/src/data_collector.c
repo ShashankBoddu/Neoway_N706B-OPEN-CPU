@@ -4,6 +4,8 @@
  */
 
 #include "data_collector.h"
+#include "remote_sd_manager.h"
+#include "hal/nwy_hal_secure_fota.h"
 #include "i2c_bus.h"
 #include "nwy_sd_card.h"
 #include "ff.h"
@@ -357,8 +359,17 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
     strncpy(s_status.current_file_path, file_path, sizeof(s_status.current_file_path) - 1);
 
     /* Open new file for writing */
+    if (!nwy_sdcard_lock(5000)) {
+        if (reply_buf && reply_max > 0) {
+            snprintf(reply_buf, reply_max, "ERROR: MicroSD card busy, lock timeout.");
+        }
+        if (s_collector_mutex) nwy_sdk_mutex_unlock(s_collector_mutex);
+        return -3;
+    }
+
     FRESULT res = f_open(&s_csv_file, file_path, FA_CREATE_ALWAYS | FA_WRITE);
     if (res != FR_OK) {
+        nwy_sdcard_unlock();
         if (reply_buf && reply_max > 0) {
             snprintf(reply_buf, reply_max, "ERROR: Failed to create file '%s' (FatFs err: %d)", file_path, res);
         }
@@ -452,6 +463,7 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
     } else {
         nwy_hal_uart_printf(1, LOG_TAG "WARNING: Could not create .bmerawdata file (err %d)\r\n", bme_res);
     }
+    nwy_sdcard_unlock();
 
     s_status.sample_count = 0;
     s_status.state = COLLECTOR_STATE_RECORDING;
@@ -489,46 +501,54 @@ int data_collector_stop(char *reply_buf, size_t reply_max)
         return 0;
     }
 
-    if (s_bme_file_is_open) {
-        const char *footer = "\n    ]\n  }\n}\n";
-        UINT bw_bme = 0;
-        f_write(&s_bme_file, footer, (UINT)strlen(footer), &bw_bme);
-        f_sync(&s_bme_file);
-        f_close(&s_bme_file);
-        s_bme_file_is_open = false;
+    if (!nwy_sdcard_lock(5000)) {
+        nwy_hal_uart_printf(1, LOG_TAG "ERROR: SD lock timeout during stop\r\n");
+    } else {
+        if (s_bme_file_is_open) {
+            const char *footer = "\n    ]\n  }\n}\n";
+            UINT bw_bme = 0;
+            f_write(&s_bme_file, footer, (UINT)strlen(footer), &bw_bme);
+            f_sync(&s_bme_file);
+            f_close(&s_bme_file);
+            s_bme_file_is_open = false;
 
-        /* Generate companion .bmelabelinfo file so Bosch AI-Studio automatically identifies the label */
-        char labelinfo_path[128];
-        strncpy(labelinfo_path, s_status.current_bme_path, sizeof(labelinfo_path) - 1);
-        labelinfo_path[sizeof(labelinfo_path) - 1] = '\0';
-        char *dot = strstr(labelinfo_path, ".bmerawdata");
-        if (dot) {
-            strcpy(dot, ".bmelabelinfo");
-            FIL linfo_file;
-            if (f_open(&linfo_file, labelinfo_path, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK) {
-                char linfo_buf[256];
-                int llen = snprintf(linfo_buf, sizeof(linfo_buf),
-                    "{\n"
-                    "  \"labelInformation\": [\n"
-                    "    {\n"
-                    "      \"labelTag\": 1,\n"
-                    "      \"labelName\": \"%s\",\n"
-                    "      \"labelDescription\": \"Recorded on Neoway N706B\"\n"
-                    "    }\n"
-                    "  ]\n"
-                    "}\n", s_status.current_label);
-                UINT bw_li = 0;
-                f_write(&linfo_file, linfo_buf, (UINT)strlen(linfo_buf), &bw_li);
-                f_close(&linfo_file);
-                nwy_hal_uart_printf(1, LOG_TAG "Companion label info created: %s\r\n", labelinfo_path);
+            /* Generate companion .bmelabelinfo file so Bosch AI-Studio automatically identifies the label */
+            char labelinfo_path[128];
+            strncpy(labelinfo_path, s_status.current_bme_path, sizeof(labelinfo_path) - 1);
+            labelinfo_path[sizeof(labelinfo_path) - 1] = '\0';
+            char *dot = strstr(labelinfo_path, ".bmerawdata");
+            if (dot) {
+                strcpy(dot, ".bmelabelinfo");
+                FIL linfo_file;
+                if (f_open(&linfo_file, labelinfo_path, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK) {
+                    char linfo_buf[256];
+                    int llen = snprintf(linfo_buf, sizeof(linfo_buf),
+                        "{\n"
+                        "  \"labelInformation\": [\n"
+                        "    {\n"
+                        "      \"labelTag\": 1,\n"
+                        "      \"labelName\": \"%s\",\n"
+                        "      \"labelDescription\": \"Recorded on Neoway N706B\"\n"
+                        "    }\n"
+                        "  ]\n"
+                        "}\n", s_status.current_label);
+                    UINT bw_li = 0;
+                    if (llen > 0) {
+                        f_write(&linfo_file, linfo_buf, (UINT)llen, &bw_li);
+                    }
+                    f_close(&linfo_file);
+                    nwy_hal_uart_printf(1, LOG_TAG "Companion label info created: %s\r\n", labelinfo_path);
+                }
             }
         }
-    }
 
-    if (s_csv_file_is_open) {
-        f_sync(&s_csv_file);
-        f_close(&s_csv_file);
-        s_csv_file_is_open = false;
+        if (s_csv_file_is_open) {
+            f_sync(&s_csv_file);
+            f_close(&s_csv_file);
+            s_csv_file_is_open = false;
+        }
+
+        nwy_sdcard_unlock();
     }
 
     s_status.state = COLLECTOR_STATE_IDLE;
@@ -707,9 +727,96 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
             snprintf(reply, sizeof(reply), "Current alerts recipient: %s. Send 'ALERT <PHONE>' to change.", s_alert_phone);
         }
     }
+    else if (strncmp(cmd_upper, "LIST", 4) == 0 || strncmp(cmd_upper, "SD LIST", 7) == 0) {
+        remote_sd_list_files(reply, sizeof(reply));
+    }
+    else if (strncmp(cmd_upper, "UPLOAD", 6) == 0) {
+        const char *target = cmd + 6;
+        while (*target && isspace((unsigned char)*target)) target++;
+
+        char target_upper[64] = {0};
+        for (size_t ti = 0; target[ti] && ti < sizeof(target_upper) - 1; ti++) {
+            target_upper[ti] = (char)toupper((unsigned char)target[ti]);
+        }
+
+        sd_upload_request_t req;
+        memset(&req, 0, sizeof(req));
+        if (sender_phone) strncpy(req.notify_phone, sender_phone, sizeof(req.notify_phone) - 1);
+
+        if (strcmp(target_upper, "LATEST") == 0 || strcmp(target_upper, "LAST") == 0) {
+            req.target_type = UPLOAD_TARGET_LATEST;
+            if (remote_sd_queue_upload(&req)) {
+                snprintf(reply, sizeof(reply), "UPLOAD: Queued latest session files to %s. Transferring in background...",
+                         remote_sd_get_server_url());
+            } else {
+                snprintf(reply, sizeof(reply), "UPLOAD ERROR: Uploader busy or unavailable.");
+            }
+        } else if (strcmp(target_upper, "ALL") == 0) {
+            req.target_type = UPLOAD_TARGET_ALL;
+            if (remote_sd_queue_upload(&req)) {
+                snprintf(reply, sizeof(reply), "UPLOAD: Queued ALL dataset files to %s. Transferring in background...",
+                         remote_sd_get_server_url());
+            } else {
+                snprintf(reply, sizeof(reply), "UPLOAD ERROR: Uploader busy or unavailable.");
+            }
+        } else if (strlen(target) > 0) {
+            req.target_type = UPLOAD_TARGET_SINGLE;
+            strncpy(req.filename, target, sizeof(req.filename) - 1);
+            if (remote_sd_queue_upload(&req)) {
+                snprintf(reply, sizeof(reply), "UPLOAD: Queued '%s' to %s. Transferring in background...",
+                         target, remote_sd_get_server_url());
+            } else {
+                snprintf(reply, sizeof(reply), "UPLOAD ERROR: Uploader busy or unavailable.");
+            }
+        } else {
+            snprintf(reply, sizeof(reply), "Usage: 'UPLOAD LATEST', 'UPLOAD ALL', or 'UPLOAD <FILENAME>'");
+        }
+    }
+    else if (strncmp(cmd_upper, "SERVER", 6) == 0) {
+        const char *url_arg = cmd + 6;
+        while (*url_arg && isspace((unsigned char)*url_arg)) url_arg++;
+        if (*url_arg != '\0') {
+            remote_sd_set_server_url(url_arg);
+            snprintf(reply, sizeof(reply), "SERVER: Upload URL set to %s", remote_sd_get_server_url());
+        } else {
+            snprintf(reply, sizeof(reply), "SERVER: Current upload URL is %s. Send 'SERVER <URL>' to change.",
+                     remote_sd_get_server_url());
+        }
+    }
+    else if (strncmp(cmd_upper, "FOTA", 4) == 0 || strncmp(cmd_upper, "OTA", 3) == 0) {
+        const char *args = cmd + (strncmp(cmd_upper, "FOTA", 4) == 0 ? 4 : 3);
+        while (*args && isspace((unsigned char)*args)) args++;
+
+        char fota_url[160] = {0};
+        uint32_t fota_size = 0;
+        char fota_sig[160] = {0};
+
+        unsigned long fota_size_raw = 0;
+        int parsed = sscanf(args, "%159s %lu %159s", fota_url, &fota_size_raw, fota_sig);
+        fota_size = (uint32_t)fota_size_raw;
+        if (parsed == 3 && fota_size > 0 && strlen(fota_sig) > 10) {
+            bool started = nwy_hal_secure_fota_start_with_notify(fota_url, fota_size, fota_sig, sender_phone);
+            if (started) {
+                snprintf(reply, sizeof(reply),
+                         "FOTA: Downloading %u bytes from %s. Verifying signature...",
+                         (unsigned int)fota_size, fota_url);
+            } else {
+                snprintf(reply, sizeof(reply), "FOTA ERROR: Failed to start or already in progress.");
+            }
+        } else {
+            snprintf(reply, sizeof(reply),
+                     "Usage: 'FOTA <URL> <SIZE> <SIG_HEX>' (e.g. FOTA http://x.com/fota.pkt 12345 304402...)");
+        }
+    }
     else if (strcmp(cmd_upper, "HELP") == 0 || strcmp(cmd_upper, "?") == 0) {
         snprintf(reply, sizeof(reply),
-                 "Commands:\nSTART <LABEL> (e.g. START BADFOOD, TOILET_CLEAN)\nSTOP\nSTATUS\nINTERVAL <SEC>\nALERT <PHONE>\nHELP");
+                 "Commands:\n"
+                 "START <LABEL>, STOP\n"
+                 "STATUS, LIST\n"
+                 "UPLOAD <LATEST|ALL|FILE>\n"
+                 "SERVER <URL>\n"
+                 "FOTA <URL> <SZ> <SIG>\n"
+                 "INTERVAL <S>, ALERT <PH>");
     }
     else {
         /* User sent a raw text label without 'START', e.g. "BADFOOD" or "TOILET_DIRTY" */
@@ -811,49 +918,54 @@ void data_collector_worker_task(void *param)
                          r_gas[0], r_gas[1], r_gas[2], r_gas[3], r_gas[4],
                          r_gas[5], r_gas[6], r_gas[7], r_gas[8], r_gas[9]);
 
-                if (s_csv_file_is_open) {
-                    UINT bw = 0;
-                    FRESULT wr_res = f_write(&s_csv_file, csv_row, (UINT)strlen(csv_row), &bw);
-                    FRESULT sync_res = f_sync(&s_csv_file); /* Guarantees immediate persistence to NAND flash */
-                    if (wr_res != FR_OK || sync_res != FR_OK || bw == 0) {
-                        if (!s_alert_sd_error_sent) {
-                            s_alert_sd_error_sent = true;
-                            char alert[160];
-                            snprintf(alert, sizeof(alert),
-                                     "[BME688 ALERT] MicroSD CSV write failed (err %d/%d). Recording paused!",
-                                     wr_res, sync_res);
-                            data_collector_send_alert(alert);
+                if (nwy_sdcard_lock(2000)) {
+                    if (s_csv_file_is_open) {
+                        UINT bw = 0;
+                        FRESULT wr_res = f_write(&s_csv_file, csv_row, (UINT)strlen(csv_row), &bw);
+                        FRESULT sync_res = f_sync(&s_csv_file); /* Guarantees immediate persistence to NAND flash */
+                        if (wr_res != FR_OK || sync_res != FR_OK || bw == 0) {
+                            if (!s_alert_sd_error_sent) {
+                                s_alert_sd_error_sent = true;
+                                char alert[160];
+                                snprintf(alert, sizeof(alert),
+                                         "[BME688 ALERT] MicroSD CSV write failed (err %d/%d). Recording paused!",
+                                         wr_res, sync_res);
+                                data_collector_send_alert(alert);
+                            }
                         }
                     }
-                }
 
-                if (s_bme_file_is_open) {
-                    char bme_entry[220];
-                    UINT bw_bme = 0;
+                    if (s_bme_file_is_open) {
+                        char bme_entry[220];
+                        UINT bw_bme = 0;
 
-                    for (int step = 0; step < 10; step++) {
-                        uint32_t step_time_ms = scan_start_time + s_hp354_step_offsets_ms[step];
-                        uint32_t elapsed_ms = (step_time_ms >= s_session_start_uptime_ms) ? (step_time_ms - s_session_start_uptime_ms) : 0;
-                        uint32_t step_rtc = s_session_rtc_base + (elapsed_ms / 1000);
-                        /* Canonical 13-Column Bosch format:
-                         * [sensor_index, sensor_id, timestamp_since_poweron, real_time_clock,
-                         *  temperature, pressure(hPa), relative_humidity, resistance_gassensor,
-                         *  heater_profile_step_index, scanning_enabled, scanning_cycle_index, label_tag, error_code] */
-                        int elen = snprintf(bme_entry, sizeof(bme_entry),
-                            "%s\n      [0, 1, %u, %u, %.2f, %.2f, %.2f, %.1f, %d, 1, %lu, 1, 0]",
-                            s_bme_first_entry ? "" : ",",
-                            (unsigned int)step_time_ms,
-                            (unsigned int)step_rtc,
-                            temp,
-                            pres, /* pressure in Hectopascals (hPa) */
-                            hum,
-                            r_gas[step],
-                            (int)step,
-                            (unsigned long)s_status.sample_count);
-                        s_bme_first_entry = false;
-                        f_write(&s_bme_file, bme_entry, (UINT)strlen(bme_entry), &bw_bme);
+                        for (int step = 0; step < 10; step++) {
+                            uint32_t step_time_ms = scan_start_time + s_hp354_step_offsets_ms[step];
+                            uint32_t elapsed_ms = (step_time_ms >= s_session_start_uptime_ms) ? (step_time_ms - s_session_start_uptime_ms) : 0;
+                            uint32_t step_rtc = s_session_rtc_base + (elapsed_ms / 1000);
+                            /* Canonical 13-Column Bosch format:
+                             * [sensor_index, sensor_id, timestamp_since_poweron, real_time_clock,
+                             *  temperature, pressure(hPa), relative_humidity, resistance_gassensor,
+                             *  heater_profile_step_index, scanning_enabled, scanning_cycle_index, label_tag, error_code] */
+                            int elen = snprintf(bme_entry, sizeof(bme_entry),
+                                "%s\n      [0, 1, %u, %u, %.2f, %.2f, %.2f, %.1f, %d, 1, %lu, 1, 0]",
+                                s_bme_first_entry ? "" : ",",
+                                (unsigned int)step_time_ms,
+                                (unsigned int)step_rtc,
+                                temp,
+                                pres, /* pressure in Hectopascals (hPa) */
+                                hum,
+                                r_gas[step],
+                                (int)step,
+                                (unsigned long)s_status.sample_count);
+                            s_bme_first_entry = false;
+                            if (elen > 0) {
+                                f_write(&s_bme_file, bme_entry, (UINT)elen, &bw_bme);
+                            }
+                        }
+                        f_sync(&s_bme_file);
                     }
-                    f_sync(&s_bme_file);
+                    nwy_sdcard_unlock();
                 }
 
                 /* Check SD card space every 20 samples */
