@@ -1,0 +1,114 @@
+{
+  "configHeader": {
+    "dateCreated_ISO": "2026-11-17T09:00:00Z",
+    "appVersion": "3.2.1",
+    "boardType": "board_8",
+    "boardMode": "burn_in",
+    "boardLayout": "grouped"
+  },
+  "configBody": {
+    "heaterProfiles": [
+      {
+        "id": "heater_354",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [320, 5],
+          [100, 2],
+          [100, 10],
+          [100, 30],
+          [200, 5],
+          [200, 5],
+          [200, 5],
+          [320, 5],
+          [320, 5],
+          [320, 5]
+        ]
+      }
+    ],
+    "dutyCycleProfiles": [
+      {
+        "id": "duty_1",
+        "numberScanningCycles": 1,
+        "numberSleepingCycles": 0
+      }
+    ],
+    "sensorConfigurations": [
+      {"sensorIndex": 0, "heaterProfile": "heater_354", "dutyCycleProfile": "duty_1"},
+      {"sensorIndex": 1, "heaterProfile": "heater_354", "dutyCycleProfile": "duty_1"},
+      {"sensorIndex": 2, "heaterProfile": "heater_354", "dutyCycleProfile": "duty_1"},
+      {"sensorIndex": 3, "heaterProfile": "heater_354", "dutyCycleProfile": "duty_1"},
+      {"sensorIndex": 4, "heaterProfile": "heater_354", "dutyCycleProfile": "duty_1"},
+      {"sensorIndex": 5, "heaterProfile": "heater_354", "dutyCycleProfile": "duty_1"},
+      {"sensorIndex": 6, "heaterProfile": "heater_354", "dutyCycleProfile": "duty_1"},
+      {"sensorIndex": 7, "heaterProfile": "heater_354", "dutyCycleProfile": "duty_1"}
+    ]
+  },
+  "rawDataHeader": {
+    "counterPowerOnOff": 1,
+    "seedPowerOnOff": "9B9F",
+    "counterFileLimit": 0,
+    "dateCreated": "1795514101",
+    "dateCreated_ISO": "2026-11-24T15:25:01+05:30",
+    "firmwareVersion": "2.1.0",
+    "boardId": "Board_N706B"
+  },
+  "rawDataBody": {
+    "dataColumns": [
+      {"name": "Sensor Index", "unit": "", "format": "integer", "key": "sensor_index", "colId": 1},
+      {"name": "Sensor ID", "unit": "", "format": "integer", "key": "sensor_id", "colId": 2},
+      {"name": "Time Since PowerOn", "unit": "Milliseconds", "format": "integer", "key": "timestamp_since_poweron", "colId": 3},
+      {"name": "Real time clock", "unit": "Unix Timestamp: seconds since Jan 01 1970. (UTC); 0 = missing", "format": "integer", "key": "real_time_clock", "colId": 4},
+      {"name": "Temperature", "unit": "DegreesCelcius", "format": "float", "key": "temperature", "colId": 5},
+      {"name": "Pressure", "unit": "Hectopascals", "format": "float", "key": "pressure", "colId": 6},
+      {"name": "Relative Humidity", "unit": "Percent", "format": "float", "key": "relative_humidity", "colId": 7},
+      {"name": "Resistance Gassensor", "unit": "Ohms", "format": "float", "key": "resistance_gassensor", "colId": 8},
+      {"name": "Heater Profile Step Index", "unit": "", "format": "integer", "key": "heater_profile_step_index", "colId": 9},
+      {"name": "Scanning Mode Enabled", "unit": "", "format": "boolean", "key": "scanning_enabled", "colId": 10},
+      {"name": "Scanning Cycle Index", "unit": "", "format": "integer", "key": "scanning_cycle_index", "colId": 11},
+      {"name": "Label Tag", "unit": "", "format": "integer", "key": "label_tag", "colId": 12},
+      {"name": "Error Code", "unit": "", "format": "integer", "key": "error_code", "colId": 13}
+    ],
+    "dataBlock": [
+      [0, 1, 106260, 1795514101, 29.51, 952.78, 50.44, 21476.5, 0, 1, 1, 1, 0],
+      [0, 1, 106960, 1795514102, 29.51, 952.78, 50.44, 231203.4, 1, 1, 1, 1, 0],
+      [0, 1, 107240, 1795514102, 29.51, 952.78, 50.44, 252590.0, 2, 1, 1, 1, 0],
+      [0, 1, 108640, 1795514104, 29.51, 952.78, 50.44, 275416.9, 3, 1, 1, 1, 0],
+      [0, 1, 112672, 1795514108, 29.51, 952.78, 50.44, 67492.8, 4, 1, 1, 1, 0],
+      [0, 1, 113372, 1795514108, 29.51, 952.78, 50.44, 66493.5, 5, 1, 1, 1, 0],
+      [0, 1, 114072, 1795514109, 29.51, 952.78, 50.44, 66390.0, 6, 1, 1, 1, 0],
+      [0, 1, 114772, 1795514110, 29.51, 952.78, 50.44, 25697.7, 7, 1, 1, 1, 0],
+      [0, 1, 115472, 1795514111, 29.51, 952.78, 50.44, 32388.7, 8, 1, 1, 1, 0],
+      [0, 1, 116172, 1795514111, 29.51, 952.78, 50.44, 39167.7, 9, 1, 1, 1, 0],
+      [0, 1, 118260, 1795514113, 33.10, 952.72, 41.78, 42482.6, 0, 1, 2, 1, 0],
+      [0, 1, 118960, 1795514114, 33.10, 952.72, 41.78, 403626.3, 1, 1, 2, 1, 0],
+      [0, 1, 119240, 1795514114, 33.10, 952.72, 41.78, 449024.3, 2, 1, 2, 1, 0],
+      [0, 1, 120640, 1795514116, 33.10, 952.72, 41.78, 511616.3, 3, 1, 2, 1, 0],
+      [0, 1, 124672, 1795514120, 33.10, 952.72, 41.78, 135629.1, 4, 1, 2, 1, 0],
+      [0, 1, 125372, 1795514120, 33.10, 952.72, 41.78, 132987.0, 5, 1, 2, 1, 0],
+      [0, 1, 126072, 1795514121, 33.10, 952.72, 41.78, 131856.8, 6, 1, 2, 1, 0],
+      [0, 1, 126772, 1795514122, 33.10, 952.72, 41.78, 42230.3, 7, 1, 2, 1, 0],
+      [0, 1, 127472, 1795514123, 33.10, 952.72, 41.78, 49718.4, 8, 1, 2, 1, 0],
+      [0, 1, 128172, 1795514123, 33.10, 952.72, 41.78, 56128.0, 9, 1, 2, 1, 0],
+      [0, 1, 130260, 1795514125, 33.57, 952.68, 40.26, 58474.2, 0, 1, 3, 1, 0],
+      [0, 1, 130960, 1795514126, 33.57, 952.68, 40.26, 551278.6, 1, 1, 3, 1, 0],
+      [0, 1, 131240, 1795514126, 33.57, 952.68, 40.26, 600234.4, 2, 1, 3, 1, 0],
+      [0, 1, 132640, 1795514128, 33.57, 952.68, 40.26, 669718.8, 3, 1, 3, 1, 0],
+      [0, 1, 136672, 1795514132, 33.57, 952.68, 40.26, 181882.8, 4, 1, 3, 1, 0],
+      [0, 1, 137372, 1795514132, 33.57, 952.68, 40.26, 177901.3, 5, 1, 3, 1, 0],
+      [0, 1, 138072, 1795514133, 33.57, 952.68, 40.26, 175162.5, 6, 1, 3, 1, 0],
+      [0, 1, 138772, 1795514134, 33.57, 952.68, 40.26, 55148.6, 7, 1, 3, 1, 0],
+      [0, 1, 139472, 1795514135, 33.57, 952.68, 40.26, 61955.5, 8, 1, 3, 1, 0],
+      [0, 1, 140172, 1795514135, 33.57, 952.68, 40.26, 68467.5, 9, 1, 3, 1, 0],
+      [0, 1, 142260, 1795514137, 33.73, 952.74, 39.84, 69983.6, 0, 1, 4, 1, 0],
+      [0, 1, 142960, 1795514138, 33.73, 952.74, 39.84, 663212.4, 1, 1, 4, 1, 0],
+      [0, 1, 143240, 1795514138, 33.73, 952.74, 39.84, 712347.8, 2, 1, 4, 1, 0],
+      [0, 1, 144640, 1795514140, 33.73, 952.74, 39.84, 794106.2, 3, 1, 4, 1, 0],
+      [0, 1, 148672, 1795514144, 33.73, 952.74, 39.84, 218476.6, 4, 1, 4, 1, 0],
+      [0, 1, 149372, 1795514144, 33.73, 952.74, 39.84, 212492.2, 5, 1, 4, 1, 0],
+      [0, 1, 150072, 1795514145, 33.73, 952.74, 39.84, 208724.0, 6, 1, 4, 1, 0],
+      [0, 1, 150772, 1795514146, 33.73, 952.74, 39.84, 63904.1, 7, 1, 4, 1, 0],
+      [0, 1, 151472, 1795514147, 33.73, 952.74, 39.84, 71091.4, 8, 1, 4, 1, 0],
+      [0, 1, 152172, 1795514147, 33.73, 952.74, 39.84, 77481.8, 9, 1, 4, 1, 0]
+    ]
+  }
+}

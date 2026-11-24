@@ -6,9 +6,9 @@
 #ifndef __DATA_COLLECTOR_H__
 #define __DATA_COLLECTOR_H__
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "bme68x.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,25 +17,25 @@ extern "C" {
 #define DEFAULT_ALERT_PHONE "+918074638788"
 
 typedef enum {
-    COLLECTOR_STATE_IDLE = 0,
-    COLLECTOR_STATE_RECORDING = 1,
-    COLLECTOR_STATE_ERROR = 2
+  COLLECTOR_STATE_IDLE = 0,
+  COLLECTOR_STATE_RECORDING = 1,
+  COLLECTOR_STATE_ERROR = 2
 } collector_state_t;
 
 typedef struct {
-    collector_state_t state;
-    bool              sensor_interfaced;
-    bool              sd_mounted;
-    char              current_label[32];
-    char              current_file_path[64];
-    char              current_bme_path[128];
-    uint32_t          sample_count;
-    uint32_t          interval_sec;
-    float             last_temperature;
-    float             last_humidity;
-    float             last_pressure;
-    float             last_rgas_0;
-    char              last_sender_phone[32];
+  collector_state_t state;
+  bool sensor_interfaced;
+  bool sd_mounted;
+  char current_label[32];
+  char current_file_path[64];
+  char current_bme_path[128];
+  uint32_t sample_count;
+  uint32_t interval_sec;
+  float last_temperature;
+  float last_humidity;
+  float last_pressure;
+  float last_rgas_0;
+  char last_sender_phone[32];
 } collector_status_t;
 
 /**
@@ -59,13 +59,15 @@ int data_collector_check_sensor_health(void);
 
 /**
  * @brief Start a new dataset recording session.
- * @param label Alphanumeric class label (e.g. "TOILET_CLEAN", "TOILET_DIRTY", "IPA_VAPOR")
+ * @param label Alphanumeric class label (e.g. "TOILET_CLEAN", "TOILET_DIRTY",
+ * "IPA_VAPOR")
  * @param sender_phone Optional phone number to notify
  * @param reply_buf Buffer to receive formatted status response
  * @param reply_max Max buffer size
  * @return 0 on success, negative on error.
  */
-int data_collector_start(const char *label, const char *sender_phone, char *reply_buf, size_t reply_max);
+int data_collector_start(const char *label, const char *sender_phone,
+                         char *reply_buf, size_t reply_max);
 
 /**
  * @brief Stop current recording session, sync and close file on SD card.
@@ -81,7 +83,8 @@ int data_collector_stop(char *reply_buf, size_t reply_max);
  * @param reply_buf Buffer to receive formatted status response for SMS
  * @param reply_max Max buffer size
  */
-void data_collector_get_status(collector_status_t *status_out, char *reply_buf, size_t reply_max);
+void data_collector_get_status(collector_status_t *status_out, char *reply_buf,
+                               size_t reply_max);
 
 /**
  * @brief Configure sampling interval between 10-step gas scans.
@@ -90,7 +93,8 @@ void data_collector_get_status(collector_status_t *status_out, char *reply_buf, 
  * @param reply_max Max buffer size
  * @return 0 on success, negative on error.
  */
-int data_collector_set_interval(uint32_t interval_sec, char *reply_buf, size_t reply_max);
+int data_collector_set_interval(uint32_t interval_sec, char *reply_buf,
+                                size_t reply_max);
 
 /**
  * @brief Process an incoming SMS message from operator.
@@ -102,7 +106,8 @@ int data_collector_set_interval(uint32_t interval_sec, char *reply_buf, size_t r
 void data_collector_process_sms(const char *sender_phone, const char *msg_text);
 
 /**
- * @brief Worker thread loop executing continuous periodic gas scanning when recording.
+ * @brief Worker thread loop executing continuous periodic gas scanning when
+ * recording.
  * @param param Unused
  */
 void data_collector_worker_task(void *param);
@@ -118,7 +123,7 @@ void data_collector_send_alert(const char *alert_msg);
  * @param bme_ok Whether BME688 sensor passed self-test
  * @param sd_ok Whether MicroSD card mounted cleanly
  */
-void data_collector_send_boot_status(bool bme_ok, bool sd_ok);
+void data_collector_send_boot_status(bool bme_ok, bool sd_ok, const char *ver);
 
 /**
  * @brief Set or update recipient phone number for proactive alerts.

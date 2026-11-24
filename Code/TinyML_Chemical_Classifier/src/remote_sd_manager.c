@@ -85,6 +85,8 @@ static bool parse_http_url(const char *url, char *host, size_t host_len, uint16_
         p += 7;
     } else if (strncmp(p, "https://", 8) == 0) {
         p += 8;
+    } else if (strncmp(p, "tcp://", 6) == 0) {
+        p += 6;
     }
 
     *port = 80;
@@ -285,11 +287,20 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
     nwy_sdcard_unlock();
 
     if (f_res != FR_OK) {
-        LOGE("Failed to open file '%s' on SD card! FatFs err: %d", full_path, f_res);
-        if (notify_phone && notify_phone[0] != '\0') {
-            char alert[160];
-            snprintf(alert, sizeof(alert), "UPLOAD ERROR: File '%s' not found on MicroSD (err %d).", base_filename, f_res);
-            nwy_hal_sms_send(1, notify_phone, alert);
+        if (f_res == 16 /* FR_LOCKED */) {
+            LOGW("File '%s' is locked by an active recording session! Send 'STOP' before uploading.", base_filename);
+            if (notify_phone && notify_phone[0] != '\0') {
+                char alert[160];
+                snprintf(alert, sizeof(alert), "UPLOAD PAUSED: '%s' is actively recording. Send 'STOP' first.", base_filename);
+                nwy_hal_sms_send(1, notify_phone, alert);
+            }
+        } else {
+            LOGE("Failed to open file '%s' on SD card! FatFs err: %d", full_path, f_res);
+            if (notify_phone && notify_phone[0] != '\0') {
+                char alert[160];
+                snprintf(alert, sizeof(alert), "UPLOAD ERROR: File '%s' not found on MicroSD (err %d).", base_filename, f_res);
+                nwy_hal_sms_send(1, notify_phone, alert);
+            }
         }
         return -3;
     }
@@ -387,12 +398,15 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
     }
     LOGI("TCP socket connected! Transmitting HTTP POST header...");
 
-    /* 5. Transmit HTTP POST Header */
-    char http_header[512];
+    /* 5. Transmit HTTP POST Header (with Tunnel Screen Bypass Headers) */
+    char http_header[640];
     int hdr_len = snprintf(http_header, sizeof(http_header),
                            "POST %s?filename=%s HTTP/1.1\r\n"
                            "Host: %s:%u\r\n"
                            "User-Agent: Neoway-N706B/1.0\r\n"
+                           "X-Pinggy-No-Screen: true\r\n"
+                           "ngrok-skip-browser-warning: 69420\r\n"
+                           "bypass-tunnel-reminder: 1\r\n"
                            "Content-Type: application/octet-stream\r\n"
                            "X-Filename: %s\r\n"
                            "Content-Length: %lu\r\n"
@@ -471,13 +485,25 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
     bool upload_accepted = false;
     if (rx_bytes > 0) {
         rx_buf[rx_bytes] = '\0';
-        LOGI("Server Response:\n%s", rx_buf);
-        if (strstr(rx_buf, "200") || strstr(rx_buf, "201") || strstr(rx_buf, "204")) {
+        LOGI("Server Response (%d bytes):\n%s", rx_bytes, rx_buf);
+        if (strstr(rx_buf, "Pinggy") || strstr(rx_buf, "Caution") || strstr(rx_buf, "tunnel-reminder") ||
+            strstr(rx_buf, "<html") || strstr(rx_buf, "<HTML") || strstr(rx_buf, "<!DOCTYPE") || strstr(rx_buf, "<!doctype")) {
+            LOGE("REJECTED: Interrupted by proxy warning/HTML screening page! File was NOT received by server.");
+            upload_accepted = false;
+        } else if (strstr(rx_buf, "\"status\":\"ok\"") || strstr(rx_buf, "\"status\": \"ok\"") ||
+                   strstr(rx_buf, "\"status\":\"OK\"") || strstr(rx_buf, "\"status\": \"OK\"")) {
+            LOGI("Verified server acknowledgement: JSON status:ok confirmed!");
             upload_accepted = true;
+        } else if ((strstr(rx_buf, "200 OK") || strstr(rx_buf, "201 Created") || strstr(rx_buf, "204 No Content")) &&
+                   !strstr(rx_buf, "<")) {
+            upload_accepted = true;
+        } else {
+            LOGE("REJECTED: Server did not return a valid JSON status:ok confirmation!");
+            upload_accepted = false;
         }
     } else {
-        /* Connection closed gracefully without body is often 200 */
-        upload_accepted = true;
+        LOGE("REJECTED: No response data received from server!");
+        upload_accepted = false;
     }
 
     if (upload_accepted) {

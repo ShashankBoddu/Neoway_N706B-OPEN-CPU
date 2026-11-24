@@ -217,18 +217,18 @@ void data_collector_send_alert(const char *alert_msg)
     }
 }
 
-void data_collector_send_boot_status(bool bme_ok, bool sd_ok)
+void data_collector_send_boot_status(bool bme_ok, bool sd_ok,const char *ver)
 {
     if (s_boot_alert_sent) return; /* Enforce strictly once on startup */
     s_boot_alert_sent = true;
 
-    char msg[160];
+    char msg[200];
     uint64_t free_bytes = nwy_sdcard_get_free_space();
     float free_gb = (float)free_bytes / (1024.0f * 1024.0f * 1024.0f);
 
     if (bme_ok && sd_ok) {
         snprintf(msg, sizeof(msg),
-                 "[BME688 READY] Online! Sensor:OK(0x76), SD:OK(%.1fGB), State:IDLE. Send 'START <LABEL>' (e.g. START BADFOOD)",
+                 "[BME688 READY] Online!\n Ver: %s\n Sensor:OK(0x76), SD:OK(%.1fGB), State:IDLE. Send 'START <LABEL>' (e.g. START BADFOOD)",ver,
                  free_gb);
     } else {
         snprintf(msg, sizeof(msg),
@@ -644,6 +644,13 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
     cmd[sizeof(cmd) - 1] = '\0';
     trim_whitespace(cmd);
 
+    /* Strip telecom spam warning prefix injected by cellular operator (e.g. "Airtel Warning: SPAM | ") */
+    char *pipe_pos = strchr(cmd, '|');
+    if (pipe_pos && (strstr(cmd, "SPAM") || strstr(cmd, "spam") || strstr(cmd, "Warning") || strstr(cmd, "Airtel"))) {
+        memmove(cmd, pipe_pos + 1, strlen(pipe_pos + 1) + 1);
+        trim_whitespace(cmd);
+    }
+
     nwy_hal_uart_printf(1, LOG_TAG "Processing SMS from %s: \"%s\"\r\n", sender_phone, cmd);
 
     char reply[160];
@@ -727,7 +734,10 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
             snprintf(reply, sizeof(reply), "Current alerts recipient: %s. Send 'ALERT <PHONE>' to change.", s_alert_phone);
         }
     }
-    else if (strncmp(cmd_upper, "LIST", 4) == 0 || strncmp(cmd_upper, "SD LIST", 7) == 0) {
+    else if (strncmp(cmd_upper, "LIST", 4) == 0 ||
+             strncmp(cmd_upper, "IIST", 4) == 0 ||
+             strncmp(cmd_upper, "1IST", 4) == 0 ||
+             strncmp(cmd_upper, "SD LIST", 7) == 0) {
         remote_sd_list_files(reply, sizeof(reply));
     }
     else if (strncmp(cmd_upper, "UPLOAD", 6) == 0) {
@@ -772,9 +782,19 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
             snprintf(reply, sizeof(reply), "Usage: 'UPLOAD LATEST', 'UPLOAD ALL', or 'UPLOAD <FILENAME>'");
         }
     }
-    else if (strncmp(cmd_upper, "SERVER", 6) == 0) {
-        const char *url_arg = cmd + 6;
-        while (*url_arg && isspace((unsigned char)*url_arg)) url_arg++;
+    else if (strncmp(cmd_upper, "SERVER", 6) == 0 || strstr(cmd_upper, "SERVER")) {
+        const char *s_pos = strstr(cmd_upper, "SERVER");
+        const char *url_arg = cmd + (s_pos - cmd_upper) + 6;
+        while (*url_arg && (isspace((unsigned char)*url_arg) || *url_arg == ':' || *url_arg == '=')) url_arg++;
+
+        /* Handle user typos like "http: http://" or extra prefixes */
+        const char *http_p = strstr(url_arg, "http://");
+        if (!http_p) http_p = strstr(url_arg, "https://");
+        if (!http_p) http_p = strstr(url_arg, "tcp://");
+        if (http_p) {
+            url_arg = http_p;
+        }
+
         if (*url_arg != '\0') {
             remote_sd_set_server_url(url_arg);
             snprintf(reply, sizeof(reply), "SERVER: Upload URL set to %s", remote_sd_get_server_url());
@@ -819,13 +839,8 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
                  "INTERVAL <S>, ALERT <PH>");
     }
     else {
-        /* User sent a raw text label without 'START', e.g. "BADFOOD" or "TOILET_DIRTY" */
-        if (strlen(cmd) >= 2) {
-            data_collector_start(cmd, sender_phone, reply, sizeof(reply));
-        } else {
-            snprintf(reply, sizeof(reply),
-                     "Unknown command '%s'. Send 'START <LABEL>' (e.g. START BADFOOD) or 'HELP'.", cmd);
-        }
+        snprintf(reply, sizeof(reply),
+                 "Unknown command '%s'. Send 'START <LABEL>', 'STOP', 'STATUS', 'LIST', or 'UPLOAD LATEST'.", cmd);
     }
 
     /* Transmit two-way SMS reply back to sender */
