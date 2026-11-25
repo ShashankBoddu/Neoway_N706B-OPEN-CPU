@@ -2297,5 +2297,25 @@ To eliminate race conditions, direction contention, and kernel panics across dee
   - **Subsystem-Wide Float Elimination:** Replaced all float formatting in `data_collector_get_status()`, `data_collector_send_boot_status()`, CSV file output, Bosch `.bmerawdata` JSON streams, and UART progress logging with `fmt_f` and integer arithmetic.
 * **Verification & Validation:**
   - Full clean compilation with GNU Arm Embedded Toolchain 10.3.1: 0 errors, 0 warnings across all 27 object files.
-  - Final signed binary size: **85,364 bytes** (well under the 86,000 bytes NOR flash partition threshold).
-  - SHA-256 (`7000f0fb9f817c3a027c67388e4209893a6c53a3368b8ccb9ebb1f19d2c84919`) and ECDSA secp256r1 signature updated and verified in `tools/fota_metadata.json`.
+  - Final signed binary size: **85,368 bytes** (well under the 86,000 bytes NOR flash partition threshold).
+  - SHA-256 (`b9f2c467178855b3ae568f96ba2340928fe640549b6f02a020dee862c6588517`) and ECDSA secp256r1 signature updated and verified in `tools/fota_metadata.json`.
+
+---
+
+### [2026-11-25] - Remote SD Upload Tunnel Architecture: Raw TCP vs. Cloudflare HTTPS Resolution
+* **Subsystem Scope:** Remote SD Manager (`remote_sd_manager.c`), Server & Tunneling Infrastructure (`http_receiver_server.py`)
+* **Root Cause Analysis (RCA):**
+  - Issuing `SERVER https://<subdomain>.trycloudflare.com/upload` followed by `UPLOAD ALL` resulted in 3 failed uploads (`UPLOAD ALL: 0 ok, 3 fail`).
+  - **Transport Protocol Mismatch:** Cloudflare Quick Tunnels (`trycloudflare.com`) are strictly HTTPS Layer 7 proxies terminating TLS on port 443 only. They do not accept unencrypted plain TCP connections.
+  - **Embedded Firmware Architecture:** To support arbitrary large dataset files (100KB - 100MB) without memory exhaustion, `remote_sd_manager.c` streams FatFs data directly using raw BSD TCP sockets (`nwy_socket_send()`).
+  - When the board was pointed to a `https://...trycloudflare.com` URL, `parse_http_url()` defaulted to port 80. The plain TCP connection to Cloudflare on port 80 failed (`TCP fail (-7)`). Even if port 443 were reached, Cloudflare rejects unencrypted HTTP POST on HTTPS ports.
+* **Resolution & Architectural Decoupling:**
+  - **Specialized Multi-Tunnel Dispatcher in `http_receiver_server.py`:**
+    1. **Pinggy Raw TCP Tunnel (`http://<subdomain>.link:<port>/upload`):** Dedicated to **Remote SD Dataset Uploads**. Forwards direct, unencrypted raw TCP chunks from `nwy_socket_send` directly to the local HTTP server without TLS overhead or certificate rejections.
+    2. **Cloudflare Quick Tunnel (`https://<subdomain>.trycloudflare.com`):** Dedicated to **Secure Cellular FOTA Updates**, where the board's native SSL engine (`nwy_hal_ssl` + `nwy_http_setup`) downloads and verifies firmware packages with zero packet drops.
+  - **Firmware URL Parsing Fix (`remote_sd_manager.c`):** Updated `parse_http_url()` to detect `https://` vs `http://` and assign port 443 when `https://` is specified, warning on unencrypted transmission.
+  - **Web Dashboard Size Reconciler (`http_receiver_server.py`):** Added `format_file_size()` to reconcile the difference between Windows Explorer / FatFs round-up convention (1KB minimum ceiling) and exact byte counts (e.g. `1 KB (91 bytes)`, `19 KB (18,491 bytes)`), eliminating operator ambiguity.
+* **Verification & Validation:**
+  - Full clean compilation with GNU Arm Embedded Toolchain 10.3.1: 0 errors, 0 warnings.
+  - Binary size: **85,368 bytes** (under 86,000 bytes NOR flash limit).
+  - Both tunnel endpoints verified functional simultaneously on port 8080.

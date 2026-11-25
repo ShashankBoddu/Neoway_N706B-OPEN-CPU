@@ -888,7 +888,7 @@ nwy_bin_header  0x7e040800        0xc
                 0x7e040800        0xc ../build/nwy_open_stub.a(nwy_open_stub.o)
                 0x7e040800                nwy_open_app_bin_header
 
-.text           0x7e04080c     0xd40c
+.text           0x7e04080c     0xd414
  *(nwy_open_asm)
  nwy_open_asm   0x7e04080c     0x1830 ../build/nwy_open_stub.a(nwy_open.o)
                 0x7e04080c                nwy_sdk_log_printf
@@ -1795,1132 +1795,1132 @@ nwy_bin_header  0x7e040800        0xc
                 0x7e04a464      0x2c8 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
                 0x7e04a464                remote_sd_delete_files
  .text.remote_sd_upload_file_sync
-                0x7e04a72c      0x8ac CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e04a72c      0x8b4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
                 0x7e04a72c                remote_sd_upload_file_sync
  .text.remote_sd_upload_latest_sync
-                0x7e04afd8      0x24c CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
-                0x7e04afd8                remote_sd_upload_latest_sync
+                0x7e04afe0      0x24c CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e04afe0                remote_sd_upload_latest_sync
  .text.remote_sd_upload_all_sync
-                0x7e04b224      0x18c CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
-                0x7e04b224                remote_sd_upload_all_sync
+                0x7e04b22c      0x18c CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e04b22c                remote_sd_upload_all_sync
  .text.remote_sd_uploader_task
-                0x7e04b3b0       0xc0 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e04b3b8       0xc0 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
  .text.remote_sd_queue_upload
-                0x7e04b470       0x54 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
-                0x7e04b470                remote_sd_queue_upload
+                0x7e04b478       0x54 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e04b478                remote_sd_queue_upload
  .text.remote_sd_manager_init
-                0x7e04b4c4       0x64 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
-                0x7e04b4c4                remote_sd_manager_init
+                0x7e04b4cc       0x64 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e04b4cc                remote_sd_manager_init
  .text.sd_cs_low
-                0x7e04b528       0x10 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04b530       0x10 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
  .text.sd_spi_set_speed
-                0x7e04b538       0x7c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04b540       0x7c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
  .text.sd_spi_transfer_byte
-                0x7e04b5b4       0x38 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04b5bc       0x38 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
  .text.sd_spi_rx_byte
-                0x7e04b5ec        0x6 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
- *fill*         0x7e04b5f2        0x2 
+                0x7e04b5f4        0x6 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+ *fill*         0x7e04b5fa        0x2 
  .text.sd_cs_high
-                0x7e04b5f4       0x18 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04b5fc       0x18 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
  .text.sd_spi_wait_ready
-                0x7e04b60c       0x26 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
- *fill*         0x7e04b632        0x2 
+                0x7e04b614       0x26 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+ *fill*         0x7e04b63a        0x2 
  .text.sd_send_cmd
-                0x7e04b634       0x58 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04b63c       0x58 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
  .text.sd_spi_hw_init
-                0x7e04b68c       0x84 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
-                0x7e04b68c                sd_spi_hw_init
+                0x7e04b694       0x84 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04b694                sd_spi_hw_init
  .text.sd_spi_card_init
-                0x7e04b710      0x358 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
-                0x7e04b710                sd_spi_card_init
+                0x7e04b718      0x358 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04b718                sd_spi_card_init
  .text.sd_spi_read_sector
-                0x7e04ba68       0xd4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
-                0x7e04ba68                sd_spi_read_sector
+                0x7e04ba70       0xd4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04ba70                sd_spi_read_sector
  .text.sd_spi_write_sector
-                0x7e04bb3c       0xf8 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
-                0x7e04bb3c                sd_spi_write_sector
+                0x7e04bb44       0xf8 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04bb44                sd_spi_write_sector
  .text.sd_spi_sync
-                0x7e04bc34       0x30 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
-                0x7e04bc34                sd_spi_sync
+                0x7e04bc3c       0x30 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04bc3c                sd_spi_sync
  .text.sd_spi_get_info
-                0x7e04bc64       0x18 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
-                0x7e04bc64                sd_spi_get_info
+                0x7e04bc6c       0x18 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04bc6c                sd_spi_get_info
  .text.sd_spi_is_ready
-                0x7e04bc7c        0xc CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
-                0x7e04bc7c                sd_spi_is_ready
+                0x7e04bc84        0xc CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04bc84                sd_spi_is_ready
  .text.sd_spi_set_unready
-                0x7e04bc88        0xc CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
-                0x7e04bc88                sd_spi_set_unready
- .text.atoi     0x7e04bc94        0x8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-atoi.o)
-                0x7e04bc94                atoi
- .text.memcpy   0x7e04bc9c       0x1a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-memcpy-stub.o)
-                0x7e04bc9c                memcpy
- .text.memmove  0x7e04bcb6       0x34 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-memmove.o)
-                0x7e04bcb6                memmove
- .text.memset   0x7e04bcea       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-memset.o)
-                0x7e04bcea                memset
- *fill*         0x7e04bcfa        0x2 
+                0x7e04bc90        0xc CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e04bc90                sd_spi_set_unready
+ .text.atoi     0x7e04bc9c        0x8 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-atoi.o)
+                0x7e04bc9c                atoi
+ .text.memcpy   0x7e04bca4       0x1a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-memcpy-stub.o)
+                0x7e04bca4                memcpy
+ .text.memmove  0x7e04bcbe       0x34 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-memmove.o)
+                0x7e04bcbe                memmove
+ .text.memset   0x7e04bcf2       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-memset.o)
+                0x7e04bcf2                memset
+ *fill*         0x7e04bd02        0x2 
  .text.snprintf
-                0x7e04bcfc       0x68 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-snprintf.o)
-                0x7e04bcfc                sniprintf
-                0x7e04bcfc                snprintf
- .text.sprintf  0x7e04bd64       0x40 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-sprintf.o)
-                0x7e04bd64                siprintf
-                0x7e04bd64                sprintf
- .text.sscanf   0x7e04bda4       0x54 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-sscanf.o)
-                0x7e04bda4                siscanf
-                0x7e04bda4                sscanf
+                0x7e04bd04       0x68 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-snprintf.o)
+                0x7e04bd04                sniprintf
+                0x7e04bd04                snprintf
+ .text.sprintf  0x7e04bd6c       0x40 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-sprintf.o)
+                0x7e04bd6c                siprintf
+                0x7e04bd6c                sprintf
+ .text.sscanf   0x7e04bdac       0x54 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-sscanf.o)
+                0x7e04bdac                siscanf
+                0x7e04bdac                sscanf
  .text.__seofread
-                0x7e04bdf8        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-stdio.o)
-                0x7e04bdf8                __seofread
+                0x7e04be00        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-stdio.o)
+                0x7e04be00                __seofread
  .text.strcasecmp
-                0x7e04bdfc       0x34 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strcasecmp.o)
-                0x7e04bdfc                strcasecmp
- .text.strchr   0x7e04be30       0x1a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strchr.o)
-                0x7e04be30                strchr
- .text          0x7e04be4a       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strcmp.o)
-                0x7e04be4a                strcmp
- .text.strcpy   0x7e04be5e       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strcpy.o)
-                0x7e04be5e                strcpy
- .text          0x7e04be6e       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strlen.o)
-                0x7e04be6e                strlen
- *fill*         0x7e04be7e        0x2 
+                0x7e04be04       0x34 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strcasecmp.o)
+                0x7e04be04                strcasecmp
+ .text.strchr   0x7e04be38       0x1a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strchr.o)
+                0x7e04be38                strchr
+ .text          0x7e04be52       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strcmp.o)
+                0x7e04be52                strcmp
+ .text.strcpy   0x7e04be66       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strcpy.o)
+                0x7e04be66                strcpy
+ .text          0x7e04be76       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strlen.o)
+                0x7e04be76                strlen
+ *fill*         0x7e04be86        0x2 
  .text.strncasecmp
-                0x7e04be80       0x44 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strncasecmp.o)
-                0x7e04be80                strncasecmp
- .text.strncat  0x7e04bec4       0x26 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strncat.o)
-                0x7e04bec4                strncat
- .text.strncmp  0x7e04beea       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strncmp.o)
-                0x7e04beea                strncmp
- .text.strncpy  0x7e04bf12       0x26 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strncpy.o)
-                0x7e04bf12                strncpy
- .text.strpbrk  0x7e04bf38       0x30 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strpbrk.o)
-                0x7e04bf38                strpbrk
- .text.strrchr  0x7e04bf68       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strrchr.o)
-                0x7e04bf68                strrchr
- .text.strstr   0x7e04bf90       0x2c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strstr.o)
-                0x7e04bf90                strstr
+                0x7e04be88       0x44 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strncasecmp.o)
+                0x7e04be88                strncasecmp
+ .text.strncat  0x7e04becc       0x26 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strncat.o)
+                0x7e04becc                strncat
+ .text.strncmp  0x7e04bef2       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strncmp.o)
+                0x7e04bef2                strncmp
+ .text.strncpy  0x7e04bf1a       0x26 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strncpy.o)
+                0x7e04bf1a                strncpy
+ .text.strpbrk  0x7e04bf40       0x30 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strpbrk.o)
+                0x7e04bf40                strpbrk
+ .text.strrchr  0x7e04bf70       0x28 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strrchr.o)
+                0x7e04bf70                strrchr
+ .text.strstr   0x7e04bf98       0x2c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strstr.o)
+                0x7e04bf98                strstr
  .text._strtol_l.constprop.0
-                0x7e04bfbc      0x108 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtol.o)
+                0x7e04bfc4      0x108 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtol.o)
  .text._strtol_r
-                0x7e04c0c4        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtol.o)
-                0x7e04c0c4                _strtol_r
- .text.strtol   0x7e04c0c8       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtol.o)
-                0x7e04c0c8                strtol
+                0x7e04c0cc        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtol.o)
+                0x7e04c0cc                _strtol_r
+ .text.strtol   0x7e04c0d0       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtol.o)
+                0x7e04c0d0                strtol
  .text._strtoul_l.constprop.0
-                0x7e04c0dc       0xf4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtoul.o)
+                0x7e04c0e4       0xf4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtoul.o)
  .text._strtoul_r
-                0x7e04c1d0        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtoul.o)
-                0x7e04c1d0                _strtoul_r
- .text.strtoul  0x7e04c1d4       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtoul.o)
-                0x7e04c1d4                strtoul
+                0x7e04c1d8        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtoul.o)
+                0x7e04c1d8                _strtoul_r
+ .text.strtoul  0x7e04c1dc       0x14 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-strtoul.o)
+                0x7e04c1dc                strtoul
  .text._vsnprintf_r
-                0x7e04c1e8       0x56 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-vsnprintf.o)
-                0x7e04c1e8                _vsniprintf_r
-                0x7e04c1e8                _vsnprintf_r
- *fill*         0x7e04c23e        0x2 
+                0x7e04c1f0       0x56 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-vsnprintf.o)
+                0x7e04c1f0                _vsniprintf_r
+                0x7e04c1f0                _vsnprintf_r
+ *fill*         0x7e04c246        0x2 
  .text.vsnprintf
-                0x7e04c240       0x1c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-vsnprintf.o)
-                0x7e04c240                vsniprintf
-                0x7e04c240                vsnprintf
- .text.__errno  0x7e04c25c        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-errno.o)
-                0x7e04c25c                __errno
+                0x7e04c248       0x1c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-vsnprintf.o)
+                0x7e04c248                vsniprintf
+                0x7e04c248                vsnprintf
+ .text.__errno  0x7e04c264        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-errno.o)
+                0x7e04c264                __errno
  .text.__ssputs_r
-                0x7e04c268       0xb6 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfprintf.o)
-                0x7e04c268                __ssputs_r
- *fill*         0x7e04c31e        0x2 
+                0x7e04c270       0xb6 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfprintf.o)
+                0x7e04c270                __ssputs_r
+ *fill*         0x7e04c326        0x2 
  .text._svfprintf_r
-                0x7e04c320      0x200 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfprintf.o)
-                0x7e04c320                _svfiprintf_r
-                0x7e04c320                _svfprintf_r
+                0x7e04c328      0x200 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfprintf.o)
+                0x7e04c328                _svfiprintf_r
+                0x7e04c328                _svfprintf_r
  .text._sungetc_r
-                0x7e04c520       0x7a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfscanf.o)
-                0x7e04c520                _sungetc_r
+                0x7e04c528       0x7a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfscanf.o)
+                0x7e04c528                _sungetc_r
  .text.__ssrefill_r
-                0x7e04c59a       0x3a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfscanf.o)
-                0x7e04c59a                __ssrefill_r
+                0x7e04c5a2       0x3a ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfscanf.o)
+                0x7e04c5a2                __ssrefill_r
  .text.__ssvfscanf_r
-                0x7e04c5d4      0x2f4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfscanf.o)
-                0x7e04c5d4                __ssvfiscanf_r
-                0x7e04c5d4                __ssvfscanf_r
+                0x7e04c5dc      0x2f4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfscanf.o)
+                0x7e04c5dc                __ssvfiscanf_r
+                0x7e04c5dc                __ssvfscanf_r
  .text._printf_common
-                0x7e04c8c8       0xe4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfprintf_i.o)
-                0x7e04c8c8                _printf_common
+                0x7e04c8d0       0xe4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfprintf_i.o)
+                0x7e04c8d0                _printf_common
  .text._printf_i
-                0x7e04c9ac      0x250 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfprintf_i.o)
-                0x7e04c9ac                _printf_i
+                0x7e04c9b4      0x250 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfprintf_i.o)
+                0x7e04c9b4                _printf_i
  .text._scanf_chars
-                0x7e04cbfc       0xb4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
-                0x7e04cbfc                _scanf_chars
+                0x7e04cc04       0xb4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x7e04cc04                _scanf_chars
  .text._scanf_i
-                0x7e04ccb0      0x1e4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
-                0x7e04ccb0                _scanf_i
- .text.__sccl   0x7e04ce94       0x70 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-sccl.o)
-                0x7e04ce94                __sccl
+                0x7e04ccb8      0x1e4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x7e04ccb8                _scanf_i
+ .text.__sccl   0x7e04ce9c       0x70 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-sccl.o)
+                0x7e04ce9c                __sccl
  .text.__submore
-                0x7e04cf04       0x6e ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-ungetc.o)
-                0x7e04cf04                __submore
+                0x7e04cf0c       0x6e ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-ungetc.o)
+                0x7e04cf0c                __submore
  .text.__retarget_lock_acquire_recursive
-                0x7e04cf72        0x2 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-lock.o)
-                0x7e04cf72                __retarget_lock_acquire_recursive
+                0x7e04cf7a        0x2 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-lock.o)
+                0x7e04cf7a                __retarget_lock_acquire_recursive
  .text.__retarget_lock_release_recursive
-                0x7e04cf74        0x2 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-lock.o)
-                0x7e04cf74                __retarget_lock_release_recursive
- .text.memchr   0x7e04cf76       0x1c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-memchr-stub.o)
-                0x7e04cf76                memchr
- *fill*         0x7e04cf92        0x2 
- .text._free_r  0x7e04cf94       0x94 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-freer.o)
-                0x7e04cf94                _free_r
+                0x7e04cf7c        0x2 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-lock.o)
+                0x7e04cf7c                __retarget_lock_release_recursive
+ .text.memchr   0x7e04cf7e       0x1c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-memchr-stub.o)
+                0x7e04cf7e                memchr
+ *fill*         0x7e04cf9a        0x2 
+ .text._free_r  0x7e04cf9c       0x94 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-freer.o)
+                0x7e04cf9c                _free_r
  .text._malloc_r
-                0x7e04d028       0xb4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-mallocr.o)
-                0x7e04d028                _malloc_r
+                0x7e04d030       0xb4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-mallocr.o)
+                0x7e04d030                _malloc_r
  .text._realloc_r
-                0x7e04d0dc       0x4c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-reallocr.o)
-                0x7e04d0dc                _realloc_r
- .text._sbrk_r  0x7e04d128       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-sbrkr.o)
-                0x7e04d128                _sbrk_r
+                0x7e04d0e4       0x4c ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-reallocr.o)
+                0x7e04d0e4                _realloc_r
+ .text._sbrk_r  0x7e04d130       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-sbrkr.o)
+                0x7e04d130                _sbrk_r
  .text.__malloc_lock
-                0x7e04d148        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-mlock.o)
-                0x7e04d148                __malloc_lock
+                0x7e04d150        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-mlock.o)
+                0x7e04d150                __malloc_lock
  .text.__malloc_unlock
-                0x7e04d154        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-mlock.o)
-                0x7e04d154                __malloc_unlock
+                0x7e04d15c        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-mlock.o)
+                0x7e04d15c                __malloc_unlock
  .text._malloc_usable_size_r
-                0x7e04d160       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-msizer.o)
-                0x7e04d160                _malloc_usable_size_r
- .text._sbrk    0x7e04d170       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(sbrk.o)
-                0x7e04d170                _sbrk
- .text          0x7e04d190      0x278 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivsi3.o)
-                0x7e04d190                __aeabi_uidiv
-                0x7e04d190                __udivsi3
-                0x7e04d3ec                __aeabi_uidivmod
- .text          0x7e04d408        0x4 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_dvmd_tls.o)
-                0x7e04d408                __aeabi_idiv0
-                0x7e04d408                __aeabi_ldiv0
- .text          0x7e04d40c      0x21c ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_addsubsf3.o)
-                0x7e04d40c                __aeabi_frsub
-                0x7e04d414                __subsf3
-                0x7e04d414                __aeabi_fsub
-                0x7e04d418                __aeabi_fadd
-                0x7e04d418                __addsf3
-                0x7e04d578                __aeabi_ui2f
-                0x7e04d578                __floatunsisf
-                0x7e04d580                __aeabi_i2f
-                0x7e04d580                __floatsisf
-                0x7e04d59c                __aeabi_ul2f
-                0x7e04d59c                __floatundisf
-                0x7e04d5ac                __aeabi_l2f
-                0x7e04d5ac                __floatdisf
- .text          0x7e04d628      0x2a0 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_muldivsf3.o)
-                0x7e04d628                __mulsf3
-                0x7e04d628                __aeabi_fmul
-                0x7e04d790                __aeabi_fdiv
-                0x7e04d790                __divsf3
- .text          0x7e04d8c8       0xec ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_cmpsf2.o)
-                0x7e04d8c8                __gesf2
-                0x7e04d8c8                __gtsf2
-                0x7e04d8d0                __lesf2
-                0x7e04d8d0                __ltsf2
-                0x7e04d8d8                __nesf2
-                0x7e04d8d8                __eqsf2
-                0x7e04d8d8                __cmpsf2
-                0x7e04d938                __aeabi_cfrcmple
-                0x7e04d940                __aeabi_cfcmpeq
-                0x7e04d940                __aeabi_cfcmple
-                0x7e04d950                __aeabi_fcmpeq
-                0x7e04d964                __aeabi_fcmplt
-                0x7e04d978                __aeabi_fcmple
-                0x7e04d98c                __aeabi_fcmpge
-                0x7e04d9a0                __aeabi_fcmpgt
- .text          0x7e04d9b4       0x4c ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_fixsfsi.o)
-                0x7e04d9b4                __aeabi_f2iz
-                0x7e04d9b4                __fixsfsi
- .text          0x7e04da00       0x40 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_fixunssfsi.o)
-                0x7e04da00                __fixunssfsi
-                0x7e04da00                __aeabi_f2uiz
- .text          0x7e04da40       0xa0 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_aeabi_ldivmod.o)
-                0x7e04da40                __aeabi_ldivmod
- .text          0x7e04dae0       0x30 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_aeabi_uldivmod.o)
-                0x7e04dae0                __aeabi_uldivmod
- .text          0x7e04db10      0x108 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivmoddi4.o)
-                0x7e04db10                __udivmoddi4
+                0x7e04d168       0x10 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-msizer.o)
+                0x7e04d168                _malloc_usable_size_r
+ .text._sbrk    0x7e04d178       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(sbrk.o)
+                0x7e04d178                _sbrk
+ .text          0x7e04d198      0x278 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivsi3.o)
+                0x7e04d198                __aeabi_uidiv
+                0x7e04d198                __udivsi3
+                0x7e04d3f4                __aeabi_uidivmod
+ .text          0x7e04d410        0x4 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_dvmd_tls.o)
+                0x7e04d410                __aeabi_idiv0
+                0x7e04d410                __aeabi_ldiv0
+ .text          0x7e04d414      0x21c ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_addsubsf3.o)
+                0x7e04d414                __aeabi_frsub
+                0x7e04d41c                __subsf3
+                0x7e04d41c                __aeabi_fsub
+                0x7e04d420                __aeabi_fadd
+                0x7e04d420                __addsf3
+                0x7e04d580                __aeabi_ui2f
+                0x7e04d580                __floatunsisf
+                0x7e04d588                __aeabi_i2f
+                0x7e04d588                __floatsisf
+                0x7e04d5a4                __aeabi_ul2f
+                0x7e04d5a4                __floatundisf
+                0x7e04d5b4                __aeabi_l2f
+                0x7e04d5b4                __floatdisf
+ .text          0x7e04d630      0x2a0 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_muldivsf3.o)
+                0x7e04d630                __mulsf3
+                0x7e04d630                __aeabi_fmul
+                0x7e04d798                __aeabi_fdiv
+                0x7e04d798                __divsf3
+ .text          0x7e04d8d0       0xec ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_cmpsf2.o)
+                0x7e04d8d0                __gesf2
+                0x7e04d8d0                __gtsf2
+                0x7e04d8d8                __lesf2
+                0x7e04d8d8                __ltsf2
+                0x7e04d8e0                __nesf2
+                0x7e04d8e0                __eqsf2
+                0x7e04d8e0                __cmpsf2
+                0x7e04d940                __aeabi_cfrcmple
+                0x7e04d948                __aeabi_cfcmpeq
+                0x7e04d948                __aeabi_cfcmple
+                0x7e04d958                __aeabi_fcmpeq
+                0x7e04d96c                __aeabi_fcmplt
+                0x7e04d980                __aeabi_fcmple
+                0x7e04d994                __aeabi_fcmpge
+                0x7e04d9a8                __aeabi_fcmpgt
+ .text          0x7e04d9bc       0x4c ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_fixsfsi.o)
+                0x7e04d9bc                __aeabi_f2iz
+                0x7e04d9bc                __fixsfsi
+ .text          0x7e04da08       0x40 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_arm_fixunssfsi.o)
+                0x7e04da08                __fixunssfsi
+                0x7e04da08                __aeabi_f2uiz
+ .text          0x7e04da48       0xa0 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_aeabi_ldivmod.o)
+                0x7e04da48                __aeabi_ldivmod
+ .text          0x7e04dae8       0x30 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_aeabi_uldivmod.o)
+                0x7e04dae8                __aeabi_uldivmod
+ .text          0x7e04db18      0x108 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivmoddi4.o)
+                0x7e04db18                __udivmoddi4
 
-.glue_7         0x7e04dc18        0x0
- .glue_7        0x7e04dc18        0x0 linker stubs
+.glue_7         0x7e04dc20        0x0
+ .glue_7        0x7e04dc20        0x0 linker stubs
 
-.glue_7t        0x7e04dc18        0x0
- .glue_7t       0x7e04dc18        0x0 linker stubs
+.glue_7t        0x7e04dc20        0x0
+ .glue_7t       0x7e04dc20        0x0 linker stubs
 
-.vfp11_veneer   0x7e04dc18        0x0
- .vfp11_veneer  0x7e04dc18        0x0 linker stubs
+.vfp11_veneer   0x7e04dc20        0x0
+ .vfp11_veneer  0x7e04dc20        0x0 linker stubs
 
-.v4_bx          0x7e04dc18        0x0
- .v4_bx         0x7e04dc18        0x0 linker stubs
+.v4_bx          0x7e04dc20        0x0
+ .v4_bx         0x7e04dc20        0x0 linker stubs
 
-.iplt           0x7e04dc18        0x0
- .iplt          0x7e04dc18        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
+.iplt           0x7e04dc20        0x0
+ .iplt          0x7e04dc20        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
 
 i.nwy_open_app_env_init
-                0x7e04dc18       0x1c
+                0x7e04dc20       0x1c
  i.nwy_open_app_env_init
-                0x7e04dc18       0x1c ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x7e04dc20       0x1c ../build/nwy_open_stub.a(nwy_open_stub.o)
 
-i.nwy_strncmp   0x7e04dc34       0x2c
- i.nwy_strncmp  0x7e04dc34       0x2c ../build/nwy_open_stub.a(nwy_open_stub.o)
+i.nwy_strncmp   0x7e04dc3c       0x2c
+ i.nwy_strncmp  0x7e04dc3c       0x2c ../build/nwy_open_stub.a(nwy_open_stub.o)
 
 i.nwy_open_app_sdk_load
-                0x7e04dc60       0x7c
+                0x7e04dc68       0x7c
  i.nwy_open_app_sdk_load
-                0x7e04dc60       0x7c ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x7e04dc68       0x7c ../build/nwy_open_stub.a(nwy_open_stub.o)
 
 i.__nwy_open_app_entry
-                0x7e04dcdc       0x1e
+                0x7e04dce4       0x1e
  i.__nwy_open_app_entry
-                0x7e04dcdc       0x1e ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x7e04dce4       0x1e ../build/nwy_open_stub.a(nwy_open_stub.o)
 
-.rodata         0x7e04dcfc     0x3ed8
+.rodata         0x7e04dd04     0x3ed8
  *(.rodata*)
  .rodata.s_hp354_dur_steps
-                0x7e04dcfc       0x14 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
+                0x7e04dd04       0x14 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
  .rodata.s_hp354_temp_steps
-                0x7e04dd10       0x14 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
+                0x7e04dd18       0x14 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
  .rodata.s_lookup_k1_range
-                0x7e04dd24       0x40 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
+                0x7e04dd2c       0x40 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
  .rodata.s_lookup_k2_range
-                0x7e04dd64       0x40 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
- .rodata.Tbl    0x7e04dda4      0x100 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ccsbcs.obj
+                0x7e04dd6c       0x40 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
+ .rodata.Tbl    0x7e04ddac      0x100 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ccsbcs.obj
  .rodata.cvt1.0
-                0x7e04dea4       0x28 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ccsbcs.obj
- .rodata.k      0x7e04decc      0x100 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/crypto/sha256.obj
+                0x7e04deac       0x28 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ccsbcs.obj
+ .rodata.k      0x7e04ded4      0x100 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/crypto/sha256.obj
  .rodata.curve_secp256r1
-                0x7e04dfcc       0xb0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/crypto/uECC.obj
+                0x7e04dfd4       0xb0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/crypto/uECC.obj
  .rodata.extract_json_str.str1.1
-                0x7e04e07c        0x7 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e084        0x7 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .rodata.fmt_f.constprop.0.isra.0.str1.1
-                0x7e04e083       0x14 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e08b       0x14 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
                                  0x18 (size before relaxing)
  .rodata.data_collector_set_alert_phone.str1.1
-                0x7e04e097       0x38 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e09f       0x38 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .rodata.data_collector_send_alert.str1.1
-                0x7e04e0cf       0x6e CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e0d7       0x6e CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .rodata.data_collector_send_boot_status.str1.1
-                0x7e04e13d       0x9c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e145       0x9c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
                                  0x9d (size before relaxing)
  .rodata.data_collector_check_sensor_health.str1.1
-                0x7e04e1d9       0xcf CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e1e1       0xcf CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .rodata.data_collector_init.str1.1
-                0x7e04e2a8        0xa CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e2b0        0xa CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .rodata.data_collector_start.str1.1
-                0x7e04e2b2      0x42a CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e2ba      0x42a CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
                                 0x42e (size before relaxing)
  .rodata.data_collector_stop.str1.1
-                0x7e04e6dc      0x169 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e6e4      0x169 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
                                 0x175 (size before relaxing)
  .rodata.data_collector_get_status.str1.1
-                0x7e04e845       0xd5 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e84d       0xd5 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
                                  0xd8 (size before relaxing)
  .rodata.data_collector_set_interval.str1.1
-                0x7e04e91a       0x52 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e922       0x52 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .rodata.data_collector_execute_command.str1.1
-                0x7e04e96c      0x429 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04e974      0x429 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
                                 0x459 (size before relaxing)
  .rodata.data_collector_process_sms.str1.1
-                0x7e04ed95       0x97 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04ed9d       0x97 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .rodata.data_collector_worker_task.str1.1
-                0x7e04ee2c      0x267 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
- .rodata        0x7e04f093       0x30 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
- *fill*         0x7e04f0c3        0x1 
+                0x7e04ee34      0x267 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+ .rodata        0x7e04f09b       0x30 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+ *fill*         0x7e04f0cb        0x1 
  .rodata.days_before_month.0
-                0x7e04f0c4       0x18 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04f0cc       0x18 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .rodata.s_bme_config_header_body
-                0x7e04f0dc      0x411 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04f0e4      0x411 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .rodata.s_bme_datacolumns
-                0x7e04f4ed      0x529 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
- *fill*         0x7e04fa16        0x2 
+                0x7e04f4f5      0x529 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+ *fill*         0x7e04fa1e        0x2 
  .rodata.s_hp354_step_offsets_ms
-                0x7e04fa18       0x28 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e04fa20       0x28 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .rodata.follow_path.str1.1
-                0x7e04fa40       0x10 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj
- .rodata.ExCvt  0x7e04fa50       0x80 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj
+                0x7e04fa48       0x10 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj
+ .rodata.ExCvt  0x7e04fa58       0x80 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj
  .rodata.LfnOfs
-                0x7e04fad0        0xd CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj
+                0x7e04fad8        0xd CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj
  .rodata.fota_http_result_cb.str1.1
-                0x7e04fadd      0x5f7 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e04fae5      0x5f7 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
                                 0x60a (size before relaxing)
  .rodata.nwy_hal_secure_fota_cancel.str1.1
-                0x7e0500d4        0xf CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e0500dc        0xf CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .rodata.nwy_hal_secure_fota_start_with_notify.str1.1
-                0x7e0500e3      0x124 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e0500eb      0x124 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
                                 0x152 (size before relaxing)
  .rodata.PUBLIC_KEY_RAW
-                0x7e050207       0x40 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e05020f       0x40 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .rodata.mqtt_background_yield_task.str1.1
-                0x7e050247       0x7a CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+                0x7e05024f       0x7a CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
  .rodata.nwy_hal_mqtt_init.str1.1
-                0x7e0502c1      0x14c CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
- *fill*         0x7e05040d        0x3 
- .rodata        0x7e050410       0x58 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+                0x7e0502c9      0x14c CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+ *fill*         0x7e050415        0x3 
+ .rodata        0x7e050418       0x58 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
  .rodata.nwy_hal_net_get_ip.str1.1
-                0x7e050468        0x8 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/net/nwy_hal_net.obj
+                0x7e050470        0x8 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/net/nwy_hal_net.obj
  .rodata.nwy_hal_ssl_create_context.str1.1
-                0x7e050470       0x95 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.obj
+                0x7e050478       0x95 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.obj
  .rodata.nwy_hal_ssl_destroy_context.str1.1
-                0x7e050505       0x2b CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.obj
+                0x7e05050d       0x2b CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.obj
  .rodata.resolve_target_fd.str1.1
-                0x7e050530        0x5 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
+                0x7e050538        0x5 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
  .rodata.uart_log_format.str1.1
-                0x7e050535       0x29 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
+                0x7e05053d       0x29 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
  .rodata.i2c_log.str1.1
-                0x7e05055e        0x5 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+                0x7e050566        0x5 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
  .rodata.i2c_bus_recover.str1.1
-                0x7e05055e       0xcd CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+                0x7e050566       0xcd CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
  .rodata.i2c_bus_init.str1.1
-                0x7e05062b       0x51 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+                0x7e050633       0x51 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
  .rodata.i2c_bus_reset.str1.1
-                0x7e05067c       0x92 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+                0x7e050684       0x92 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
  .rodata.sms_worker_task.str1.1
-                0x7e05070e       0x67 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e050716       0x67 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
                                  0x6b (size before relaxing)
  .rodata.on_incoming_sms_cb.str1.1
-                0x7e050775       0x13 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e05077d       0x13 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
  .rodata.app_main_task.str1.1
-                0x7e050788      0x343 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e050790      0x343 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
                                 0x353 (size before relaxing)
  .rodata.sd_log.str1.1
-                0x7e050acb      0x343 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e050ad3      0x343 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
                                   0x5 (size before relaxing)
  .rodata.nwy_open_app_entry.str1.1
-                0x7e050acb        0x9 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e050ad3        0x9 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
  .rodata.S_FAIL
-                0x7e050ad4        0x9 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
- .rodata.S_OK   0x7e050add        0x9 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
- .rodata.S_SEP  0x7e050ae6       0x41 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
- .rodata.S_TB   0x7e050b27       0x41 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
- .rodata.S_TR   0x7e050b68       0x28 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e050adc        0x9 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+ .rodata.S_OK   0x7e050ae5        0x9 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+ .rodata.S_SEP  0x7e050aee       0x41 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+ .rodata.S_TB   0x7e050b2f       0x41 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+ .rodata.S_TR   0x7e050b70       0x28 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
  .rodata.S_WARN
-                0x7e050b90        0x9 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e050b98        0x9 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
  .rodata.on_mqtt_incoming_message.str1.1
-                0x7e050b99       0x33 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
+                0x7e050ba1       0x33 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
  .rodata.mqtt_manager_init.str1.1
-                0x7e050bcc       0x1b CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
+                0x7e050bd4       0x1b CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
  .rodata.mqtt_manager_publish.str1.1
-                0x7e050be7       0x19 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
+                0x7e050bef       0x19 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
  .rodata.mqtt_manager_worker_task.str1.1
-                0x7e050c00      0x175 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
+                0x7e050c08      0x175 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
                                 0x17d (size before relaxing)
  .rodata.mqtt_cmd_worker_task.str1.1
-                0x7e050d75       0xd1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
+                0x7e050d7d       0xd1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
                                 0x127 (size before relaxing)
  .rodata.sd_safe_reinit_locked.str1.1
-                0x7e050e46        0x3 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
+                0x7e050e4e        0x3 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
  .rodata.format_path.constprop.0.str1.1
-                0x7e050e49        0xb CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
+                0x7e050e51        0xb CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
  .rodata.nwy_sdcard_init.str1.1
-                0x7e050e54       0x8d CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
+                0x7e050e5c       0x8d CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
                                  0x8f (size before relaxing)
  .rodata.remote_sd_set_server_url.str1.1
-                0x7e050ee1       0x2b CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e050ee9       0x2b CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
  .rodata.remote_sd_list_files.str1.1
-                0x7e050f0c      0x108 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e050f14      0x108 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
                                 0x10c (size before relaxing)
  .rodata.remote_sd_delete_files.str1.1
-                0x7e051014      0x16f CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e05101c      0x16f CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
                                 0x17f (size before relaxing)
  .rodata.remote_sd_upload_file_sync.str1.1
-                0x7e051183      0x5d6 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e05118b      0x5d6 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
                                 0x5f6 (size before relaxing)
  .rodata.remote_sd_upload_latest_sync.str1.1
-                0x7e051759       0xc1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e051761       0xc1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
                                  0xe0 (size before relaxing)
  .rodata.remote_sd_upload_all_sync.str1.1
-                0x7e05181a       0x9b CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e051822       0x9b CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
  .rodata.remote_sd_uploader_task.str1.1
-                0x7e0518b5       0x89 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e0518bd       0x89 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
  .rodata.remote_sd_queue_upload.str1.1
-                0x7e05193e        0xe CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e051946        0xe CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
  .rodata.remote_sd_manager_init.str1.1
-                0x7e05194c       0x2e CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e051954       0x2e CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
  .rodata.sd_spi_set_speed.str1.1
-                0x7e05197a        0xa CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e051982        0xa CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
  .rodata.sd_spi_card_init.str1.1
-                0x7e051984       0x97 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e05198c       0x97 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
  .rodata._ctype_
-                0x7e051a1b      0x101 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-ctype_.o)
-                0x7e051a1b                _ctype_
+                0x7e051a23      0x101 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-ctype_.o)
+                0x7e051a23                _ctype_
  .rodata._svfprintf_r.str1.1
-                0x7e051b1c       0x11 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfprintf.o)
+                0x7e051b24       0x11 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfprintf.o)
  .rodata.__ssvfscanf_r.str1.1
-                0x7e051b2d        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfscanf.o)
+                0x7e051b35        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-svfscanf.o)
  .rodata._printf_i.str1.1
-                0x7e051b2d       0x22 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfprintf_i.o)
+                0x7e051b35       0x22 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfprintf_i.o)
  .rodata.str1.1
-                0x7e051b4f        0x6 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x7e051b57        0x6 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
                                   0x9 (size before relaxing)
  .rodata._scanf_i.str1.1
-                0x7e051b55       0x12 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
- *fill*         0x7e051b67        0x1 
- .rodata        0x7e051b68        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x7e051b5d       0x12 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
+ *fill*         0x7e051b6f        0x1 
+ .rodata        0x7e051b70        0xc ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-vfscanf_i.o)
  .rodata.__sf_fake_stderr
-                0x7e051b74       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-findfp.o)
-                0x7e051b74                __sf_fake_stderr
+                0x7e051b7c       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-findfp.o)
+                0x7e051b7c                __sf_fake_stderr
  .rodata.__sf_fake_stdin
-                0x7e051b94       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-findfp.o)
-                0x7e051b94                __sf_fake_stdin
+                0x7e051b9c       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-findfp.o)
+                0x7e051b9c                __sf_fake_stdin
  .rodata.__sf_fake_stdout
-                0x7e051bb4       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-findfp.o)
-                0x7e051bb4                __sf_fake_stdout
+                0x7e051bbc       0x20 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-findfp.o)
+                0x7e051bbc                __sf_fake_stdout
 
-.conststrlit    0x7e051bd4     0x1de3
- .conststrlit   0x7e051bd4     0x1de3 ../build/nwy_open_stub.a(nwy_open_stub.o)
+.conststrlit    0x7e051bdc     0x1de3
+ .conststrlit   0x7e051bdc     0x1de3 ../build/nwy_open_stub.a(nwy_open_stub.o)
 
-.ARM.exidx      0x7e0539b8        0x8
- .ARM.exidx     0x7e0539b8        0x8 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivmoddi4.o)
+.ARM.exidx      0x7e0539c0        0x8
+ .ARM.exidx     0x7e0539c0        0x8 ../tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a(_udivmoddi4.o)
 
-.rel.dyn        0x7e0539c0        0x0
- .rel.iplt      0x7e0539c0        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
+.rel.dyn        0x7e0539c8        0x0
+ .rel.iplt      0x7e0539c8        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
 
 nwy_open_api_import
-                0x7e0539c0      0xc18
-                0x7e0539c0                PROVIDE (nwy_open_api_import$$Base = .)
+                0x7e0539c8      0xc18
+                0x7e0539c8                PROVIDE (nwy_open_api_import$$Base = .)
  *(nwy_open_api_import)
  nwy_open_api_import
-                0x7e0539c0      0xc18 ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x7e0539c8      0xc18 ../build/nwy_open_stub.a(nwy_open_stub.o)
                 [!provide]                PROVIDE (nwy_open_api_import$$End = .)
                 0x00000c18                nwy_open_api_import$$Length = SIZEOF (nwy_open_api_import)
 
-.data           0x7e0545d8      0x77c
+.data           0x7e0545e0      0x77c
  *(.data*)
  .data.s_alert_phone
-                0x7e0545d8       0x20 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e0545e0       0x20 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .data.s_bme_first_entry
-                0x7e0545f8        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
- *fill*         0x7e0545f9        0x1 
+                0x7e054600        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+ *fill*         0x7e054601        0x1 
  .data.g_fota_port
-                0x7e0545fa        0x2 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e054602        0x2 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .data.g_current_log_level
-                0x7e0545fc        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
- *fill*         0x7e0545fd        0x3 
- .data.g_log_fd
-                0x7e054600        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
- .data.s_active_engine
-                0x7e054604        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+                0x7e054604        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
  *fill*         0x7e054605        0x3 
+ .data.g_log_fd
+                0x7e054608        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
+ .data.s_active_engine
+                0x7e05460c        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+ *fill*         0x7e05460d        0x3 
  .data.s_hw_i2c_fd
-                0x7e054608        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+                0x7e054610        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
  .data.s_log_uart_fd
-                0x7e05460c        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+                0x7e054614        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
  .data.g_bme_addr
-                0x7e054610        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
- *fill*         0x7e054611        0x3 
+                0x7e054618        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+ *fill*         0x7e054619        0x3 
  .data.g_dbg_uart_fd
-                0x7e054614        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e05461c        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
  .data.s_configured_server_url
-                0x7e054618       0xc0 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e054620       0xc0 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
  .data.s_cs_gpio
-                0x7e0546d8        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
- .data.s_spi_bus
-                0x7e0546dc        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
- .data.s_spi_hd
                 0x7e0546e0        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
- .data          0x7e0546e4      0x60c ../build/nwy_open_stub.a(nwy_open_stub.o)
-                0x7e0546e4                nwy_sdk_log_printf_ptr
-                0x7e0546e8                nwy_thread_create_ptr
-                0x7e0546ec                nwy_thread_get_current_ptr
-                0x7e0546f0                nwy_thread_set_priority_ptr
-                0x7e0546f4                nwy_thread_get_priority_ptr
-                0x7e0546f8                nwy_thread_suspend_ptr
-                0x7e0546fc                nwy_thread_resume_ptr
-                0x7e054700                nwy_thread_exit_ptr
-                0x7e054704                nwy_thread_sleep_ptr
-                0x7e054708                nwy_thread_usleep_ptr
-                0x7e05470c                nwy_thread_event_send_ptr
-                0x7e054710                nwy_thread_event_front_send_ptr
-                0x7e054714                nwy_thread_event_wait_ptr
-                0x7e054718                nwy_thread_pendingevt_num_get_ptr
-                0x7e05471c                nwy_thread_spaceevt_cnt_get_ptr
-                0x7e054720                nwy_thread_info_get_ptr
-                0x7e054724                nwy_thread_list_get_ptr
-                0x7e054728                nwy_thread_runtime_stats_get_ptr
-                0x7e05472c                nwy_msg_queue_create_ptr
-                0x7e054730                nwy_msg_queue_delete_ptr
-                0x7e054734                nwy_msg_queue_send_ptr
-                0x7e054738                nwy_msg_queue_front_send_ptr
-                0x7e05473c                nwy_msg_queue_recv_ptr
-                0x7e054740                nwy_msg_queue_pending_num_get_ptr
-                0x7e054744                nwy_msg_queue_space_num_get_ptr
-                0x7e054748                nwy_sdk_mutex_create_ptr
-                0x7e05474c                nwy_sdk_mutex_lock_ptr
-                0x7e054750                nwy_sdk_mutex_unlock_ptr
-                0x7e054754                nwy_sdk_mutex_delete_ptr
-                0x7e054758                nwy_semaphore_create_ptr
-                0x7e05475c                nwy_semaphore_acquire_ptr
-                0x7e054760                nwy_semahpore_release_ptr
-                0x7e054764                nwy_semahpore_delete_ptr
-                0x7e054768                nwy_semahpore_count_get_ptr
-                0x7e05476c                nwy_sdk_timer_create_ptr
-                0x7e054770                nwy_sdk_timer_destory_ptr
-                0x7e054774                nwy_sdk_timer_start_ptr
-                0x7e054778                nwy_sdk_timer_status_get_ptr
-                0x7e05477c                nwy_sdk_timer_stop_ptr
-                0x7e054780                nwy_uptime_get_ptr
-                0x7e054784                nwy_date_set_ptr
-                0x7e054788                nwy_date_get_ptr
-                0x7e05478c                nwy_sys_timestamp_set_ptr
-                0x7e054790                nwy_sys_timestamp_get_ptr
-                0x7e054794                nwy_sys_timezone_set_ptr
-                0x7e054798                nwy_timestamp_to_date_ptr
-                0x7e05479c                nwy_date_to_timestamp_ptr
-                0x7e0547a0                nwy_socket_errno_ptr
-                0x7e0547a4                nwy_socket_open_ptr
-                0x7e0547a8                nwy_socket_send_ptr
-                0x7e0547ac                nwy_socket_recv_ptr
-                0x7e0547b0                nwy_socket_sendto_ptr
-                0x7e0547b4                nwy_socket_recvfrom_ptr
-                0x7e0547b8                nwy_socket_setsockopt_ptr
-                0x7e0547bc                nwy_socket_getsockopt_ptr
-                0x7e0547c0                nwy_socket_gethost_by_name_ptr
-                0x7e0547c4                nwy_socket_close_ptr
-                0x7e0547c8                nwy_socket_shutdown_ptr
-                0x7e0547cc                nwy_socket_connect_ptr
-                0x7e0547d0                nwy_socket_lport_bind_ptr
-                0x7e0547d4                nwy_socket_bind_ptr
-                0x7e0547d8                nwy_socket_listen_ptr
-                0x7e0547dc                nwy_socket_accept_ptr
-                0x7e0547e0                nwy_socket_get_state_ptr
-                0x7e0547e4                nwy_socket_select_ptr
-                0x7e0547e8                nwy_socket_set_nonblock_ptr
-                0x7e0547ec                nwy_socket_set_reuseaddr_ptr
-                0x7e0547f0                nwy_socket_set_nodelay_ptr
-                0x7e0547f4                nwy_socket_set_keepalive_ptr
-                0x7e0547f8                nwy_socket_set_linger_ptr
-                0x7e0547fc                nwy_socket_get_ack_ptr
-                0x7e054800                nwy_socket_get_sent_ptr
-                0x7e054804                nwy_socket_inet_ntop_ptr
-                0x7e054808                nwy_socket_inet_pton_ptr
-                0x7e05480c                nwy_socket_htons_ptr
-                0x7e054810                nwy_socket_ntohs_ptr
-                0x7e054814                nwy_socket_htonl_ptr
-                0x7e054818                nwy_socket_ntohl_ptr
-                0x7e05481c                nwy_usb_serial_send_ptr
-                0x7e054820                nwy_usb_serial_reg_recv_cb_ptr
-                0x7e054824                malloc_ptr
-                0x7e054828                calloc_ptr
-                0x7e05482c                realloc_ptr
-                0x7e054830                free_ptr
-                0x7e054834                nwy_file_open_ptr
-                0x7e054838                nwy_file_read_ptr
-                0x7e05483c                nwy_file_write_ptr
-                0x7e054840                nwy_file_tell_ptr
-                0x7e054844                nwy_file_seek_ptr
-                0x7e054848                nwy_file_path_size_ptr
-                0x7e05484c                nwy_file_fd_size_ptr
-                0x7e054850                nwy_file_exist_ptr
-                0x7e054854                nwy_file_remove_ptr
-                0x7e054858                nwy_file_rename_ptr
-                0x7e05485c                nwy_file_sync_ptr
-                0x7e054860                nwy_file_fd_trunc_ptr
-                0x7e054864                nwy_file_path_trunc_ptr
-                0x7e054868                nwy_file_path_stat_get_ptr
-                0x7e05486c                nwy_file_fd_stat_get_ptr
-                0x7e054870                nwy_file_close_ptr
-                0x7e054874                nwy_dir_mk_ptr
-                0x7e054878                nwy_dir_rm_ptr
-                0x7e05487c                nwy_dir_recursive_rm_ptr
-                0x7e054880                nwy_dir_open_ptr
-                0x7e054884                nwy_dir_close_ptr
-                0x7e054888                nwy_dir_read_ptr
-                0x7e05488c                nwy_dir_tell_ptr
-                0x7e054890                nwy_dir_seek_ptr
-                0x7e054894                nwy_dir_rewind_ptr
-                0x7e054898                nwy_vfs_free_size_get_ptr
-                0x7e05489c                nwy_dm_dev_model_get_ptr
-                0x7e0548a0                nwy_dm_inner_version_get_ptr
-                0x7e0548a4                nwy_dm_open_sdk_version_get_ptr
-                0x7e0548a8                nwy_dm_hw_version_get_ptr
-                0x7e0548ac                nwy_dm_rftemperature_get_ptr
-                0x7e0548b0                nwy_dm_sn_get_ptr
-                0x7e0548b4                nwy_dm_imei_get_ptr
-                0x7e0548b8                nwy_dm_app_version_set_ptr
-                0x7e0548bc                nwy_dm_imei_set_ptr
-                0x7e0548c0                nwy_dm_heapinfo_ptr
-                0x7e0548c4                nwy_dm_nvinfo_get_ptr
-                0x7e0548c8                nwy_ftp_login_ptr
-                0x7e0548cc                nwy_ftp_logout_ptr
-                0x7e0548d0                nwy_ftp_get_ptr
-                0x7e0548d4                nwy_ftp_put_ptr
-                0x7e0548d8                nwy_ftp_get_filesize_ptr
-                0x7e0548dc                nwy_ftp_del_file_ptr
-                0x7e0548e0                nwy_http_setup_ptr
-                0x7e0548e4                nwy_http_get_ptr
-                0x7e0548e8                nwy_http_head_ptr
-                0x7e0548ec                nwy_http_post_ptr
-                0x7e0548f0                nwy_http_put_ptr
-                0x7e0548f4                nwy_http_open_mode_ptr
-                0x7e0548f8                nwy_http_close_ptr
-                0x7e0548fc                nwy_sntp_get_time_ptr
-                0x7e054900                nwy_sim_imsi_get_ptr
-                0x7e054904                nwy_sim_iccid_get_ptr
-                0x7e054908                nwy_sim_status_get_ptr
-                0x7e05490c                nwy_sim_pin_verify_ptr
-                0x7e054910                nwy_sim_pin_unlock_ptr
-                0x7e054914                nwy_sim_pin_mode_get_ptr
-                0x7e054918                nwy_sim_pin_enable_ptr
-                0x7e05491c                nwy_sim_pin_disable_ptr
-                0x7e054920                nwy_sim_pin_change_ptr
-                0x7e054924                nwy_sim_pin_times_get_ptr
-                0x7e054928                nwy_sim_msisdn_get_ptr
-                0x7e05492c                nwy_sim_slot_set_ptr
-                0x7e054930                nwy_sim_slot_get_ptr
-                0x7e054934                nwy_sim_reset_ptr
-                0x7e054938                nwy_sim_power_set_ptr
-                0x7e05493c                nwy_sim_detect_set_ptr
-                0x7e054940                nwy_sim_csim_ptr
-                0x7e054944                nwy_sim_urc_reg_ptr
-                0x7e054948                nwy_sim_urc_unreg_ptr
-                0x7e05494c                nwy_pm_ctrl_ptr
-                0x7e054950                nwy_pm_state_set_ptr
-                0x7e054954                nwy_bootup_alarm_set_ptr
-                0x7e054958                nwy_bootup_alarm_del_ptr
-                0x7e05495c                nwy_power_state_ptr
-                0x7e054960                nwy_pm_boot_res_ptr
-                0x7e054964                nwy_loc_navigation_start_ptr
-                0x7e054968                nwy_loc_navigation_stop_ptr
-                0x7e05496c                nwy_loc_navigation_reset_ptr
-                0x7e054970                nwy_loc_recv_cb_reg_ptr
-                0x7e054974                nwy_loc_mode_set_ptr
-                0x7e054978                nwy_loc_startup_set_ptr
-                0x7e05497c                nwy_loc_rate_set_ptr
-                0x7e054980                nwy_loc_cfg_nmea_type_ptr
-                0x7e054984                nwy_loc_nmea_get_ptr
-                0x7e054988                nwy_loc_nmea_parse_ptr
-                0x7e05498c                nwy_loc_agnss_start_ptr
-                0x7e054990                nwy_loc_param_set_ptr
-                0x7e054994                nwy_loc_param_get_ptr
-                0x7e054998                nwy_data_reg_cb_ptr
-                0x7e05499c                nwy_data_unreg_cb_ptr
-                0x7e0549a0                nwy_data_call_start_ptr
-                0x7e0549a4                nwy_data_call_stop_ptr
-                0x7e0549a8                nwy_data_profile_get_ptr
-                0x7e0549ac                nwy_data_profile_set_ptr
-                0x7e0549b0                nwy_data_auto_connect_set_ptr
-                0x7e0549b4                nwy_data_call_info_get_ptr
-                0x7e0549b8                nwy_data_flow_info_get_ptr
-                0x7e0549bc                nwy_data_eps_dyn_apn_get_ptr
-                0x7e0549c0                nwy_data_dhcp_get_ptr
-                0x7e0549c4                nwy_data_dhcp_set_ptr
-                0x7e0549c8                nwy_data_dns_info_get_ptr
-                0x7e0549cc                nwy_data_get_capability_ptr
-                0x7e0549d0                mbedtls_ssl_conf_max_version_ptr
-                0x7e0549d4                mbedtls_ssl_conf_min_version_ptr
-                0x7e0549d8                mbedtls_ssl_conf_authmode_ptr
-                0x7e0549dc                mbedtls_ssl_conf_ca_chain_ptr
-                0x7e0549e0                mbedtls_ssl_conf_own_cert_ptr
-                0x7e0549e4                mbedtls_ssl_conf_rng_ptr
-                0x7e0549e8                mbedtls_ssl_conf_dbg_ptr
-                0x7e0549ec                mbedtls_ssl_setup_ptr
-                0x7e0549f0                mbedtls_ssl_set_hostname_ptr
-                0x7e0549f4                mbedtls_ssl_set_bio_ptr
-                0x7e0549f8                mbedtls_ssl_handshake_ptr
-                0x7e0549fc                mbedtls_ssl_get_verify_result_ptr
-                0x7e054a00                mbedtls_net_connect_ptr
-                0x7e054a04                mbedtls_net_init_ptr
-                0x7e054a08                mbedtls_net_bind_ptr
-                0x7e054a0c                mbedtls_net_accept_ptr
-                0x7e054a10                mbedtls_net_poll_ptr
-                0x7e054a14                mbedtls_net_set_block_ptr
-                0x7e054a18                mbedtls_net_set_nonblock_ptr
-                0x7e054a1c                mbedtls_net_usleep_ptr
-                0x7e054a20                mbedtls_net_recv_ptr
-                0x7e054a24                mbedtls_net_send_ptr
-                0x7e054a28                mbedtls_net_recv_timeout_ptr
-                0x7e054a2c                mbedtls_net_free_ptr
-                0x7e054a30                mbedtls_pk_init_ptr
-                0x7e054a34                mbedtls_pk_free_ptr
-                0x7e054a38                mbedtls_ssl_init_ptr
-                0x7e054a3c                mbedtls_ssl_read_ptr
-                0x7e054a40                mbedtls_ssl_write_ptr
-                0x7e054a44                mbedtls_ssl_send_alert_message_ptr
-                0x7e054a48                mbedtls_ssl_close_notify_ptr
-                0x7e054a4c                mbedtls_ssl_free_ptr
-                0x7e054a50                mbedtls_ssl_config_init_ptr
-                0x7e054a54                mbedtls_ssl_config_defaults_ptr
-                0x7e054a58                mbedtls_ssl_config_free_ptr
-                0x7e054a5c                mbedtls_ssl_session_init_ptr
-                0x7e054a60                mbedtls_ssl_session_free_ptr
-                0x7e054a64                mbedtls_ssl_conf_read_timeout_ptr
-                0x7e054a68                mbedtls_ssl_set_timer_cb_ptr
-                0x7e054a6c                mbedtls_platform_set_calloc_free_ptr
-                0x7e054a70                mbedtls_x509_crt_parse_der_ptr
-                0x7e054a74                mbedtls_x509_crt_parse_ptr
-                0x7e054a78                mbedtls_x509_crt_info_ptr
-                0x7e054a7c                mbedtls_x509_crt_verify_info_ptr
-                0x7e054a80                mbedtls_x509_crt_verify_ptr
-                0x7e054a84                mbedtls_x509_crt_verify_with_profile_ptr
-                0x7e054a88                mbedtls_x509_crt_verify_restartable_ptr
-                0x7e054a8c                mbedtls_x509_crt_init_ptr
-                0x7e054a90                mbedtls_x509_crt_free_ptr
-                0x7e054a94                mbedtls_pk_parse_key_ptr
-                0x7e054a98                mbedtls_entropy_free_ptr
-                0x7e054a9c                mbedtls_entropy_init_ptr
-                0x7e054aa0                mbedtls_entropy_func_ptr
-                0x7e054aa4                mbedtls_ctr_drbg_random_ptr
-                0x7e054aa8                mbedtls_ctr_drbg_free_ptr
-                0x7e054aac                mbedtls_ctr_drbg_seed_ptr
-                0x7e054ab0                mbedtls_ctr_drbg_init_ptr
-                0x7e054ab4                mbedtls_ssl_get_bytes_avail_ptr
-                0x7e054ab8                mbedtls_ssl_conf_ciphersuites_ptr
-                0x7e054abc                mbedtls_sha1_init_ptr
-                0x7e054ac0                mbedtls_sha1_update_ptr
-                0x7e054ac4                mbedtls_sha1_finish_ptr
-                0x7e054ac8                mbedtls_base64_encode_ptr
-                0x7e054acc                mbedtls_ssl_session_reset_ptr
-                0x7e054ad0                mbedtls_pk_get_type_ptr
-                0x7e054ad4                mbedtls_ssl_conf_renegotiation_ptr
-                0x7e054ad8                mbedtls_ssl_set_session_ptr
-                0x7e054adc                mbedtls_aes_init_ptr
-                0x7e054ae0                mbedtls_aes_free_ptr
-                0x7e054ae4                mbedtls_aes_xts_init_ptr
-                0x7e054ae8                mbedtls_aes_xts_free_ptr
-                0x7e054aec                mbedtls_aes_setkey_enc_ptr
-                0x7e054af0                mbedtls_aes_setkey_dec_ptr
-                0x7e054af4                mbedtls_aes_xts_setkey_enc_ptr
-                0x7e054af8                mbedtls_aes_xts_setkey_dec_ptr
-                0x7e054afc                mbedtls_aes_crypt_ecb_ptr
-                0x7e054b00                mbedtls_aes_crypt_cbc_ptr
-                0x7e054b04                mbedtls_aes_crypt_xts_ptr
-                0x7e054b08                mbedtls_aes_crypt_cfb128_ptr
-                0x7e054b0c                mbedtls_aes_crypt_cfb8_ptr
-                0x7e054b10                mbedtls_aes_crypt_ofb_ptr
-                0x7e054b14                mbedtls_aes_crypt_ctr_ptr
-                0x7e054b18                nwy_ssl_version_info_get_ptr
-                0x7e054b1c                mbedtls_internal_aes_encrypt_ptr
-                0x7e054b20                mbedtls_internal_aes_decrypt_ptr
-                0x7e054b24                psa_crypto_init_ptr
-                0x7e054b28                nwy_usb_net_mode_set_ptr
-                0x7e054b2c                nwy_usb_net_mode_get_ptr
-                0x7e054b30                nwy_i2c_init_ptr
-                0x7e054b34                nwy_i2c_read_ptr
-                0x7e054b38                nwy_i2c_write_ptr
-                0x7e054b3c                nwy_i2c_deinit_ptr
-                0x7e054b40                nwy_i2c_raw_get_byte_ptr
-                0x7e054b44                nwy_i2c_raw_put_byte_ptr
-                0x7e054b48                nwy_spi_init_ptr
-                0x7e054b4c                nwy_spi_cs_cfg_ptr
-                0x7e054b50                nwy_spi_transfer_ptr
-                0x7e054b54                nwy_spi_deinit_ptr
-                0x7e054b58                nwy_spi_read_ptr
-                0x7e054b5c                nwy_spi_write_ptr
-                0x7e054b60                nwy_sms_option_init_ptr
-                0x7e054b64                nwy_sms_storage_set_ptr
-                0x7e054b68                nwy_sms_storage_get_ptr
-                0x7e054b6c                nwy_sms_report_set_ptr
-                0x7e054b70                nwy_sms_sca_set_ptr
-                0x7e054b74                nwy_sms_sca_get_ptr
-                0x7e054b78                nwy_sms_msg_send_ptr
-                0x7e054b7c                nwy_sms_recv_cb_reg_ptr
-                0x7e054b80                nwy_sms_recv_cb_unreg_ptr
-                0x7e054b84                nwy_sms_msg_del_ptr
-                0x7e054b88                nwy_sms_msg_read_ptr
-                0x7e054b8c                nwy_sms_msg_del_ext_ptr
-                0x7e054b90                nwy_sms_msg_list_read_ptr
-                0x7e054b94                nwy_nw_mode_get_ptr
-                0x7e054b98                nwy_nw_mode_set_ptr
-                0x7e054b9c                nwy_nw_priband_get_ptr
-                0x7e054ba0                nwy_nw_priband_set_ptr
-                0x7e054ba4                nwy_nw_ims_get_ptr
-                0x7e054ba8                nwy_nw_ims_set_ptr
-                0x7e054bac                nwy_nw_radio_get_ptr
-                0x7e054bb0                nwy_nw_radio_set_ptr
-                0x7e054bb4                nwy_nw_config_get_ptr
-                0x7e054bb8                nwy_nw_config_set_ptr
-                0x7e054bbc                nwy_nw_operator_get_ptr
-                0x7e054bc0                nwy_nw_csq_get_ptr
-                0x7e054bc4                nwy_nw_signal_get_ptr
-                0x7e054bc8                nwy_nw_regstatus_get_ptr
-                0x7e054bcc                nwy_nw_cellinfo_get_ptr
-                0x7e054bd0                nwy_nw_lock_set_ptr
-                0x7e054bd4                nwy_nw_lock_get_ptr
-                0x7e054bd8                nwy_nw_manual_select_ptr
-                0x7e054bdc                nwy_nw_scan_ptr
-                0x7e054be0                nwy_nw_psm_get_ptr
-                0x7e054be4                nwy_nw_psm_set_ptr
-                0x7e054be8                nwy_nw_get_forbidden_plmn_ptr
-                0x7e054bec                nwy_nw_reg_cb_ptr
-                0x7e054bf0                nwy_nw_unreg_cb_ptr
-                0x7e054bf4                nwy_get_time_zone_switch_ptr
-                0x7e054bf8                nwy_set_time_zone_switch_ptr
-                0x7e054bfc                nwy_dm_nwcfg_get_ptr
-                0x7e054c00                nwy_dm_nwcfg_set_ptr
-                0x7e054c04                nwy_virt_at_parameter_init_ptr
-                0x7e054c08                nwy_virt_at_cmd_send_ptr
-                0x7e054c0c                nwy_virt_at_unsolicited_cb_reg_ptr
-                0x7e054c10                nwy_virt_at_get_original_rsp_cb_ptr
-                0x7e054c14                nwy_virt_at_forward_cb_ptr
-                0x7e054c18                nwy_virt_at_forward_send_ptr
-                0x7e054c1c                nwy_pm_vbat_voltage_get_ptr
-                0x7e054c20                nwy_ping_start_ptr
-                0x7e054c24                NetworkInit_ptr
-                0x7e054c28                NetworkConnect_ptr
-                0x7e054c2c                NetworkDisconnect_ptr
-                0x7e054c30                MQTTClientInit_ptr
-                0x7e054c34                MQTTConnect_ptr
-                0x7e054c38                MQTTPublish_ptr
-                0x7e054c3c                MQTTSetMessageHandler_ptr
-                0x7e054c40                MQTTSubscribe_ptr
-                0x7e054c44                MQTTUnsubscribe_ptr
-                0x7e054c48                MQTTDisconnect_ptr
-                0x7e054c4c                MQTTYield_ptr
-                0x7e054c50                MQTTIsConnected_ptr
-                0x7e054c54                nwy_gpio_direction_get_ptr
-                0x7e054c58                nwy_gpio_direction_set_ptr
-                0x7e054c5c                nwy_gpio_value_get_ptr
-                0x7e054c60                nwy_gpio_value_set_ptr
-                0x7e054c64                nwy_gpio_pull_get_ptr
-                0x7e054c68                nwy_gpio_pull_set_ptr
-                0x7e054c6c                nwy_gpio_irq_register_ptr
-                0x7e054c70                nwy_gpio_irq_enable_ptr
-                0x7e054c74                nwy_gpio_irq_disable_ptr
-                0x7e054c78                nwy_gpio_irq_wakeup_enable_ptr
-                0x7e054c7c                nwy_gpio_irq_wakeup_disable_ptr
-                0x7e054c80                nwy_gpio_close_ptr
-                0x7e054c84                nwy_uart_open_ptr
-                0x7e054c88                nwy_uart_read_ptr
-                0x7e054c8c                nwy_uart_write_ptr
-                0x7e054c90                nwy_uart_dcb_set_ptr
-                0x7e054c94                nwy_uart_dcb_get_ptr
-                0x7e054c98                nwy_uart_close_ptr
-                0x7e054c9c                nwy_uart_rx_cb_register_ptr
-                0x7e054ca0                nwy_uart_tx_cb_register_ptr
-                0x7e054ca4                nwy_uart_rx_frame_timeout_set_ptr
-                0x7e054ca8                nwy_adc_get_ptr
-                0x7e054cac                nwy_dev_name_list_get_ptr
-                0x7e054cb0                nwy_sat_set_on_off_ptr
-                0x7e054cb4                nwy_sat_get_on_off_ptr
-                0x7e054cb8                nwy_sat_terminal_response_ptr
-                0x7e054cbc                nwy_sat_envelope_command_ptr
-                0x7e054cc0                nwy_sat_set_profile_ptr
-                0x7e054cc4                nwy_sat_get_profile_ptr
-                0x7e054cc8                nwy_sat_recv_data_ptr
-                0x7e054ccc                nwy_fota_write_ptr
-                0x7e054cd0                nwy_fota_update_ptr
-                0x7e054cd4                nwy_fota_result_get_ptr
-                0x7e054cd8                nwy_fota_base_ver_update_ptr
-                0x7e054cdc                nwy_vfs_logical_block_device_create_ptr
-                0x7e054ce0                nwy_vfs_mount_ptr
-                0x7e054ce4                nwy_vfs_unmount_ptr
-                0x7e054ce8                nwy_vfs_mkfs_ptr
-                0x7e054cec                nwy_dm_soc_model_get_ptr
+ .data.s_spi_bus
+                0x7e0546e4        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+ .data.s_spi_hd
+                0x7e0546e8        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+ .data          0x7e0546ec      0x60c ../build/nwy_open_stub.a(nwy_open_stub.o)
+                0x7e0546ec                nwy_sdk_log_printf_ptr
+                0x7e0546f0                nwy_thread_create_ptr
+                0x7e0546f4                nwy_thread_get_current_ptr
+                0x7e0546f8                nwy_thread_set_priority_ptr
+                0x7e0546fc                nwy_thread_get_priority_ptr
+                0x7e054700                nwy_thread_suspend_ptr
+                0x7e054704                nwy_thread_resume_ptr
+                0x7e054708                nwy_thread_exit_ptr
+                0x7e05470c                nwy_thread_sleep_ptr
+                0x7e054710                nwy_thread_usleep_ptr
+                0x7e054714                nwy_thread_event_send_ptr
+                0x7e054718                nwy_thread_event_front_send_ptr
+                0x7e05471c                nwy_thread_event_wait_ptr
+                0x7e054720                nwy_thread_pendingevt_num_get_ptr
+                0x7e054724                nwy_thread_spaceevt_cnt_get_ptr
+                0x7e054728                nwy_thread_info_get_ptr
+                0x7e05472c                nwy_thread_list_get_ptr
+                0x7e054730                nwy_thread_runtime_stats_get_ptr
+                0x7e054734                nwy_msg_queue_create_ptr
+                0x7e054738                nwy_msg_queue_delete_ptr
+                0x7e05473c                nwy_msg_queue_send_ptr
+                0x7e054740                nwy_msg_queue_front_send_ptr
+                0x7e054744                nwy_msg_queue_recv_ptr
+                0x7e054748                nwy_msg_queue_pending_num_get_ptr
+                0x7e05474c                nwy_msg_queue_space_num_get_ptr
+                0x7e054750                nwy_sdk_mutex_create_ptr
+                0x7e054754                nwy_sdk_mutex_lock_ptr
+                0x7e054758                nwy_sdk_mutex_unlock_ptr
+                0x7e05475c                nwy_sdk_mutex_delete_ptr
+                0x7e054760                nwy_semaphore_create_ptr
+                0x7e054764                nwy_semaphore_acquire_ptr
+                0x7e054768                nwy_semahpore_release_ptr
+                0x7e05476c                nwy_semahpore_delete_ptr
+                0x7e054770                nwy_semahpore_count_get_ptr
+                0x7e054774                nwy_sdk_timer_create_ptr
+                0x7e054778                nwy_sdk_timer_destory_ptr
+                0x7e05477c                nwy_sdk_timer_start_ptr
+                0x7e054780                nwy_sdk_timer_status_get_ptr
+                0x7e054784                nwy_sdk_timer_stop_ptr
+                0x7e054788                nwy_uptime_get_ptr
+                0x7e05478c                nwy_date_set_ptr
+                0x7e054790                nwy_date_get_ptr
+                0x7e054794                nwy_sys_timestamp_set_ptr
+                0x7e054798                nwy_sys_timestamp_get_ptr
+                0x7e05479c                nwy_sys_timezone_set_ptr
+                0x7e0547a0                nwy_timestamp_to_date_ptr
+                0x7e0547a4                nwy_date_to_timestamp_ptr
+                0x7e0547a8                nwy_socket_errno_ptr
+                0x7e0547ac                nwy_socket_open_ptr
+                0x7e0547b0                nwy_socket_send_ptr
+                0x7e0547b4                nwy_socket_recv_ptr
+                0x7e0547b8                nwy_socket_sendto_ptr
+                0x7e0547bc                nwy_socket_recvfrom_ptr
+                0x7e0547c0                nwy_socket_setsockopt_ptr
+                0x7e0547c4                nwy_socket_getsockopt_ptr
+                0x7e0547c8                nwy_socket_gethost_by_name_ptr
+                0x7e0547cc                nwy_socket_close_ptr
+                0x7e0547d0                nwy_socket_shutdown_ptr
+                0x7e0547d4                nwy_socket_connect_ptr
+                0x7e0547d8                nwy_socket_lport_bind_ptr
+                0x7e0547dc                nwy_socket_bind_ptr
+                0x7e0547e0                nwy_socket_listen_ptr
+                0x7e0547e4                nwy_socket_accept_ptr
+                0x7e0547e8                nwy_socket_get_state_ptr
+                0x7e0547ec                nwy_socket_select_ptr
+                0x7e0547f0                nwy_socket_set_nonblock_ptr
+                0x7e0547f4                nwy_socket_set_reuseaddr_ptr
+                0x7e0547f8                nwy_socket_set_nodelay_ptr
+                0x7e0547fc                nwy_socket_set_keepalive_ptr
+                0x7e054800                nwy_socket_set_linger_ptr
+                0x7e054804                nwy_socket_get_ack_ptr
+                0x7e054808                nwy_socket_get_sent_ptr
+                0x7e05480c                nwy_socket_inet_ntop_ptr
+                0x7e054810                nwy_socket_inet_pton_ptr
+                0x7e054814                nwy_socket_htons_ptr
+                0x7e054818                nwy_socket_ntohs_ptr
+                0x7e05481c                nwy_socket_htonl_ptr
+                0x7e054820                nwy_socket_ntohl_ptr
+                0x7e054824                nwy_usb_serial_send_ptr
+                0x7e054828                nwy_usb_serial_reg_recv_cb_ptr
+                0x7e05482c                malloc_ptr
+                0x7e054830                calloc_ptr
+                0x7e054834                realloc_ptr
+                0x7e054838                free_ptr
+                0x7e05483c                nwy_file_open_ptr
+                0x7e054840                nwy_file_read_ptr
+                0x7e054844                nwy_file_write_ptr
+                0x7e054848                nwy_file_tell_ptr
+                0x7e05484c                nwy_file_seek_ptr
+                0x7e054850                nwy_file_path_size_ptr
+                0x7e054854                nwy_file_fd_size_ptr
+                0x7e054858                nwy_file_exist_ptr
+                0x7e05485c                nwy_file_remove_ptr
+                0x7e054860                nwy_file_rename_ptr
+                0x7e054864                nwy_file_sync_ptr
+                0x7e054868                nwy_file_fd_trunc_ptr
+                0x7e05486c                nwy_file_path_trunc_ptr
+                0x7e054870                nwy_file_path_stat_get_ptr
+                0x7e054874                nwy_file_fd_stat_get_ptr
+                0x7e054878                nwy_file_close_ptr
+                0x7e05487c                nwy_dir_mk_ptr
+                0x7e054880                nwy_dir_rm_ptr
+                0x7e054884                nwy_dir_recursive_rm_ptr
+                0x7e054888                nwy_dir_open_ptr
+                0x7e05488c                nwy_dir_close_ptr
+                0x7e054890                nwy_dir_read_ptr
+                0x7e054894                nwy_dir_tell_ptr
+                0x7e054898                nwy_dir_seek_ptr
+                0x7e05489c                nwy_dir_rewind_ptr
+                0x7e0548a0                nwy_vfs_free_size_get_ptr
+                0x7e0548a4                nwy_dm_dev_model_get_ptr
+                0x7e0548a8                nwy_dm_inner_version_get_ptr
+                0x7e0548ac                nwy_dm_open_sdk_version_get_ptr
+                0x7e0548b0                nwy_dm_hw_version_get_ptr
+                0x7e0548b4                nwy_dm_rftemperature_get_ptr
+                0x7e0548b8                nwy_dm_sn_get_ptr
+                0x7e0548bc                nwy_dm_imei_get_ptr
+                0x7e0548c0                nwy_dm_app_version_set_ptr
+                0x7e0548c4                nwy_dm_imei_set_ptr
+                0x7e0548c8                nwy_dm_heapinfo_ptr
+                0x7e0548cc                nwy_dm_nvinfo_get_ptr
+                0x7e0548d0                nwy_ftp_login_ptr
+                0x7e0548d4                nwy_ftp_logout_ptr
+                0x7e0548d8                nwy_ftp_get_ptr
+                0x7e0548dc                nwy_ftp_put_ptr
+                0x7e0548e0                nwy_ftp_get_filesize_ptr
+                0x7e0548e4                nwy_ftp_del_file_ptr
+                0x7e0548e8                nwy_http_setup_ptr
+                0x7e0548ec                nwy_http_get_ptr
+                0x7e0548f0                nwy_http_head_ptr
+                0x7e0548f4                nwy_http_post_ptr
+                0x7e0548f8                nwy_http_put_ptr
+                0x7e0548fc                nwy_http_open_mode_ptr
+                0x7e054900                nwy_http_close_ptr
+                0x7e054904                nwy_sntp_get_time_ptr
+                0x7e054908                nwy_sim_imsi_get_ptr
+                0x7e05490c                nwy_sim_iccid_get_ptr
+                0x7e054910                nwy_sim_status_get_ptr
+                0x7e054914                nwy_sim_pin_verify_ptr
+                0x7e054918                nwy_sim_pin_unlock_ptr
+                0x7e05491c                nwy_sim_pin_mode_get_ptr
+                0x7e054920                nwy_sim_pin_enable_ptr
+                0x7e054924                nwy_sim_pin_disable_ptr
+                0x7e054928                nwy_sim_pin_change_ptr
+                0x7e05492c                nwy_sim_pin_times_get_ptr
+                0x7e054930                nwy_sim_msisdn_get_ptr
+                0x7e054934                nwy_sim_slot_set_ptr
+                0x7e054938                nwy_sim_slot_get_ptr
+                0x7e05493c                nwy_sim_reset_ptr
+                0x7e054940                nwy_sim_power_set_ptr
+                0x7e054944                nwy_sim_detect_set_ptr
+                0x7e054948                nwy_sim_csim_ptr
+                0x7e05494c                nwy_sim_urc_reg_ptr
+                0x7e054950                nwy_sim_urc_unreg_ptr
+                0x7e054954                nwy_pm_ctrl_ptr
+                0x7e054958                nwy_pm_state_set_ptr
+                0x7e05495c                nwy_bootup_alarm_set_ptr
+                0x7e054960                nwy_bootup_alarm_del_ptr
+                0x7e054964                nwy_power_state_ptr
+                0x7e054968                nwy_pm_boot_res_ptr
+                0x7e05496c                nwy_loc_navigation_start_ptr
+                0x7e054970                nwy_loc_navigation_stop_ptr
+                0x7e054974                nwy_loc_navigation_reset_ptr
+                0x7e054978                nwy_loc_recv_cb_reg_ptr
+                0x7e05497c                nwy_loc_mode_set_ptr
+                0x7e054980                nwy_loc_startup_set_ptr
+                0x7e054984                nwy_loc_rate_set_ptr
+                0x7e054988                nwy_loc_cfg_nmea_type_ptr
+                0x7e05498c                nwy_loc_nmea_get_ptr
+                0x7e054990                nwy_loc_nmea_parse_ptr
+                0x7e054994                nwy_loc_agnss_start_ptr
+                0x7e054998                nwy_loc_param_set_ptr
+                0x7e05499c                nwy_loc_param_get_ptr
+                0x7e0549a0                nwy_data_reg_cb_ptr
+                0x7e0549a4                nwy_data_unreg_cb_ptr
+                0x7e0549a8                nwy_data_call_start_ptr
+                0x7e0549ac                nwy_data_call_stop_ptr
+                0x7e0549b0                nwy_data_profile_get_ptr
+                0x7e0549b4                nwy_data_profile_set_ptr
+                0x7e0549b8                nwy_data_auto_connect_set_ptr
+                0x7e0549bc                nwy_data_call_info_get_ptr
+                0x7e0549c0                nwy_data_flow_info_get_ptr
+                0x7e0549c4                nwy_data_eps_dyn_apn_get_ptr
+                0x7e0549c8                nwy_data_dhcp_get_ptr
+                0x7e0549cc                nwy_data_dhcp_set_ptr
+                0x7e0549d0                nwy_data_dns_info_get_ptr
+                0x7e0549d4                nwy_data_get_capability_ptr
+                0x7e0549d8                mbedtls_ssl_conf_max_version_ptr
+                0x7e0549dc                mbedtls_ssl_conf_min_version_ptr
+                0x7e0549e0                mbedtls_ssl_conf_authmode_ptr
+                0x7e0549e4                mbedtls_ssl_conf_ca_chain_ptr
+                0x7e0549e8                mbedtls_ssl_conf_own_cert_ptr
+                0x7e0549ec                mbedtls_ssl_conf_rng_ptr
+                0x7e0549f0                mbedtls_ssl_conf_dbg_ptr
+                0x7e0549f4                mbedtls_ssl_setup_ptr
+                0x7e0549f8                mbedtls_ssl_set_hostname_ptr
+                0x7e0549fc                mbedtls_ssl_set_bio_ptr
+                0x7e054a00                mbedtls_ssl_handshake_ptr
+                0x7e054a04                mbedtls_ssl_get_verify_result_ptr
+                0x7e054a08                mbedtls_net_connect_ptr
+                0x7e054a0c                mbedtls_net_init_ptr
+                0x7e054a10                mbedtls_net_bind_ptr
+                0x7e054a14                mbedtls_net_accept_ptr
+                0x7e054a18                mbedtls_net_poll_ptr
+                0x7e054a1c                mbedtls_net_set_block_ptr
+                0x7e054a20                mbedtls_net_set_nonblock_ptr
+                0x7e054a24                mbedtls_net_usleep_ptr
+                0x7e054a28                mbedtls_net_recv_ptr
+                0x7e054a2c                mbedtls_net_send_ptr
+                0x7e054a30                mbedtls_net_recv_timeout_ptr
+                0x7e054a34                mbedtls_net_free_ptr
+                0x7e054a38                mbedtls_pk_init_ptr
+                0x7e054a3c                mbedtls_pk_free_ptr
+                0x7e054a40                mbedtls_ssl_init_ptr
+                0x7e054a44                mbedtls_ssl_read_ptr
+                0x7e054a48                mbedtls_ssl_write_ptr
+                0x7e054a4c                mbedtls_ssl_send_alert_message_ptr
+                0x7e054a50                mbedtls_ssl_close_notify_ptr
+                0x7e054a54                mbedtls_ssl_free_ptr
+                0x7e054a58                mbedtls_ssl_config_init_ptr
+                0x7e054a5c                mbedtls_ssl_config_defaults_ptr
+                0x7e054a60                mbedtls_ssl_config_free_ptr
+                0x7e054a64                mbedtls_ssl_session_init_ptr
+                0x7e054a68                mbedtls_ssl_session_free_ptr
+                0x7e054a6c                mbedtls_ssl_conf_read_timeout_ptr
+                0x7e054a70                mbedtls_ssl_set_timer_cb_ptr
+                0x7e054a74                mbedtls_platform_set_calloc_free_ptr
+                0x7e054a78                mbedtls_x509_crt_parse_der_ptr
+                0x7e054a7c                mbedtls_x509_crt_parse_ptr
+                0x7e054a80                mbedtls_x509_crt_info_ptr
+                0x7e054a84                mbedtls_x509_crt_verify_info_ptr
+                0x7e054a88                mbedtls_x509_crt_verify_ptr
+                0x7e054a8c                mbedtls_x509_crt_verify_with_profile_ptr
+                0x7e054a90                mbedtls_x509_crt_verify_restartable_ptr
+                0x7e054a94                mbedtls_x509_crt_init_ptr
+                0x7e054a98                mbedtls_x509_crt_free_ptr
+                0x7e054a9c                mbedtls_pk_parse_key_ptr
+                0x7e054aa0                mbedtls_entropy_free_ptr
+                0x7e054aa4                mbedtls_entropy_init_ptr
+                0x7e054aa8                mbedtls_entropy_func_ptr
+                0x7e054aac                mbedtls_ctr_drbg_random_ptr
+                0x7e054ab0                mbedtls_ctr_drbg_free_ptr
+                0x7e054ab4                mbedtls_ctr_drbg_seed_ptr
+                0x7e054ab8                mbedtls_ctr_drbg_init_ptr
+                0x7e054abc                mbedtls_ssl_get_bytes_avail_ptr
+                0x7e054ac0                mbedtls_ssl_conf_ciphersuites_ptr
+                0x7e054ac4                mbedtls_sha1_init_ptr
+                0x7e054ac8                mbedtls_sha1_update_ptr
+                0x7e054acc                mbedtls_sha1_finish_ptr
+                0x7e054ad0                mbedtls_base64_encode_ptr
+                0x7e054ad4                mbedtls_ssl_session_reset_ptr
+                0x7e054ad8                mbedtls_pk_get_type_ptr
+                0x7e054adc                mbedtls_ssl_conf_renegotiation_ptr
+                0x7e054ae0                mbedtls_ssl_set_session_ptr
+                0x7e054ae4                mbedtls_aes_init_ptr
+                0x7e054ae8                mbedtls_aes_free_ptr
+                0x7e054aec                mbedtls_aes_xts_init_ptr
+                0x7e054af0                mbedtls_aes_xts_free_ptr
+                0x7e054af4                mbedtls_aes_setkey_enc_ptr
+                0x7e054af8                mbedtls_aes_setkey_dec_ptr
+                0x7e054afc                mbedtls_aes_xts_setkey_enc_ptr
+                0x7e054b00                mbedtls_aes_xts_setkey_dec_ptr
+                0x7e054b04                mbedtls_aes_crypt_ecb_ptr
+                0x7e054b08                mbedtls_aes_crypt_cbc_ptr
+                0x7e054b0c                mbedtls_aes_crypt_xts_ptr
+                0x7e054b10                mbedtls_aes_crypt_cfb128_ptr
+                0x7e054b14                mbedtls_aes_crypt_cfb8_ptr
+                0x7e054b18                mbedtls_aes_crypt_ofb_ptr
+                0x7e054b1c                mbedtls_aes_crypt_ctr_ptr
+                0x7e054b20                nwy_ssl_version_info_get_ptr
+                0x7e054b24                mbedtls_internal_aes_encrypt_ptr
+                0x7e054b28                mbedtls_internal_aes_decrypt_ptr
+                0x7e054b2c                psa_crypto_init_ptr
+                0x7e054b30                nwy_usb_net_mode_set_ptr
+                0x7e054b34                nwy_usb_net_mode_get_ptr
+                0x7e054b38                nwy_i2c_init_ptr
+                0x7e054b3c                nwy_i2c_read_ptr
+                0x7e054b40                nwy_i2c_write_ptr
+                0x7e054b44                nwy_i2c_deinit_ptr
+                0x7e054b48                nwy_i2c_raw_get_byte_ptr
+                0x7e054b4c                nwy_i2c_raw_put_byte_ptr
+                0x7e054b50                nwy_spi_init_ptr
+                0x7e054b54                nwy_spi_cs_cfg_ptr
+                0x7e054b58                nwy_spi_transfer_ptr
+                0x7e054b5c                nwy_spi_deinit_ptr
+                0x7e054b60                nwy_spi_read_ptr
+                0x7e054b64                nwy_spi_write_ptr
+                0x7e054b68                nwy_sms_option_init_ptr
+                0x7e054b6c                nwy_sms_storage_set_ptr
+                0x7e054b70                nwy_sms_storage_get_ptr
+                0x7e054b74                nwy_sms_report_set_ptr
+                0x7e054b78                nwy_sms_sca_set_ptr
+                0x7e054b7c                nwy_sms_sca_get_ptr
+                0x7e054b80                nwy_sms_msg_send_ptr
+                0x7e054b84                nwy_sms_recv_cb_reg_ptr
+                0x7e054b88                nwy_sms_recv_cb_unreg_ptr
+                0x7e054b8c                nwy_sms_msg_del_ptr
+                0x7e054b90                nwy_sms_msg_read_ptr
+                0x7e054b94                nwy_sms_msg_del_ext_ptr
+                0x7e054b98                nwy_sms_msg_list_read_ptr
+                0x7e054b9c                nwy_nw_mode_get_ptr
+                0x7e054ba0                nwy_nw_mode_set_ptr
+                0x7e054ba4                nwy_nw_priband_get_ptr
+                0x7e054ba8                nwy_nw_priband_set_ptr
+                0x7e054bac                nwy_nw_ims_get_ptr
+                0x7e054bb0                nwy_nw_ims_set_ptr
+                0x7e054bb4                nwy_nw_radio_get_ptr
+                0x7e054bb8                nwy_nw_radio_set_ptr
+                0x7e054bbc                nwy_nw_config_get_ptr
+                0x7e054bc0                nwy_nw_config_set_ptr
+                0x7e054bc4                nwy_nw_operator_get_ptr
+                0x7e054bc8                nwy_nw_csq_get_ptr
+                0x7e054bcc                nwy_nw_signal_get_ptr
+                0x7e054bd0                nwy_nw_regstatus_get_ptr
+                0x7e054bd4                nwy_nw_cellinfo_get_ptr
+                0x7e054bd8                nwy_nw_lock_set_ptr
+                0x7e054bdc                nwy_nw_lock_get_ptr
+                0x7e054be0                nwy_nw_manual_select_ptr
+                0x7e054be4                nwy_nw_scan_ptr
+                0x7e054be8                nwy_nw_psm_get_ptr
+                0x7e054bec                nwy_nw_psm_set_ptr
+                0x7e054bf0                nwy_nw_get_forbidden_plmn_ptr
+                0x7e054bf4                nwy_nw_reg_cb_ptr
+                0x7e054bf8                nwy_nw_unreg_cb_ptr
+                0x7e054bfc                nwy_get_time_zone_switch_ptr
+                0x7e054c00                nwy_set_time_zone_switch_ptr
+                0x7e054c04                nwy_dm_nwcfg_get_ptr
+                0x7e054c08                nwy_dm_nwcfg_set_ptr
+                0x7e054c0c                nwy_virt_at_parameter_init_ptr
+                0x7e054c10                nwy_virt_at_cmd_send_ptr
+                0x7e054c14                nwy_virt_at_unsolicited_cb_reg_ptr
+                0x7e054c18                nwy_virt_at_get_original_rsp_cb_ptr
+                0x7e054c1c                nwy_virt_at_forward_cb_ptr
+                0x7e054c20                nwy_virt_at_forward_send_ptr
+                0x7e054c24                nwy_pm_vbat_voltage_get_ptr
+                0x7e054c28                nwy_ping_start_ptr
+                0x7e054c2c                NetworkInit_ptr
+                0x7e054c30                NetworkConnect_ptr
+                0x7e054c34                NetworkDisconnect_ptr
+                0x7e054c38                MQTTClientInit_ptr
+                0x7e054c3c                MQTTConnect_ptr
+                0x7e054c40                MQTTPublish_ptr
+                0x7e054c44                MQTTSetMessageHandler_ptr
+                0x7e054c48                MQTTSubscribe_ptr
+                0x7e054c4c                MQTTUnsubscribe_ptr
+                0x7e054c50                MQTTDisconnect_ptr
+                0x7e054c54                MQTTYield_ptr
+                0x7e054c58                MQTTIsConnected_ptr
+                0x7e054c5c                nwy_gpio_direction_get_ptr
+                0x7e054c60                nwy_gpio_direction_set_ptr
+                0x7e054c64                nwy_gpio_value_get_ptr
+                0x7e054c68                nwy_gpio_value_set_ptr
+                0x7e054c6c                nwy_gpio_pull_get_ptr
+                0x7e054c70                nwy_gpio_pull_set_ptr
+                0x7e054c74                nwy_gpio_irq_register_ptr
+                0x7e054c78                nwy_gpio_irq_enable_ptr
+                0x7e054c7c                nwy_gpio_irq_disable_ptr
+                0x7e054c80                nwy_gpio_irq_wakeup_enable_ptr
+                0x7e054c84                nwy_gpio_irq_wakeup_disable_ptr
+                0x7e054c88                nwy_gpio_close_ptr
+                0x7e054c8c                nwy_uart_open_ptr
+                0x7e054c90                nwy_uart_read_ptr
+                0x7e054c94                nwy_uart_write_ptr
+                0x7e054c98                nwy_uart_dcb_set_ptr
+                0x7e054c9c                nwy_uart_dcb_get_ptr
+                0x7e054ca0                nwy_uart_close_ptr
+                0x7e054ca4                nwy_uart_rx_cb_register_ptr
+                0x7e054ca8                nwy_uart_tx_cb_register_ptr
+                0x7e054cac                nwy_uart_rx_frame_timeout_set_ptr
+                0x7e054cb0                nwy_adc_get_ptr
+                0x7e054cb4                nwy_dev_name_list_get_ptr
+                0x7e054cb8                nwy_sat_set_on_off_ptr
+                0x7e054cbc                nwy_sat_get_on_off_ptr
+                0x7e054cc0                nwy_sat_terminal_response_ptr
+                0x7e054cc4                nwy_sat_envelope_command_ptr
+                0x7e054cc8                nwy_sat_set_profile_ptr
+                0x7e054ccc                nwy_sat_get_profile_ptr
+                0x7e054cd0                nwy_sat_recv_data_ptr
+                0x7e054cd4                nwy_fota_write_ptr
+                0x7e054cd8                nwy_fota_update_ptr
+                0x7e054cdc                nwy_fota_result_get_ptr
+                0x7e054ce0                nwy_fota_base_ver_update_ptr
+                0x7e054ce4                nwy_vfs_logical_block_device_create_ptr
+                0x7e054ce8                nwy_vfs_mount_ptr
+                0x7e054cec                nwy_vfs_unmount_ptr
+                0x7e054cf0                nwy_vfs_mkfs_ptr
+                0x7e054cf4                nwy_dm_soc_model_get_ptr
  .data._impure_ptr
-                0x7e054cf0        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-impure.o)
-                0x7e054cf0                _impure_ptr
+                0x7e054cf8        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-impure.o)
+                0x7e054cf8                _impure_ptr
  .data.impure_data
-                0x7e054cf4       0x60 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-impure.o)
+                0x7e054cfc       0x60 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-impure.o)
 
-.igot.plt       0x7e054d54        0x0
- .igot.plt      0x7e054d54        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
+.igot.plt       0x7e054d5c        0x0
+ .igot.plt      0x7e054d5c        0x0 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/bme68x.obj
 
-.bss            0x7e054d54     0x3220
-                0x7e054d54                __bss_start = .
+.bss            0x7e054d5c     0x3228
+                0x7e054d5c                __bss_start = .
  *(.bss*)
  .bss.s_alert_sd_error_sent
-                0x7e054d54        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e054d5c        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .bss.s_alert_sd_low_sent
-                0x7e054d55        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e054d5d        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .bss.s_alert_sensor_error_sent
-                0x7e054d56        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
- *fill*         0x7e054d57        0x1 
+                0x7e054d5e        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+ *fill*         0x7e054d5f        0x1 
  .bss.s_bme_dev
-                0x7e054d58        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e054d60        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .bss.s_bme_file
-                0x7e054d5c      0x228 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e054d64      0x228 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .bss.s_bme_file_is_open
-                0x7e054f84        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e054f8c        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .bss.s_boot_alert_sent
-                0x7e054f85        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
- *fill*         0x7e054f86        0x2 
+                0x7e054f8d        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+ *fill*         0x7e054f8e        0x2 
  .bss.s_collector_mutex
-                0x7e054f88        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e054f90        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .bss.s_csv_file
-                0x7e054f8c      0x228 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e054f94      0x228 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .bss.s_csv_file_is_open
-                0x7e0551b4        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
- *fill*         0x7e0551b5        0x3 
+                0x7e0551bc        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+ *fill*         0x7e0551bd        0x3 
  .bss.s_session_rtc_base
-                0x7e0551b8        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+                0x7e0551c0        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
  .bss.s_session_start_uptime_ms
-                0x7e0551bc        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
- .bss.s_status  0x7e0551c0      0x11c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
- .bss.FatFs     0x7e0552dc        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj
- .bss.Fsid      0x7e0552e0        0x2 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj
+                0x7e0551c4        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+ .bss.s_status  0x7e0551c8      0x11c CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/data_collector.obj
+ .bss.FatFs     0x7e0552e4        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj
+ .bss.Fsid      0x7e0552e8        0x2 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/ff.obj
  .bss.g_expected_sha256_hex
-                0x7e0552e2       0x41 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e0552ea       0x41 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_expected_signature_hex
-                0x7e055323       0xa0 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
- *fill*         0x7e0553c3        0x1 
+                0x7e05532b       0xa0 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+ *fill*         0x7e0553cb        0x1 
  .bss.g_expected_size
-                0x7e0553c4        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e0553cc        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_firmware_offset
-                0x7e0553c8        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e0553d0        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_fota_host
-                0x7e0553cc       0x80 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e0553d4       0x80 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_fota_http_handle
-                0x7e05544c        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e055454        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_fota_http_param
-                0x7e055450       0x14 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e055458       0x14 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_fota_is_ssl
-                0x7e055464        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e05546c        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_fota_sms_sent
-                0x7e055465        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e05546d        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_fota_state
-                0x7e055466        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e05546e        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_fota_uri
-                0x7e055467      0x100 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e05546f      0x100 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_http_headers_parsed
-                0x7e055567        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e05556f        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_last_pub_pct
-                0x7e055568        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+                0x7e055570        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
  .bss.g_notify_phone
-                0x7e05556c       0x20 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
- *fill*         0x7e05558c        0x4 
+                0x7e055574       0x20 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+ *fill*         0x7e055594        0x4 
  .bss.g_sha256_ctx
-                0x7e055590       0x70 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
- .bss.g_client  0x7e055600      0x144 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+                0x7e055598       0x70 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/fota/nwy_hal_secure_fota.obj
+ .bss.g_client  0x7e055608      0x144 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
  .bss.g_loop_active
-                0x7e055744        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
- *fill*         0x7e055745        0x3 
+                0x7e05574c        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+ *fill*         0x7e05574d        0x3 
  .bss.g_mqtt_mutex
-                0x7e055748        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
- *fill*         0x7e05574c        0x4 
+                0x7e055750        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+ *fill*         0x7e055754        0x4 
  .bss.g_network
-                0x7e055750      0x9b0 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
- .bss.g_rx_buf  0x7e056100      0x200 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
- .bss.g_tx_buf  0x7e056300      0x200 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+                0x7e055758      0x9b0 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+ .bss.g_rx_buf  0x7e056108      0x200 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+ .bss.g_tx_buf  0x7e056308      0x200 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
  .bss.g_user_cb
-                0x7e056500        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+                0x7e056508        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
  .bss.g_yield_thread
-                0x7e056504        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+                0x7e05650c        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
  .bss.g_yield_thread_running
-                0x7e056508        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
- *fill*         0x7e056509        0x3 
+                0x7e056510        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/mqtt/nwy_hal_mqtt.obj
+ *fill*         0x7e056511        0x3 
  .bss.g_user_net_cb
-                0x7e05650c       0x38 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/net/nwy_hal_net.obj
+                0x7e056514       0x38 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/net/nwy_hal_net.obj
  .bss.g_user_sms_cb
-                0x7e056544        0x8 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/sms/nwy_hal_sms.obj
+                0x7e05654c        0x8 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/sms/nwy_hal_sms.obj
  .bss.g_slot_active
-                0x7e05654c        0x6 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.obj
- *fill*         0x7e056552        0x2 
+                0x7e056554        0x6 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.obj
+ *fill*         0x7e05655a        0x2 
  .bss.g_ssl_config_slots
-                0x7e056554       0xd8 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.obj
+                0x7e05655c       0xd8 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/ssl/nwy_hal_ssl.obj
  .bss.g_log_timestamp
-                0x7e05662c        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
- *fill*         0x7e05662d        0x3 
+                0x7e056634        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
+ *fill*         0x7e056635        0x3 
  .bss.s_uart_mutex
-                0x7e056630        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
- .bss.s_uart_owner
-                0x7e056634        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
- .bss.s_uart_recursion
                 0x7e056638        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
+ .bss.s_uart_owner
+                0x7e05663c        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
+ .bss.s_uart_recursion
+                0x7e056640        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/hal/uart/nwy_hal_uart.obj
  .bss.s_bus_mutex
-                0x7e05663c        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
- .bss.s_cfg     0x7e056640       0x18 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+                0x7e056644        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+ .bss.s_cfg     0x7e056648       0x18 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
  .bss.s_is_initialized
-                0x7e056658        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
- *fill*         0x7e056659        0x3 
+                0x7e056660        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+ *fill*         0x7e056661        0x3 
  .bss.s_mutex_owner
-                0x7e05665c        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+                0x7e056664        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
  .bss.s_recursion_count
-                0x7e056660        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
+                0x7e056668        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/i2c_bus.obj
  .bss.g_bme_dev
-                0x7e056664       0x44 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e05666c       0x44 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
  .bss.g_collector_thread
-                0x7e0566a8        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
- .bss.g_sms_q_head
-                0x7e0566ac        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
- .bss.g_sms_q_mutex
                 0x7e0566b0        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
- .bss.g_sms_q_tail
+ .bss.g_sms_q_head
                 0x7e0566b4        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+ .bss.g_sms_q_mutex
+                0x7e0566b8        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+ .bss.g_sms_q_tail
+                0x7e0566bc        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
  .bss.g_sms_queue
-                0x7e0566b8       0x40 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e0566c0       0x40 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
  .bss.g_sms_sem
-                0x7e0566f8        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e056700        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
  .bss.g_sms_worker_thread
-                0x7e0566fc        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
+                0x7e056704        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/main.obj
  .bss.g_cmd_q_head
-                0x7e056700        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
- .bss.g_cmd_q_mutex
-                0x7e056704        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
- .bss.g_cmd_q_sem
                 0x7e056708        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
- .bss.g_cmd_q_tail
+ .bss.g_cmd_q_mutex
                 0x7e05670c        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
+ .bss.g_cmd_q_sem
+                0x7e056710        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
+ .bss.g_cmd_q_tail
+                0x7e056714        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
  .bss.g_cmd_queue
-                0x7e056710     0x1000 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
+                0x7e056718     0x1000 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
  .bss.g_cmd_worker_thread
-                0x7e057710        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
- .bss.g_mqtt_mgr_running
-                0x7e057714        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
- *fill*         0x7e057715        0x3 
- .bss.g_mqtt_mgr_thread
                 0x7e057718        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
- .bss.s_config  0x7e05771c       0x14 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
- .bss.s_fatfs   0x7e057730      0x234 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
+ .bss.g_mqtt_mgr_running
+                0x7e05771c        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
+ *fill*         0x7e05771d        0x3 
+ .bss.g_mqtt_mgr_thread
+                0x7e057720        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/mqtt_manager.obj
+ .bss.s_config  0x7e057724       0x14 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
+ .bss.s_fatfs   0x7e057738      0x234 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
  .bss.s_is_mounted
-                0x7e057964        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
- *fill*         0x7e057965        0x3 
+                0x7e05796c        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
+ *fill*         0x7e05796d        0x3 
  .bss.s_last_reinit_attempt_ms
-                0x7e057968        0x8 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
+                0x7e057970        0x8 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
  .bss.s_mutex_owner
-                0x7e057970        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
- .bss.s_raw_mutex
-                0x7e057974        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
- .bss.s_recursion_count
                 0x7e057978        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
+ .bss.s_raw_mutex
+                0x7e05797c        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
+ .bss.s_recursion_count
+                0x7e057980        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/nwy_sd_card.obj
  .bss.s_bytes_sent
-                0x7e05797c        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e057984        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
  .bss.s_has_pending_req
-                0x7e057980        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e057988        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
  .bss.s_pending_req
-                0x7e057981      0x141 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
- *fill*         0x7e057ac2        0x2 
+                0x7e057989      0x141 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+ *fill*         0x7e057aca        0x2 
  .bss.s_total_bytes
-                0x7e057ac4        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+                0x7e057acc        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
  .bss.s_upload_sem
-                0x7e057ac8        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
- .bss.s_upload_state
-                0x7e057acc        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
- *fill*         0x7e057acd        0x3 
- .bss.s_upload_thread
                 0x7e057ad0        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
- *fill*         0x7e057ad4        0x4 
+ .bss.s_upload_state
+                0x7e057ad4        0x1 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+ *fill*         0x7e057ad5        0x3 
+ .bss.s_upload_thread
+                0x7e057ad8        0x4 CMakeFiles/nwy_open_app.dir/05119b2ad5dbefbada3c2f2e1d7f4ffe/Code/TinyML_Chemical_Classifier/src/remote_sd_manager.obj
+ *fill*         0x7e057adc        0x4 
  .bss.s_card_info
-                0x7e057ad8       0x30 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e057ae0       0x30 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
  .bss.s_card_ready
-                0x7e057b08        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
- *fill*         0x7e057b09        0x7 
- .bss.s_cmd_rx  0x7e057b10       0x10 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
- .bss.s_cmd_tx  0x7e057b20       0x10 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+                0x7e057b10        0x1 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+ *fill*         0x7e057b11        0xf 
+ .bss.s_cmd_rx  0x7e057b20       0x10 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+ .bss.s_cmd_tx  0x7e057b30       0x10 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
  .bss.s_cur_speed
-                0x7e057b30        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
- *fill*         0x7e057b34        0xc 
- .bss.s_dma_rx  0x7e057b40      0x210 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
- .bss.s_dma_tx  0x7e057d50      0x210 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
- .bss.errno     0x7e057f60        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-reent.o)
-                0x7e057f60                errno
+                0x7e057b40        0x4 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+ *fill*         0x7e057b44        0xc 
+ .bss.s_dma_rx  0x7e057b50      0x210 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+ .bss.s_dma_tx  0x7e057d60      0x210 CMakeFiles/nwy_open_app.dir/E_/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/src/sd_spi.obj
+ .bss.errno     0x7e057f70        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-reent.o)
+                0x7e057f70                errno
  .bss.__lock___malloc_recursive_mutex
-                0x7e057f64        0x1 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-lock.o)
-                0x7e057f64                __lock___malloc_recursive_mutex
- *fill*         0x7e057f65        0x3 
+                0x7e057f74        0x1 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-lock.o)
+                0x7e057f74                __lock___malloc_recursive_mutex
+ *fill*         0x7e057f75        0x3 
  .bss.__malloc_free_list
-                0x7e057f68        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-mallocr.o)
-                0x7e057f68                __malloc_free_list
+                0x7e057f78        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-mallocr.o)
+                0x7e057f78                __malloc_free_list
  .bss.__malloc_sbrk_start
-                0x7e057f6c        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-mallocr.o)
-                0x7e057f6c                __malloc_sbrk_start
+                0x7e057f7c        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a(lib_a-nano-mallocr.o)
+                0x7e057f7c                __malloc_sbrk_start
  .bss.heap_end.0
-                0x7e057f70        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(sbrk.o)
-                0x7e057f74                __bss_end = .
-                0x7e057f74                end = .
+                0x7e057f80        0x4 ../tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a(sbrk.o)
+                0x7e057f84                __bss_end = .
+                0x7e057f84                end = .
 OUTPUT(bin\nwy_open_app.elf elf32-littlearm)
 LOAD linker stubs
 

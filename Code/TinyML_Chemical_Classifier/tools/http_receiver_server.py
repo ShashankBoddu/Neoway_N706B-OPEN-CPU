@@ -109,6 +109,20 @@ def get_local_ip():
         s.close()
     return ip
 
+def format_file_size(size_bytes):
+    """
+    Format file size to match Windows Explorer and SD FAT filesystem conventions
+    while displaying exact byte precision.
+    """
+    if size_bytes < 1024:
+        return f"1 KB ({size_bytes} bytes)" if size_bytes > 0 else "0 bytes"
+    elif size_bytes < 1024 * 1024:
+        kb_ceil = (size_bytes + 1023) // 1024
+        return f"{kb_ceil} KB ({size_bytes:,} bytes)"
+    else:
+        mb = size_bytes / (1024 * 1024)
+        return f"{mb:.1f} MB ({size_bytes:,} bytes)"
+
 def kill_stale_ssh():
     """Clean up any old background ssh tunnel processes."""
     if sys.platform == "win32":
@@ -132,83 +146,77 @@ def find_cloudflared():
             return path
     return None
 
-def start_auto_tunnel(local_port):
-    """
-    Start automatic secure cellular tunnel.
-    Priority 1: Cloudflare Quick Tunnel (enterprise HTTPS CDN, no data limits or 38KB drops)
-    Priority 2: Pinggy raw TCP (fallback)
-    """
-    # 1. Try Cloudflare Quick Tunnel (Identical to FLoRa OTA runner)
+def start_cloudflare_tunnel(local_port):
+    """Start Cloudflare Quick Tunnel for high-speed, zero-drop HTTPS FOTA updates."""
     cf_exe = find_cloudflared()
-    if cf_exe:
-        print(f"[*] Found Cloudflare Quick Tunnel: {cf_exe}")
-        print("    Launching zero-drop HTTPS cellular tunnel via trycloudflare.com...")
-        cmd = [cf_exe, "tunnel", "--url", f"http://127.0.0.1:{local_port}"]
-        try:
-            proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
-            url_pattern = re.compile(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com")
-            public_url = None
-            start_time = time.time()
-            while time.time() - start_time < 20:
-                line = proc.stderr.readline()
-                if not line:
-                    break
-                match = url_pattern.search(line)
-                if match:
-                    public_url = f"{match.group(0)}/upload"
-                    break
+    if not cf_exe:
+        return None, None
+    print(f"[*] Found Cloudflare Quick Tunnel: {cf_exe}")
+    print("    Launching HTTPS CDN tunnel via trycloudflare.com (for FOTA)...")
+    cmd = [cf_exe, "tunnel", "--url", f"http://127.0.0.1:{local_port}"]
+    try:
+        proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
+        url_pattern = re.compile(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com")
+        public_url = None
+        start_time = time.time()
+        while time.time() - start_time < 20:
+            line = proc.stderr.readline()
+            if not line:
+                break
+            match = url_pattern.search(line)
+            if match:
+                public_url = match.group(0)
+                break
 
-            if public_url:
-                def _drain_cf():
-                    for _ in proc.stderr:
-                        pass
-                threading.Thread(target=_drain_cf, daemon=True).start()
-                return proc, public_url, "Cloudflare Quick Tunnel (HTTPS)"
-            else:
-                proc.terminate()
-        except Exception as e:
-            print(f"[!] Cloudflare launch error: {e}")
+        if public_url:
+            def _drain_cf():
+                for _ in proc.stderr:
+                    pass
+            threading.Thread(target=_drain_cf, daemon=True).start()
+            return proc, public_url
+        else:
+            proc.terminate()
+    except Exception as e:
+        print(f"[!] Cloudflare launch error: {e}")
+    return None, None
 
-    # 2. Fallback: Pinggy
+def start_pinggy_tunnel(local_port):
+    """Start Pinggy raw TCP tunnel for direct unencrypted TCP streaming (Remote SD dataset uploader)."""
     kill_stale_ssh()
     ssh_exe = shutil.which("ssh") or (r"C:\Windows\System32\OpenSSH\ssh.exe" if os.path.exists(r"C:\Windows\System32\OpenSSH\ssh.exe") else None)
-    if ssh_exe:
-        print("[*] Launching Pinggy raw TCP tunnel as fallback...")
-        cmd = [ssh_exe, "-p", "443", "-o", "StrictHostKeyChecking=no", "-o", "ServerAliveInterval=15", f"-R0:127.0.0.1:{local_port}", "tcp@a.pinggy.io"]
-        try:
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-            public_url = None
-            lines_seen = []
-            start_time = time.time()
-            while time.time() - start_time < 15:
-                line = proc.stdout.readline()
-                if not line:
-                    break
-                line_str = line.strip()
-                lines_seen.append(line_str)
-                match = re.search(r'tcp://([^\s:]+):(\d+)', line)
-                if match:
-                    host = match.group(1)
-                    port = match.group(2)
-                    public_url = f"http://{host}:{port}/upload"
-                    break
+    if not ssh_exe:
+        return None, None
+    print("[*] Launching Pinggy raw TCP tunnel (for Remote SD dataset uploader)...")
+    cmd = [ssh_exe, "-p", "443", "-o", "StrictHostKeyChecking=no", "-o", "ServerAliveInterval=15", f"-R0:127.0.0.1:{local_port}", "tcp@a.pinggy.io"]
+    try:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+        public_url = None
+        start_time = time.time()
+        while time.time() - start_time < 15:
+            line = proc.stdout.readline()
+            if not line:
+                break
+            match = re.search(r'tcp://([^\s:]+):(\d+)', line)
+            if match:
+                host = match.group(1)
+                port = match.group(2)
+                public_url = f"http://{host}:{port}/upload"
+                break
 
-            def _drain_ssh_output(pipe):
+        if public_url:
+            def _drain_ssh(pipe):
                 try:
-                    while True:
-                        l = pipe.readline()
-                        if not l:
-                            break
+                    while pipe.readline():
+                        pass
                 except Exception:
                     pass
-
-            if public_url:
-                threading.Thread(target=_drain_ssh_output, args=(proc.stdout,), daemon=True).start()
-                return proc, public_url, "Pinggy TCP"
-        except Exception as e:
-            pass
-
-    return None, None, "None"
+            threading.Thread(target=_drain_ssh, args=(proc.stdout,), daemon=True).start()
+            return proc, public_url
+        else:
+            proc.terminate()
+    except Exception as e:
+        print(f"[!] Pinggy launch error: {e}")
+    return None, None
 
 class ThreadedDualStackServer(ThreadingMixIn, HTTPServer):
     """Reliable IPv4 server for local host and SSH tunnel connections."""
@@ -344,7 +352,7 @@ class N706BHTTPHandler(BaseHTTPRequestHandler):
         </tr>
       </thead>
       <tbody>
-        {"".join(f"<tr><td><strong>{f}</strong></td><td>{sz:,} bytes</td><td>{mt}</td><td><a href='/{f}' download>Download</a></td></tr>" for f, sz, mt in datasets)}
+        {"".join(f"<tr><td><strong>{f}</strong></td><td>{format_file_size(sz)}</td><td>{mt}</td><td><a href='/{f}' download>Download</a></td></tr>" for f, sz, mt in datasets)}
       </tbody>
     </table>
     '''}
@@ -363,7 +371,7 @@ class N706BHTTPHandler(BaseHTTPRequestHandler):
         </tr>
       </thead>
       <tbody>
-        {"".join(f"<tr><td><strong>{f}</strong></td><td>{sz:,} bytes</td><td><a href='/{f}'>http://localhost:8080/{f}</a></td><td><span class='cmd'>FOTA</span></td></tr>" for f, sz in firmware_pkgs)}
+        {"".join(f"<tr><td><strong>{f}</strong></td><td>{format_file_size(sz)}</td><td><a href='/{f}'>http://localhost:8080/{f}</a></td><td><span class='cmd'>FOTA</span></td></tr>" for f, sz in firmware_pkgs)}
       </tbody>
     </table>
     <div class="warn" style="background:#0c4a6e; border-left:4px solid #0284c7; color:#bae6fd; margin-top:16px;">
@@ -693,14 +701,31 @@ def main():
         ACTIVE_TUNNEL_URL = args.tunnel_url.strip()
         print(f"[+] Using configured tunnel endpoint: {ACTIVE_TUNNEL_URL}")
 
-    tunnel_proc = None
+    pinggy_proc = None
+    cf_proc = None
+    upload_url = None
+    fota_url = None
+
+    if args.tunnel_url:
+        upload_url = args.tunnel_url.strip()
+        ACTIVE_TUNNEL_URL = upload_url
+        print(f"[+] Using configured tunnel endpoint: {upload_url}")
+
     if not args.no_tunnel and not args.tunnel_url:
         kill_stale_ssh()
-        print("\n[*] Initializing high-speed cellular tunnel...")
-        tunnel_proc, public_url, tunnel_type = start_auto_tunnel(args.port)
-        if public_url:
-            ACTIVE_TUNNEL_URL = public_url
-            print(f"[+] Tunnel online ({tunnel_type})! Public endpoint: {ACTIVE_TUNNEL_URL}")
+        print("\n[*] Initializing cellular tunnels...")
+        # 1. Pinggy TCP tunnel (essential for raw TCP streaming SD dataset uploads)
+        pinggy_proc, pinggy_url = start_pinggy_tunnel(args.port)
+        if pinggy_url:
+            upload_url = pinggy_url
+            ACTIVE_TUNNEL_URL = pinggy_url
+            print(f"[+] Raw TCP Tunnel Online! SD Upload URL: {upload_url}")
+
+        # 2. Cloudflare HTTPS tunnel (gold standard for FOTA downloads)
+        cf_proc, cf_base = start_cloudflare_tunnel(args.port)
+        if cf_base:
+            fota_url = f"{cf_base}/nwy_open_app_fota.pkt"
+            print(f"[+] Cloudflare HTTPS Tunnel Online! FOTA URL: {fota_url}")
 
     local_ip = get_local_ip()
     server = ThreadedDualStackServer((args.host, args.port), N706BHTTPHandler,
@@ -712,31 +737,38 @@ def main():
     print(" [1] LOCAL WEB DASHBOARD (Open on this PC in Chrome/Edge):")
     print(f"     -> http://localhost:{args.port}   or   http://127.0.0.1:{args.port}")
     print()
-    if ACTIVE_TUNNEL_URL:
-        print(" [2] LIVE 4G CELLULAR LTE UPLOAD LINK (Direct Raw TCP — Zero Warning Pages):")
+    if upload_url:
+        print(" [2] LIVE 4G CELLULAR LTE UPLOAD LINK (Direct Raw TCP Streaming):")
         print("     ====================================================================")
-        print("     >>> SEND THIS EXACT SMS COMMAND TO YOUR BOARD NOW:")
-        print(f"         SERVER {ACTIVE_TUNNEL_URL}")
+        print("     >>> SEND THIS COMMAND OVER MQTT / SMS TO CONFIGURE BOARD:")
+        print(f"         SERVER {upload_url}")
         print("     ====================================================================")
-        print("     >>> THEN SEND THIS SMS COMMAND TO UPLOAD DATASETS:")
+        print("     >>> THEN SEND THIS COMMAND TO UPLOAD SD CARD DATASETS:")
         print("         UPLOAD ALL")
         print("     ====================================================================")
     else:
-        print(" [2] MANUAL TUNNEL INSTRUCTIONS:")
+        print(" [2] MANUAL TCP TUNNEL INSTRUCTIONS (for SD Uploads):")
         print("     Open a second PowerShell window and run:")
         print(f"       ssh -p 443 -o StrictHostKeyChecking=no -R0:127.0.0.1:{args.port} tcp@a.pinggy.io")
-        print("     Then send SMS: SERVER http://<link>/upload")
+        print("     Then send command: SERVER http://<link>/upload")
     print()
-    print(" [3] QUICK SMS CHEAT SHEET:")
-    print("     * Set Server URL : SERVER <url>")
-    print("     * List Files     : LIST")
+    if fota_url:
+        print(" [3] SECURE FOTA FIRMWARE LINK (Cloudflare Enterprise HTTPS CDN):")
+        print("     ====================================================================")
+        print("     >>> TO TRIGGER OVER-THE-AIR FIRMWARE UPDATE:")
+        print(f"         FOTA {fota_url}")
+        print("     ====================================================================")
+    print()
+    print(" [4] QUICK COMMAND CHEAT SHEET:")
+    print("     * Set Upload URL : SERVER <url>")
+    print("     * List SD Files  : LIST")
     print("     * Upload Latest  : UPLOAD LATEST")
     print("     * Upload All     : UPLOAD ALL")
     print("     * Upload One     : UPLOAD <filename>")
     print("     * Delete All     : DELETE ALL")
-    print("     * Delete Bundle  : DELETE <filename/prefix>")
+    print("     * Delete Session : DELETE <filename/prefix>")
     print("     * Device Status  : STATUS")
-    print("     * Trigger FOTA   : FOTA   (Auto-downloads, verifies ECDSA & updates!)")
+    print("     * Trigger FOTA   : FOTA")
     print("="*74)
     print(f" Received Datasets Folder : {RECEIVE_DIR}")
     print(f" Firmware Release Folder  : {RELEASE_DIR}")
@@ -747,11 +779,17 @@ def main():
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nStopping server...")
-        if tunnel_proc:
+        if pinggy_proc:
             try:
-                tunnel_proc.terminate()
+                pinggy_proc.terminate()
             except Exception:
                 pass
+        if cf_proc:
+            try:
+                cf_proc.terminate()
+            except Exception:
+                pass
+        kill_stale_ssh()
         server.server_close()
 
 if __name__ == "__main__":

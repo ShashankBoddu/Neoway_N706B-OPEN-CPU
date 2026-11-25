@@ -81,15 +81,17 @@ static bool parse_http_url(const char *url, char *host, size_t host_len, uint16_
     if (!url || !host || !port || !uri) return false;
 
     const char *p = url;
+    bool is_https = false;
     if (strncmp(p, "http://", 7) == 0) {
         p += 7;
     } else if (strncmp(p, "https://", 8) == 0) {
+        is_https = true;
         p += 8;
     } else if (strncmp(p, "tcp://", 6) == 0) {
         p += 6;
     }
 
-    *port = 80;
+    *port = is_https ? 443 : 80;
 
     const char *slash = strchr(p, '/');
     const char *colon = strchr(p, ':');

@@ -35,7 +35,7 @@
 #define PIN_PERIPHERAL_PWR_GPIO0 0       /* Module Pin 83 (GPIO_00: Q1/Q3 & Q5/Q10 Master Gate) */
 #define BME688_I2C_ADDR         0x76    /* Default SmartElex BME688 address (SDO tied to GND) */
 
-#define CodeVer "0.8"
+#define CodeVer "0.1"
 /* Global Device Handles */
 static bme68x_dev_t        g_bme_dev;
 static uint8_t             g_bme_addr = BME688_I2C_ADDR;
