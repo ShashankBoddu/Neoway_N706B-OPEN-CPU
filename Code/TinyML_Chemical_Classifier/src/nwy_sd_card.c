@@ -327,8 +327,8 @@ int nwy_sdcard_remove_dir_recursive(const char *path)
         if (fr != FR_OK || fno.fname[0] == 0) break;
         if (fno.fname[0] == '.') continue;
 
-        char sub_path[128];
-        snprintf(sub_path, sizeof(sub_path), "%s/%s", fpath, fno.fname);
+        char sub_path[256];
+        snprintf(sub_path, sizeof(sub_path), "%.120s/%.120s", fpath, fno.fname);
 
         if (fno.fattrib & AM_DIR) {
             nwy_sdcard_remove_dir_recursive(sub_path);

@@ -1,8 +1,9 @@
 {
   "filename": "nwy_open_app_fota.pkt",
-  "size": 126830,
-  "sha256": "c4d5531f5226a37fcc25ca4b1f61b88de4f8ba31323695b84b47bd46f3aab936",
-  "signature": "3045022100f970efd9b6f2e4b850dbacad96097bb2ac8508ed5392c46c8b8213c31f8cf3ad0220610a47e8dee6a78fbfd9baab300625aa2ed1f78c0c68ac45aad7be16e9a0f60f",
+  "size": 83532,
+  "sha256": "1695cd5bdcf37e46ed6f9ad1f401f5b6ba680413b22102e71b026d4048dc7198",
+  "signature": "304502204e16c576df89d5ff72b063bbc8fdeb63cf1d220322055d4407dd15541fdf8a5f022100a2201e2b868e6b3f5e6b71c9d7be235a3090b52f5bdd0d51a416a5d5c856a00f",
   "url": "http://192.168.0.118:8080/nwy_open_app_fota.pkt",
-  "sms_command": "FOTA http://192.168.0.118:8080/nwy_open_app_fota.pkt 126830 3045022100f970efd9b6f2e4b850dbacad96097bb2ac8508ed5392c46c8b8213c31f8cf3ad0220610a47e8dee6a78fbfd9baab300625aa2ed1f78c0c68ac45aad7be16e9a0f60f"
+  "sms_command_simple": "FOTA",
+  "sms_command_full": "FOTA http://192.168.0.118:8080/nwy_open_app_fota.pkt 83532 304502204e16c576df89d5ff72b063bbc8fdeb63cf1d220322055d4407dd15541fdf8a5f022100a2201e2b868e6b3f5e6b71c9d7be235a3090b52f5bdd0d51a416a5d5c856a00f"
 }

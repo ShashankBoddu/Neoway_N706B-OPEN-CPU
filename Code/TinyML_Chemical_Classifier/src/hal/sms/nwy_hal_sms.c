@@ -56,7 +56,8 @@ bool nwy_hal_sms_init(int sim_id, nwy_sms_storage_type_e sms_storage) {
     return false;
   }
 
-  // nwy_sms_msg_del_ext(internal_sim, NWY_SMS_MSG_DFLAG_ALL);
+  // Purge any residual or unread SMS on boot so SIM card slots never fill up
+  nwy_sms_msg_del_ext(internal_sim, NWY_SMS_MSG_DFLAG_ALL);
 
   return true;
 }

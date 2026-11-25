@@ -84,9 +84,10 @@ set(target_map_file ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${build_target}.map)
 # link libraries for target
 target_link_libraries(${build_target} PRIVATE 
     -Wl,--whole-archive ${CMAKE_CURRENT_SOURCE_DIR}/build/nwy_open_stub.a  -Wl,--no-whole-archive 
-    ${CMAKE_CURRENT_SOURCE_DIR}/tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libc_nano.a
     ${CMAKE_CURRENT_SOURCE_DIR}/tools/GNU_Arm_Toolchain/arm-none-eabi/lib/thumb/v7/nofp/libnosys.a
     ${CMAKE_CURRENT_SOURCE_DIR}/tools/GNU_Arm_Toolchain/lib/gcc/arm-none-eabi/10.3.1/thumb/v7/nofp/libgcc.a
+    -Wl,--no-wchar-size-warning
     -Wl,-Map=${target_map_file}
 )
 

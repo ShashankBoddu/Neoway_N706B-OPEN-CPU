@@ -5,6 +5,7 @@
 
 #include "data_collector.h"
 #include "remote_sd_manager.h"
+#include "mqtt_manager.h"
 #include "hal/nwy_hal_secure_fota.h"
 #include "i2c_bus.h"
 #include "nwy_sd_card.h"
@@ -80,71 +81,36 @@ static uint32_t rtc_to_epoch(const nwy_time_t *tm, int tz_quarter_hours)
 
 /* Canonical Bosch BME AI-Studio v3.2.1 Configuration Header & Body */
 static const char s_bme_config_header_body[] =
-    "{\n"
-    "  \"configHeader\": {\n"
-    "    \"dateCreated_ISO\": \"2026-11-17T09:00:00Z\",\n"
-    "    \"appVersion\": \"3.2.1\",\n"
-    "    \"boardType\": \"board_8\",\n"
-    "    \"boardMode\": \"burn_in\",\n"
-    "    \"boardLayout\": \"grouped\"\n"
-    "  },\n"
-    "  \"configBody\": {\n"
-    "    \"heaterProfiles\": [\n"
-    "      {\n"
-    "        \"id\": \"heater_354\",\n"
-    "        \"timeBase\": 140,\n"
-    "        \"temperatureTimeVectors\": [\n"
-    "          [320, 5],\n"
-    "          [100, 2],\n"
-    "          [100, 10],\n"
-    "          [100, 30],\n"
-    "          [200, 5],\n"
-    "          [200, 5],\n"
-    "          [200, 5],\n"
-    "          [320, 5],\n"
-    "          [320, 5],\n"
-    "          [320, 5]\n"
-    "        ]\n"
-    "      }\n"
-    "    ],\n"
-    "    \"dutyCycleProfiles\": [\n"
-    "      {\n"
-    "        \"id\": \"duty_1\",\n"
-    "        \"numberScanningCycles\": 1,\n"
-    "        \"numberSleepingCycles\": 0\n"
-    "      }\n"
-    "    ],\n"
-    "    \"sensorConfigurations\": [\n"
-    "      {\"sensorIndex\": 0, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
-    "      {\"sensorIndex\": 1, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
-    "      {\"sensorIndex\": 2, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
-    "      {\"sensorIndex\": 3, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
-    "      {\"sensorIndex\": 4, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
-    "      {\"sensorIndex\": 5, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
-    "      {\"sensorIndex\": 6, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"},\n"
-    "      {\"sensorIndex\": 7, \"heaterProfile\": \"heater_354\", \"dutyCycleProfile\": \"duty_1\"}\n"
-    "    ]\n"
-    "  },\n";
+    "{\"configHeader\":{\"dateCreated_ISO\":\"2026-11-17T09:00:00Z\",\"appVersion\":\"3.2.1\",\"boardType\":\"board_8\",\"boardMode\":\"burn_in\",\"boardLayout\":\"grouped\"},"
+    "\"configBody\":{\"heaterProfiles\":[{\"id\":\"heater_354\",\"timeBase\":140,\"temperatureTimeVectors\":[[320,5],[100,2],[100,10],[100,30],[200,5],[200,5],[200,5],[320,5],[320,5],[320,5]]}],"
+    "\"dutyCycleProfiles\":[{\"id\":\"duty_1\",\"numberScanningCycles\":1,\"numberSleepingCycles\":0}],"
+    "\"sensorConfigurations\":["
+    "{\"sensorIndex\":0,\"heaterProfile\":\"heater_354\",\"dutyCycleProfile\":\"duty_1\"},"
+    "{\"sensorIndex\":1,\"heaterProfile\":\"heater_354\",\"dutyCycleProfile\":\"duty_1\"},"
+    "{\"sensorIndex\":2,\"heaterProfile\":\"heater_354\",\"dutyCycleProfile\":\"duty_1\"},"
+    "{\"sensorIndex\":3,\"heaterProfile\":\"heater_354\",\"dutyCycleProfile\":\"duty_1\"},"
+    "{\"sensorIndex\":4,\"heaterProfile\":\"heater_354\",\"dutyCycleProfile\":\"duty_1\"},"
+    "{\"sensorIndex\":5,\"heaterProfile\":\"heater_354\",\"dutyCycleProfile\":\"duty_1\"},"
+    "{\"sensorIndex\":6,\"heaterProfile\":\"heater_354\",\"dutyCycleProfile\":\"duty_1\"},"
+    "{\"sensorIndex\":7,\"heaterProfile\":\"heater_354\",\"dutyCycleProfile\":\"duty_1\"}]},\n";
 
 /* Canonical Bosch BME AI-Studio 13-Column Data Definition */
 static const char s_bme_datacolumns[] =
-    "  \"rawDataBody\": {\n"
-    "    \"dataColumns\": [\n"
-    "      {\"name\": \"Sensor Index\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"sensor_index\", \"colId\": 1},\n"
-    "      {\"name\": \"Sensor ID\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"sensor_id\", \"colId\": 2},\n"
-    "      {\"name\": \"Time Since PowerOn\", \"unit\": \"Milliseconds\", \"format\": \"integer\", \"key\": \"timestamp_since_poweron\", \"colId\": 3},\n"
-    "      {\"name\": \"Real time clock\", \"unit\": \"Unix Timestamp: seconds since Jan 01 1970. (UTC); 0 = missing\", \"format\": \"integer\", \"key\": \"real_time_clock\", \"colId\": 4},\n"
-    "      {\"name\": \"Temperature\", \"unit\": \"DegreesCelcius\", \"format\": \"float\", \"key\": \"temperature\", \"colId\": 5},\n"
-    "      {\"name\": \"Pressure\", \"unit\": \"Hectopascals\", \"format\": \"float\", \"key\": \"pressure\", \"colId\": 6},\n"
-    "      {\"name\": \"Relative Humidity\", \"unit\": \"Percent\", \"format\": \"float\", \"key\": \"relative_humidity\", \"colId\": 7},\n"
-    "      {\"name\": \"Resistance Gassensor\", \"unit\": \"Ohms\", \"format\": \"float\", \"key\": \"resistance_gassensor\", \"colId\": 8},\n"
-    "      {\"name\": \"Heater Profile Step Index\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"heater_profile_step_index\", \"colId\": 9},\n"
-    "      {\"name\": \"Scanning Mode Enabled\", \"unit\": \"\", \"format\": \"boolean\", \"key\": \"scanning_enabled\", \"colId\": 10},\n"
-    "      {\"name\": \"Scanning Cycle Index\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"scanning_cycle_index\", \"colId\": 11},\n"
-    "      {\"name\": \"Label Tag\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"label_tag\", \"colId\": 12},\n"
-    "      {\"name\": \"Error Code\", \"unit\": \"\", \"format\": \"integer\", \"key\": \"error_code\", \"colId\": 13}\n"
-    "    ],\n"
-    "    \"dataBlock\": [";
+    "\"rawDataBody\":{\"dataColumns\":["
+    "{\"name\":\"Sensor Index\",\"unit\":\"\",\"format\":\"integer\",\"key\":\"sensor_index\",\"colId\":1},"
+    "{\"name\":\"Sensor ID\",\"unit\":\"\",\"format\":\"integer\",\"key\":\"sensor_id\",\"colId\":2},"
+    "{\"name\":\"Time Since PowerOn\",\"unit\":\"Milliseconds\",\"format\":\"integer\",\"key\":\"timestamp_since_poweron\",\"colId\":3},"
+    "{\"name\":\"Real time clock\",\"unit\":\"Unix Timestamp: seconds since Jan 01 1970. (UTC); 0 = missing\",\"format\":\"integer\",\"key\":\"real_time_clock\",\"colId\":4},"
+    "{\"name\":\"Temperature\",\"unit\":\"DegreesCelcius\",\"format\":\"float\",\"key\":\"temperature\",\"colId\":5},"
+    "{\"name\":\"Pressure\",\"unit\":\"Hectopascals\",\"format\":\"float\",\"key\":\"pressure\",\"colId\":6},"
+    "{\"name\":\"Relative Humidity\",\"unit\":\"Percent\",\"format\":\"float\",\"key\":\"relative_humidity\",\"colId\":7},"
+    "{\"name\":\"Resistance Gassensor\",\"unit\":\"Ohms\",\"format\":\"float\",\"key\":\"resistance_gassensor\",\"colId\":8},"
+    "{\"name\":\"Heater Profile Step Index\",\"unit\":\"\",\"format\":\"integer\",\"key\":\"heater_profile_step_index\",\"colId\":9},"
+    "{\"name\":\"Scanning Mode Enabled\",\"unit\":\"\",\"format\":\"boolean\",\"key\":\"scanning_enabled\",\"colId\":10},"
+    "{\"name\":\"Scanning Cycle Index\",\"unit\":\"\",\"format\":\"integer\",\"key\":\"scanning_cycle_index\",\"colId\":11},"
+    "{\"name\":\"Label Tag\",\"unit\":\"\",\"format\":\"integer\",\"key\":\"label_tag\",\"colId\":12},"
+    "{\"name\":\"Error Code\",\"unit\":\"\",\"format\":\"integer\",\"key\":\"error_code\",\"colId\":13}"
+    "],\"dataBlock\":[";
 
 /* -------------------------------------------------------------------------
  * HELPER STRING UTILITIES
@@ -208,13 +174,17 @@ const char *data_collector_get_alert_phone(void)
 void data_collector_send_alert(const char *alert_msg)
 {
     if (!alert_msg || alert_msg[0] == '\0') return;
-    if (s_alert_phone[0] == '\0') return;
 
-    nwy_hal_uart_printf(1, LOG_TAG "DISPATCHING ALERT SMS to %s: \"%s\"\r\n", s_alert_phone, alert_msg);
-    bool sent = nwy_hal_sms_send(1, s_alert_phone, alert_msg);
-    if (!sent) {
-        nwy_hal_uart_printf(1, LOG_TAG "WARNING: Alert SMS send failed to %s!\r\n", s_alert_phone);
+    if (s_alert_phone[0] != '\0') {
+        nwy_hal_uart_printf(1, LOG_TAG "DISPATCHING ALERT SMS to %s: \"%s\"\r\n", s_alert_phone, alert_msg);
+        bool sent = nwy_hal_sms_send(1, s_alert_phone, alert_msg);
+        if (!sent) {
+            nwy_hal_uart_printf(1, LOG_TAG "WARNING: Alert SMS send failed to %s!\r\n", s_alert_phone);
+        }
     }
+
+    /* Mirror alert notification to MQTT telemetry stream */
+    mqtt_manager_publish(alert_msg);
 }
 
 void data_collector_send_boot_status(bool bme_ok, bool sd_ok,const char *ver)
@@ -390,8 +360,8 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
     nwy_time_t tm;
     int tz = 0;
     bool time_valid = false;
-    char iso_time[32] = "2026-11-16T12:00:00Z";
-    char iso_prefix[24] = "2026-11-16T12:00:00";
+    char iso_time[48] = "2026-11-16T12:00:00Z";
+    char iso_prefix[32] = "2026-11-16T12:00:00";
     char bme_filename[128];
     uint32_t session_seed = (uint32_t)(nwy_uptime_get() & 0xFFFF);
 
@@ -478,7 +448,7 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
         const char *basename = file_path;
         if (strncmp(basename, "0:/", 3) == 0) basename += 3;
         snprintf(reply_buf, reply_max,
-                 "STARTED: Dataset '%s'. File: %s. Sampling every %lus.",
+                 "STARTED: '%s' (%s, %lus)",
                  s_status.current_label, basename, (unsigned long)s_status.interval_sec);
     }
 
@@ -495,7 +465,7 @@ int data_collector_stop(char *reply_buf, size_t reply_max)
 
     if (s_status.state != COLLECTOR_STATE_RECORDING) {
         if (reply_buf && reply_max > 0) {
-            snprintf(reply_buf, reply_max, "IDLE: No active collection session to stop. Send 'START <LABEL>'.");
+            snprintf(reply_buf, reply_max, "IDLE: No active session. Send START <LABEL>");
         }
         if (s_collector_mutex) nwy_sdk_mutex_unlock(s_collector_mutex);
         return 0;
@@ -561,7 +531,7 @@ int data_collector_stop(char *reply_buf, size_t reply_max)
 
     if (reply_buf && reply_max > 0) {
         snprintf(reply_buf, reply_max,
-                 "STOPPED: '%s' (%lu samples). Dual saved: %s & .bmerawdata",
+                 "STOPPED: '%s' (%lu samples). File: %s",
                  s_status.current_label, (unsigned long)s_status.sample_count, csv_base);
     }
 
@@ -591,18 +561,17 @@ void data_collector_get_status(collector_status_t *status_out, char *reply_buf, 
     if (reply_buf && reply_max > 0) {
         if (!bme_ok) {
             snprintf(reply_buf, reply_max,
-                     "STATUS: SENSOR DISCONNECTED (0x76)! State:%s | SD:%s(%.1fGB) | Check I2C wiring!",
+                     "STATUS: SENSOR ERR(0x76)! State:%s | SD:%s(%.1fGB)",
                      (s_status.state == COLLECTOR_STATE_RECORDING) ? "PAUSED" : "IDLE",
                      sd_ok ? "OK" : "ERR", free_gb);
         } else if (s_status.state == COLLECTOR_STATE_RECORDING) {
             snprintf(reply_buf, reply_max,
-                     "STATUS: RUNNING '%s' (%lu) | Sensor:OK | T:%.1fC H:%.1f%% P:%.0fhPa R0:%.1fk | SD:%.1fGB",
+                     "STATUS: RUN '%s'(%lu) | T:%.1fC H:%.1f%% | SD:%.1fGB",
                      s_status.current_label, (unsigned long)s_status.sample_count,
-                     s_status.last_temperature, s_status.last_humidity, s_status.last_pressure,
-                     s_status.last_rgas_0 / 1000.0f, free_gb);
+                     s_status.last_temperature, s_status.last_humidity, free_gb);
         } else {
             snprintf(reply_buf, reply_max,
-                     "STATUS: IDLE (Ready) | Sensor:OK(0x76) | T:%.1fC H:%.1f%% R0:%.1fk | SD:%.1fGB free",
+                     "STATUS: IDLE | T:%.1fC H:%.1f%% R0:%.1fk | SD:%.1fGB",
                      s_status.last_temperature, s_status.last_humidity,
                      s_status.last_rgas_0 / 1000.0f, free_gb);
         }
@@ -625,22 +594,47 @@ int data_collector_set_interval(uint32_t interval_sec, char *reply_buf, size_t r
     nwy_hal_uart_printf(1, LOG_TAG "Sampling interval updated: %lu seconds\r\n", (unsigned long)interval_sec);
 
     if (reply_buf && reply_max > 0) {
-        snprintf(reply_buf, reply_max, "INTERVAL: Sampling rate set to %lu seconds.", (unsigned long)interval_sec);
+        snprintf(reply_buf, reply_max, "INTERVAL: Set to %lu s.", (unsigned long)interval_sec);
     }
 
     if (s_collector_mutex) nwy_sdk_mutex_unlock(s_collector_mutex);
     return 0;
 }
 
-/* -------------------------------------------------------------------------
- * SMS COMMAND PARSER & DISPATCHER
- * ------------------------------------------------------------------------- */
-void data_collector_process_sms(const char *sender_phone, const char *msg_text)
-{
-    if (!sender_phone || !msg_text) return;
+static bool extract_json_str(const char *json, const char *key, char *out, int max_len) {
+    char search[32];
+    snprintf(search, sizeof(search), "\"%s\":\"", key);
+    char *start = strstr(json, search);
+    if (!start) return false;
+    start += strlen(search);
+    char *end = strchr(start, '\"');
+    if (!end || (end - start) >= max_len) return false;
+    strncpy(out, start, end - start);
+    out[end - start] = '\0';
+    return true;
+}
 
-    char cmd[128];
-    strncpy(cmd, msg_text, sizeof(cmd) - 1);
+static bool extract_json_int(const char *json, const char *key, uint32_t *out) {
+    char search[32];
+    snprintf(search, sizeof(search), "\"%s\":", key);
+    char *start = strstr(json, search);
+    if (!start) return false;
+    start += strlen(search);
+    while (*start == ' ') start++;
+    *out = (uint32_t)atoi(start);
+    return true;
+}
+
+/* -------------------------------------------------------------------------
+ * UNIFIED COMMAND PARSER & DISPATCHER (SMS, MQTT, CLI)
+ * ------------------------------------------------------------------------- */
+void data_collector_execute_command(const char *cmd_text, const char *sender_id, char *reply, size_t reply_max)
+{
+    if (!cmd_text) return;
+    if (reply && reply_max > 0) memset(reply, 0, reply_max);
+
+    char cmd[384];
+    strncpy(cmd, cmd_text, sizeof(cmd) - 1);
     cmd[sizeof(cmd) - 1] = '\0';
     trim_whitespace(cmd);
 
@@ -651,13 +645,10 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
         trim_whitespace(cmd);
     }
 
-    nwy_hal_uart_printf(1, LOG_TAG "Processing SMS from %s: \"%s\"\r\n", sender_phone, cmd);
-
-    char reply[160];
-    memset(reply, 0, sizeof(reply));
+    nwy_hal_uart_printf(1, "CMD [%s]: %s\r\n", sender_id ? sender_id : "?", cmd);
 
     /* Convert command prefix to uppercase for case-insensitive matching */
-    char cmd_upper[128];
+    char cmd_upper[384];
     size_t i = 0;
     for (; cmd[i] != '\0' && i < sizeof(cmd_upper) - 1; i++) {
         cmd_upper[i] = (char)toupper((unsigned char)cmd[i]);
@@ -682,10 +673,10 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
             label_part = "BASELINE_AIR";
         }
 
-        data_collector_start(label_part, sender_phone, reply, sizeof(reply));
+        data_collector_start(label_part, sender_id, reply, reply_max);
     }
     else if (strcmp(cmd_upper, "STOP") == 0) {
-        data_collector_stop(reply, sizeof(reply));
+        data_collector_stop(reply, reply_max);
     }
     else if (strncmp(cmd_upper, "STATUS", 6) == 0 || strncmp(cmd_upper, "STATE", 5) == 0) {
         const char *extra = cmd + 6;
@@ -700,45 +691,51 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
             float free_g = (float)free_b / (1024.0f * 1024.0f * 1024.0f);
 
             if (!bme_live) {
-                snprintf(reply, sizeof(reply),
-                         "STATUS: NOT READY for '%s'! Sensor not interfaced (0x76). Check wiring.", extra);
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max,
+                             "STATUS: NOT READY for '%s'! Sensor not interfaced (0x76). Check wiring.", extra);
             } else if (!sd_live) {
-                snprintf(reply, sizeof(reply),
-                         "STATUS: NOT READY for '%s'! MicroSD missing/unmounted. Insert card.", extra);
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max,
+                             "STATUS: NOT READY for '%s'! MicroSD missing/unmounted. Insert card.", extra);
             } else if (s_status.state == COLLECTOR_STATE_RECORDING) {
-                snprintf(reply, sizeof(reply),
-                         "STATUS: BUSY. Running '%s' (%lu). To collect '%s', send STOP then START %s.",
-                         s_status.current_label, (unsigned long)s_status.sample_count, extra, extra);
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max,
+                             "STATUS: BUSY '%s' (%lu). Send STOP then START %s.",
+                             s_status.current_label, (unsigned long)s_status.sample_count, extra);
             } else {
-                snprintf(reply, sizeof(reply),
-                         "STATUS: READY for '%s'. Sensor: OK(0x76, %.1fC), SD: OK(%.1fGB). Send: START %s",
-                         extra, s_status.last_temperature, free_g, extra);
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max,
+                             "STATUS: READY for '%s'. Sensor: OK(%.1fC), SD: %.1fGB.",
+                             extra, s_status.last_temperature, free_g);
             }
         } else {
-            data_collector_get_status(NULL, reply, sizeof(reply));
+            data_collector_get_status(NULL, reply, reply_max);
         }
     }
     else if (strncmp(cmd_upper, "INTERVAL", 8) == 0) {
         const char *sec_str = cmd + 8;
         while (*sec_str && isspace((unsigned char)*sec_str)) sec_str++;
         uint32_t interval = (uint32_t)atoi(sec_str);
-        data_collector_set_interval(interval, reply, sizeof(reply));
+        data_collector_set_interval(interval, reply, reply_max);
     }
     else if (strncmp(cmd_upper, "ALERT", 5) == 0) {
         const char *phone_arg = cmd + 5;
         while (*phone_arg && isspace((unsigned char)*phone_arg)) phone_arg++;
         if (*phone_arg != '\0') {
             data_collector_set_alert_phone(phone_arg);
-            snprintf(reply, sizeof(reply), "Alerts recipient updated to: %s", s_alert_phone);
+            if (reply && reply_max > 0)
+                snprintf(reply, reply_max, "Alerts: %s", s_alert_phone);
         } else {
-            snprintf(reply, sizeof(reply), "Current alerts recipient: %s. Send 'ALERT <PHONE>' to change.", s_alert_phone);
+            if (reply && reply_max > 0)
+                snprintf(reply, reply_max, "Alerts: %s. Send 'ALERT <PH>'", s_alert_phone);
         }
     }
     else if (strncmp(cmd_upper, "LIST", 4) == 0 ||
              strncmp(cmd_upper, "IIST", 4) == 0 ||
              strncmp(cmd_upper, "1IST", 4) == 0 ||
              strncmp(cmd_upper, "SD LIST", 7) == 0) {
-        remote_sd_list_files(reply, sizeof(reply));
+        remote_sd_list_files(reply, reply_max);
     }
     else if (strncmp(cmd_upper, "UPLOAD", 6) == 0) {
         const char *target = cmd + 6;
@@ -751,35 +748,46 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
 
         sd_upload_request_t req;
         memset(&req, 0, sizeof(req));
-        if (sender_phone) strncpy(req.notify_phone, sender_phone, sizeof(req.notify_phone) - 1);
+        if (sender_id && strcmp(sender_id, "MQTT") != 0) {
+            strncpy(req.notify_phone, sender_id, sizeof(req.notify_phone) - 1);
+        } else {
+            strncpy(req.notify_phone, s_alert_phone, sizeof(req.notify_phone) - 1);
+        }
 
         if (strcmp(target_upper, "LATEST") == 0 || strcmp(target_upper, "LAST") == 0) {
             req.target_type = UPLOAD_TARGET_LATEST;
             if (remote_sd_queue_upload(&req)) {
-                snprintf(reply, sizeof(reply), "UPLOAD: Queued latest session files to %s. Transferring in background...",
-                         remote_sd_get_server_url());
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "UPLOAD: Queued latest to %s",
+                             remote_sd_get_server_url());
             } else {
-                snprintf(reply, sizeof(reply), "UPLOAD ERROR: Uploader busy or unavailable.");
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "UPLOAD ERR: Busy");
             }
         } else if (strcmp(target_upper, "ALL") == 0) {
             req.target_type = UPLOAD_TARGET_ALL;
             if (remote_sd_queue_upload(&req)) {
-                snprintf(reply, sizeof(reply), "UPLOAD: Queued ALL dataset files to %s. Transferring in background...",
-                         remote_sd_get_server_url());
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "UPLOAD: Queued ALL to %s",
+                             remote_sd_get_server_url());
             } else {
-                snprintf(reply, sizeof(reply), "UPLOAD ERROR: Uploader busy or unavailable.");
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "UPLOAD ERR: Busy");
             }
         } else if (strlen(target) > 0) {
             req.target_type = UPLOAD_TARGET_SINGLE;
             strncpy(req.filename, target, sizeof(req.filename) - 1);
             if (remote_sd_queue_upload(&req)) {
-                snprintf(reply, sizeof(reply), "UPLOAD: Queued '%s' to %s. Transferring in background...",
-                         target, remote_sd_get_server_url());
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "UPLOAD: Queued '%s' to %s",
+                             target, remote_sd_get_server_url());
             } else {
-                snprintf(reply, sizeof(reply), "UPLOAD ERROR: Uploader busy or unavailable.");
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "UPLOAD ERR: Busy");
             }
         } else {
-            snprintf(reply, sizeof(reply), "Usage: 'UPLOAD LATEST', 'UPLOAD ALL', or 'UPLOAD <FILENAME>'");
+            if (reply && reply_max > 0)
+                snprintf(reply, reply_max, "Usage: UPLOAD LATEST|ALL|<FILE>");
         }
     }
     else if (strncmp(cmd_upper, "SERVER", 6) == 0 || strstr(cmd_upper, "SERVER")) {
@@ -795,53 +803,148 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
             url_arg = http_p;
         }
 
-        if (*url_arg != '\0') {
-            remote_sd_set_server_url(url_arg);
-            snprintf(reply, sizeof(reply), "SERVER: Upload URL set to %s", remote_sd_get_server_url());
+        /* Validate URL format: must not contain spaces or shell keywords */
+        if (*url_arg == '\0') {
+            if (reply && reply_max > 0)
+                snprintf(reply, reply_max, "SERVER: %s. Send 'SERVER <URL>'",
+                         remote_sd_get_server_url());
+        } else if (strchr(url_arg, ' ') != NULL || strstr(url_arg, "ssh") != NULL ||
+                   (strncmp(url_arg, "http://", 7) != 0 && strncmp(url_arg, "https://", 8) != 0 && strncmp(url_arg, "tcp://", 6) != 0)) {
+            if (reply && reply_max > 0)
+                snprintf(reply, reply_max, "SERVER ERR: Expected 'SERVER http://host:port/upload'");
         } else {
-            snprintf(reply, sizeof(reply), "SERVER: Current upload URL is %s. Send 'SERVER <URL>' to change.",
-                     remote_sd_get_server_url());
+            remote_sd_set_server_url(url_arg);
+            if (reply && reply_max > 0)
+                snprintf(reply, reply_max, "SERVER: URL set to %s", remote_sd_get_server_url());
+        }
+    }
+    else if (strstr(cmd, "\"command\":\"OTA\"") || strstr(cmd, "\"command\": \"OTA\"") || strstr(cmd, "\"command\":\"ota\"")) {
+        char fota_url[192] = {0};
+        char fota_sig[160] = {0};
+        uint32_t fota_size = 0;
+
+        bool has_url = extract_json_str(cmd, "OTAConfigURL", fota_url, sizeof(fota_url));
+        bool has_sig = extract_json_str(cmd, "signature", fota_sig, sizeof(fota_sig));
+        bool has_size = extract_json_int(cmd, "Configsize", &fota_size);
+
+        if (has_url && has_sig && has_size) {
+            nwy_hal_uart_printf(1, LOG_TAG "Valid JSON OTA Trigger! URL: %s, Size: %lu\r\n", fota_url, (unsigned long)fota_size);
+            const char *notify_dst = (sender_id && strcmp(sender_id, "MQTT") != 0) ? sender_id : s_alert_phone;
+            bool started = nwy_hal_secure_fota_start_with_notify(fota_url, fota_size, fota_sig, notify_dst);
+            if (started) {
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "FOTA: Download %s (%lu B)...", fota_url, (unsigned long)fota_size);
+            } else {
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "FOTA ERR: Failed to start or busy.");
+            }
+        } else {
+            if (reply && reply_max > 0)
+                snprintf(reply, reply_max, "FOTA ERR: Malformed trigger");
         }
     }
     else if (strncmp(cmd_upper, "FOTA", 4) == 0 || strncmp(cmd_upper, "OTA", 3) == 0) {
         const char *args = cmd + (strncmp(cmd_upper, "FOTA", 4) == 0 ? 4 : 3);
         while (*args && isspace((unsigned char)*args)) args++;
 
-        char fota_url[160] = {0};
+        char fota_url[192] = {0};
         uint32_t fota_size = 0;
         char fota_sig[160] = {0};
 
-        unsigned long fota_size_raw = 0;
-        int parsed = sscanf(args, "%159s %lu %159s", fota_url, &fota_size_raw, fota_sig);
-        fota_size = (uint32_t)fota_size_raw;
-        if (parsed == 3 && fota_size > 0 && strlen(fota_sig) > 10) {
-            bool started = nwy_hal_secure_fota_start_with_notify(fota_url, fota_size, fota_sig, sender_phone);
-            if (started) {
-                snprintf(reply, sizeof(reply),
-                         "FOTA: Downloading %u bytes from %s. Verifying signature...",
-                         (unsigned int)fota_size, fota_url);
+        if (*args == '\0' || strcmp(args, "UPDATE") == 0 || strcmp(args, "NOW") == 0 || strcmp(args, "LATEST") == 0) {
+            /* Mode 1: Bare "FOTA" command - auto-derive URL from configured server */
+            const char *srv_url = remote_sd_get_server_url();
+            if (srv_url && strlen(srv_url) > 7) {
+                strncpy(fota_url, srv_url, sizeof(fota_url) - 1);
+                char *upload_slash = strstr(fota_url, "/upload");
+                if (upload_slash) {
+                    strcpy(upload_slash, "/nwy_open_app_fota.pkt");
+                } else {
+                    size_t flen = strlen(fota_url);
+                    if (fota_url[flen - 1] == '/') fota_url[flen - 1] = '\0';
+                    strncat(fota_url, "/nwy_open_app_fota.pkt", sizeof(fota_url) - strlen(fota_url) - 1);
+                }
             } else {
-                snprintf(reply, sizeof(reply), "FOTA ERROR: Failed to start or already in progress.");
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "FOTA ERR: No server URL configured.");
+            }
+        } else if (isdigit((unsigned char)*args)) {
+            /* Mode 2: FOTA <size> <sig> using configured server URL */
+            const char *srv_url = remote_sd_get_server_url();
+            if (srv_url && strlen(srv_url) > 7) {
+                strncpy(fota_url, srv_url, sizeof(fota_url) - 1);
+                char *upload_slash = strstr(fota_url, "/upload");
+                if (upload_slash) {
+                    strcpy(upload_slash, "/nwy_open_app_fota.pkt");
+                } else {
+                    size_t flen = strlen(fota_url);
+                    if (fota_url[flen - 1] == '/') fota_url[flen - 1] = '\0';
+                    strncat(fota_url, "/nwy_open_app_fota.pkt", sizeof(fota_url) - strlen(fota_url) - 1);
+                }
+                unsigned long fota_size_raw = 0;
+                int parsed = sscanf(args, "%lu %159s", &fota_size_raw, fota_sig);
+                if (parsed >= 1 && fota_size_raw > 0) {
+                    fota_size = (uint32_t)fota_size_raw;
+                }
+            } else {
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "FOTA ERR: No server URL configured.");
             }
         } else {
-            snprintf(reply, sizeof(reply),
-                     "Usage: 'FOTA <URL> <SIZE> <SIG_HEX>' (e.g. FOTA http://x.com/fota.pkt 12345 304402...)");
+            /* Mode 3: FOTA <url> <size> <sig> OR FOTA <url> */
+            unsigned long fota_size_raw = 0;
+            int parsed = sscanf(args, "%191s %lu %159s", fota_url, &fota_size_raw, fota_sig);
+            if (parsed == 3 && fota_size_raw > 0 && strlen(fota_sig) > 10) {
+                fota_size = (uint32_t)fota_size_raw;
+            } else {
+                sscanf(args, "%191s", fota_url);
+                fota_size = 0;
+                fota_sig[0] = '\0';
+            }
+        }
+
+        if (fota_url[0] != '\0') {
+            nwy_hal_uart_printf(1, LOG_TAG "Starting FOTA from: %s (size: %lu, sig: %s)\r\n",
+                                fota_url, (unsigned long)fota_size, (fota_sig[0] != '\0') ? "MANUAL" : "AUTO");
+            const char *notify_dst = (sender_id && strcmp(sender_id, "MQTT") != 0) ? sender_id : s_alert_phone;
+            bool started = nwy_hal_secure_fota_start_with_notify(fota_url, fota_size,
+                                                                 (fota_sig[0] != '\0') ? fota_sig : NULL,
+                                                                 notify_dst);
+            if (started) {
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max,
+                             "FOTA: Download %s...",
+                             fota_url);
+            } else {
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "FOTA ERR: Failed to start or busy.");
+            }
         }
     }
     else if (strcmp(cmd_upper, "HELP") == 0 || strcmp(cmd_upper, "?") == 0) {
-        snprintf(reply, sizeof(reply),
-                 "Commands:\n"
-                 "START <LABEL>, STOP\n"
-                 "STATUS, LIST\n"
-                 "UPLOAD <LATEST|ALL|FILE>\n"
-                 "SERVER <URL>\n"
-                 "FOTA <URL> <SZ> <SIG>\n"
-                 "INTERVAL <S>, ALERT <PH>");
+        if (reply && reply_max > 0)
+            snprintf(reply, reply_max, "CMD: START, STOP, STATUS, LIST, UPLOAD, SERVER, FOTA, INTERVAL");
     }
     else {
-        snprintf(reply, sizeof(reply),
-                 "Unknown command '%s'. Send 'START <LABEL>', 'STOP', 'STATUS', 'LIST', or 'UPLOAD LATEST'.", cmd);
+        if (reply && reply_max > 0)
+            snprintf(reply, reply_max,
+                     "Unknown cmd '%s'. Send HELP.", cmd);
     }
+}
+
+/* -------------------------------------------------------------------------
+ * SMS COMMAND LISTENER & DISPATCHER (Dual-Channel: SMS + MQTT)
+ * ------------------------------------------------------------------------- */
+void data_collector_process_sms(const char *sender_phone, const char *msg_text)
+{
+    if (!sender_phone || !msg_text) return;
+
+    nwy_hal_uart_printf(1, LOG_TAG "Processing SMS from %s: \"%s\"\r\n", sender_phone, msg_text);
+
+    char reply[256];
+    memset(reply, 0, sizeof(reply));
+
+    data_collector_execute_command(msg_text, sender_phone, reply, sizeof(reply));
 
     /* Transmit two-way SMS reply back to sender */
     if (reply[0] != '\0') {
@@ -850,6 +953,9 @@ void data_collector_process_sms(const char *sender_phone, const char *msg_text)
         if (!sent) {
             nwy_hal_uart_printf(1, LOG_TAG "WARNING: Failed to send SMS reply!\r\n");
         }
+
+        /* Dual-Channel: Mirror reply to MQTT publish topic */
+        mqtt_manager_publish(reply);
     }
 }
 
@@ -878,7 +984,7 @@ void data_collector_worker_task(void *param)
                     s_alert_sensor_error_sent = true;
                     char alert[160];
                     snprintf(alert, sizeof(alert),
-                             "[BME688 ALERT] Sensor DISCONNECTED at runtime on '%s'! Recording paused. Recovering...",
+                             "[BME688 ALERT] Sensor lost on '%s'!",
                              s_status.current_label);
                     data_collector_send_alert(alert);
                 }
@@ -888,7 +994,7 @@ void data_collector_worker_task(void *param)
                     s_alert_sensor_error_sent = false;
                     char alert[160];
                     snprintf(alert, sizeof(alert),
-                             "[BME688 INFO] Sensor connection RESTORED! Recording resumed for '%s'.",
+                             "[BME688 INFO] Sensor restored for '%s'.",
                              s_status.current_label);
                     data_collector_send_alert(alert);
                 } else {
@@ -907,7 +1013,7 @@ void data_collector_worker_task(void *param)
                     s_alert_sensor_error_sent = false; /* Sensor recovered */
                     char alert[160];
                     snprintf(alert, sizeof(alert),
-                             "[BME688 INFO] Sensor recovered! Recording resumed for '%s'.",
+                             "[BME688 INFO] Sensor OK for '%s'.",
                              s_status.current_label);
                     data_collector_send_alert(alert);
                 }
@@ -943,7 +1049,7 @@ void data_collector_worker_task(void *param)
                                 s_alert_sd_error_sent = true;
                                 char alert[160];
                                 snprintf(alert, sizeof(alert),
-                                         "[BME688 ALERT] MicroSD CSV write failed (err %d/%d). Recording paused!",
+                                         "[BME688 ALERT] SD write failed (%d/%d)!",
                                          wr_res, sync_res);
                                 data_collector_send_alert(alert);
                             }
@@ -1011,7 +1117,7 @@ void data_collector_worker_task(void *param)
                     s_alert_sensor_error_sent = true;
                     char alert[160];
                     snprintf(alert, sizeof(alert),
-                             "[BME688 ALERT] Sensor I2C error (code %d) on '%s'. Checking bus...",
+                             "[BME688 ALERT] I2C error (%d) on '%s'!",
                              rslt, s_status.current_label);
                     data_collector_send_alert(alert);
                 }

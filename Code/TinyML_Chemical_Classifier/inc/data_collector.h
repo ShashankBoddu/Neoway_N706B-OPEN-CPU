@@ -97,6 +97,16 @@ int data_collector_set_interval(uint32_t interval_sec, char *reply_buf,
                                 size_t reply_max);
 
 /**
+ * @brief Parse and execute a command string (shared by SMS, MQTT, and debug console).
+ * @param cmd_text Command string (e.g. "START TEST1", "STOP", "STATUS", "LIST", "UPLOAD ALL", "FOTA")
+ * @param sender_id Optional sender identifier (phone number for SMS, "MQTT" for MQTT, or NULL)
+ * @param reply_buf Output buffer to receive response text
+ * @param reply_max Maximum capacity of reply_buf
+ */
+void data_collector_execute_command(const char *cmd_text, const char *sender_id,
+                                    char *reply_buf, size_t reply_max);
+
+/**
  * @brief Process an incoming SMS message from operator.
  *        Parses: START <LABEL>, STOP, STATUS, INTERVAL <SEC>, HELP.
  *        Executes requested action and replies via SMS to sender.

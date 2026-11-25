@@ -138,7 +138,7 @@ static bool ensure_data_connection(void)
         return true;
     }
 
-    LOGI("Data call inactive. Dialing LTE PDP context profile 1...");
+    LOGI("Dialing LTE...");
     nwy_hal_net_start_data_call(1, 1, NULL);
 
     int wait_cycles = 0;
@@ -146,7 +146,7 @@ static bool ensure_data_connection(void)
         nwy_hal_os_thread_sleep(1000);
         wait_cycles++;
         if (nwy_hal_net_get_ip(1, 1, ip_buf, sizeof(ip_buf)) && strlen(ip_buf) > 4) {
-            LOGI("Data call established after %d seconds! IP: %s", wait_cycles, ip_buf);
+            LOGI("LTE ready: %s", wait_cycles, ip_buf);
             return true;
         }
     }
@@ -177,10 +177,10 @@ int remote_sd_list_files(char *summary_out, size_t max_len)
     uint32_t total_size = 0;
     char latest_name[64] = {0};
 
-    LOGI("Listing MicroSD card root directory (0:/)...");
+    LOGI("List SD...");
 
     if (!nwy_sdcard_lock(5000)) {
-        LOGE("Failed to acquire SD card mutex for listing!");
+        LOGE("SD mutex fail");
         if (summary_out && max_len > 0) {
             snprintf(summary_out, max_len, "ERROR: MicroSD card is busy.");
         }
@@ -190,9 +190,9 @@ int remote_sd_list_files(char *summary_out, size_t max_len)
     FRESULT res = f_opendir(&dir, "0:/");
     if (res != FR_OK) {
         nwy_sdcard_unlock();
-        LOGE("Failed to open SD card root directory! FatFs err: %d", res);
+        LOGE("Open dir err: %d", res);
         if (summary_out && max_len > 0) {
-            snprintf(summary_out, max_len, "ERROR: MicroSD directory read failed (err: %d).", res);
+            snprintf(summary_out, max_len, "SD read err: %d", res);
         }
         return -1;
     }
@@ -221,11 +221,11 @@ int remote_sd_list_files(char *summary_out, size_t max_len)
     f_closedir(&dir);
     nwy_sdcard_unlock();
 
-    LOGI("MicroSD scan complete: %d dataset files found, total %lu bytes", count, (unsigned long)total_size);
+    LOGI("Scan: %d files, %lu B", count, (unsigned long)total_size);
 
     if (summary_out && max_len > 0) {
         if (count == 0) {
-            snprintf(summary_out, max_len, "SD Files: 0 datasets found on MicroSD card.");
+            snprintf(summary_out, max_len, "SD: 0 files found.");
         } else if (count <= 3) {
             int off = snprintf(summary_out, max_len, "SD Files (%d):\n", count);
             for (int i = 0; i < preview_count && off < (int)max_len - 30; i++) {
@@ -236,7 +236,7 @@ int remote_sd_list_files(char *summary_out, size_t max_len)
         } else {
             uint32_t total_kb = (total_size + 1023) / 1024;
             snprintf(summary_out, max_len,
-                     "SD Files: %d found (%luKB). Latest: %s. Send 'UPLOAD LATEST' or 'UPLOAD ALL'.",
+                     "SD: %d files (%luKB). Latest: %s",
                      count, (unsigned long)total_kb, latest_name);
         }
     }
@@ -275,7 +275,7 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
 
     /* Verify file exists and open it under SD lock */
     if (!nwy_sdcard_lock(5000)) {
-        LOGE("Could not lock SD card for file open: '%s'", full_path);
+        LOGE("SD lock fail: '%s'", full_path);
         return -3;
     }
     FIL file_obj;
@@ -288,17 +288,17 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
 
     if (f_res != FR_OK) {
         if (f_res == 16 /* FR_LOCKED */) {
-            LOGW("File '%s' is locked by an active recording session! Send 'STOP' before uploading.", base_filename);
+            LOGW("File '%s' is locked! Send STOP first.", base_filename);
             if (notify_phone && notify_phone[0] != '\0') {
-                char alert[160];
-                snprintf(alert, sizeof(alert), "UPLOAD PAUSED: '%s' is actively recording. Send 'STOP' first.", base_filename);
+                char alert[200];
+                snprintf(alert, sizeof(alert), "UPLOAD: '%s' recording. Send STOP first.", base_filename);
                 nwy_hal_sms_send(1, notify_phone, alert);
             }
         } else {
-            LOGE("Failed to open file '%s' on SD card! FatFs err: %d", full_path, f_res);
+            LOGE("Open '%s' err: %d", full_path, f_res);
             if (notify_phone && notify_phone[0] != '\0') {
                 char alert[160];
-                snprintf(alert, sizeof(alert), "UPLOAD ERROR: File '%s' not found on MicroSD (err %d).", base_filename, f_res);
+                snprintf(alert, sizeof(alert), "UPLOAD ERR: '%s' not found (%d)", base_filename, f_res);
                 nwy_hal_sms_send(1, notify_phone, alert);
             }
         }
@@ -309,7 +309,7 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
     s_bytes_sent = 0;
     s_upload_state = SD_UPLOAD_BUSY;
 
-    LOGI("Preparing upload: '%s' (%lu bytes) -> %s:%u%s", base_filename, (unsigned long)file_size, host, port, uri);
+    LOGI("Upload: '%s' (%lu B) -> %s:%u", base_filename, (unsigned long)file_size, host, port, uri);
 
     /* 1. Ensure Cellular Data Connection */
     if (!ensure_data_connection()) {
@@ -318,7 +318,7 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
         nwy_sdcard_unlock();
         s_upload_state = SD_UPLOAD_ERROR;
         if (notify_phone && notify_phone[0] != '\0') {
-            nwy_hal_sms_send(1, notify_phone, "UPLOAD ERROR: Cellular LTE data connection unavailable.");
+            nwy_hal_sms_send(1, notify_phone, "UPLOAD ERR: Cellular unavailable");
         }
         return -4;
     }
@@ -342,7 +342,7 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
             s_upload_state = SD_UPLOAD_ERROR;
             if (notify_phone && notify_phone[0] != '\0') {
                 char alert[160];
-                snprintf(alert, sizeof(alert), "UPLOAD ERROR: Could not resolve server '%s'.", host);
+                snprintf(alert, sizeof(alert), "UPLOAD ERR: DNS fail '%s'", host);
                 nwy_hal_sms_send(1, notify_phone, alert);
             }
             return -5;
@@ -382,7 +382,7 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
             }
         }
         if (!connected) {
-            LOGE("TCP connection to %s:%u failed! errno: %d", host, port, nwy_socket_errno());
+            LOGE("TCP fail %s:%u (%d)", host, port, nwy_socket_errno());
             nwy_socket_close(sock);
             nwy_sdcard_lock(5000);
             f_close(&file_obj);
@@ -390,13 +390,13 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
             s_upload_state = SD_UPLOAD_ERROR;
             if (notify_phone && notify_phone[0] != '\0') {
                 char alert[160];
-                snprintf(alert, sizeof(alert), "UPLOAD ERROR: Failed to connect to %s:%u.", host, port);
+                snprintf(alert, sizeof(alert), "UPLOAD ERR: TCP fail %s:%u", host, port);
                 nwy_hal_sms_send(1, notify_phone, alert);
             }
             return -7;
         }
     }
-    LOGI("TCP socket connected! Transmitting HTTP POST header...");
+    LOGI("Connected. Sending POST...");
 
     /* 5. Transmit HTTP POST Header (with Tunnel Screen Bypass Headers) */
     char http_header[640];
@@ -416,7 +416,7 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
 
     int sent_hdr = nwy_socket_send(sock, http_header, hdr_len, 0);
     if (sent_hdr < hdr_len) {
-        LOGE("Failed to send full HTTP header (sent %d of %d)", sent_hdr, hdr_len);
+        LOGE("Header send fail (%d/%d)", sent_hdr, hdr_len);
         nwy_socket_close(sock);
         nwy_sdcard_lock(5000);
         f_close(&file_obj);
@@ -440,14 +440,14 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
         nwy_sdcard_unlock();
 
         if (fr != FR_OK || bytes_read == 0) {
-            LOGE("Error reading from SD card! (fr: %d, bytes_read: %u)", fr, (unsigned int)bytes_read);
+            LOGE("SD read err (%d, %u B)", fr, (unsigned int)bytes_read);
             stream_ok = false;
             break;
         }
 
         int chunk_sent = nwy_socket_send(sock, chunk_buf, bytes_read, 0);
         if (chunk_sent <= 0) {
-            LOGE("Socket send error during stream! errno: %d", nwy_socket_errno());
+            LOGE("Send err (%d)", nwy_socket_errno());
             stream_ok = false;
             break;
         }
@@ -464,12 +464,12 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
     nwy_sdcard_unlock();
 
     if (!stream_ok || s_bytes_sent < file_size) {
-        LOGE("Stream interrupted! Sent %lu of %lu bytes.", (unsigned long)s_bytes_sent, (unsigned long)file_size);
+        LOGE("Stream break (%lu/%lu B)", (unsigned long)s_bytes_sent, (unsigned long)file_size);
         nwy_socket_close(sock);
         s_upload_state = SD_UPLOAD_ERROR;
         if (notify_phone && notify_phone[0] != '\0') {
             char alert[160];
-            snprintf(alert, sizeof(alert), "UPLOAD ERROR: Transfer interrupted (%lu/%lu bytes).",
+            snprintf(alert, sizeof(alert), "UPLOAD ERR: Interrupted (%lu/%lu B)",
                      (unsigned long)s_bytes_sent, (unsigned long)file_size);
             nwy_hal_sms_send(1, notify_phone, alert);
         }
@@ -477,7 +477,7 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
     }
 
     /* 7. Receive Server Response */
-    LOGI("File stream complete (%lu bytes). Awaiting HTTP 200 response...", (unsigned long)s_bytes_sent);
+    LOGI("Stream done (%lu B). Awaiting 200...", (unsigned long)s_bytes_sent);
     char rx_buf[256] = {0};
     int rx_bytes = nwy_socket_recv(sock, rx_buf, sizeof(rx_buf) - 1, 0);
     nwy_socket_close(sock);
@@ -488,40 +488,40 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
         LOGI("Server Response (%d bytes):\n%s", rx_bytes, rx_buf);
         if (strstr(rx_buf, "Pinggy") || strstr(rx_buf, "Caution") || strstr(rx_buf, "tunnel-reminder") ||
             strstr(rx_buf, "<html") || strstr(rx_buf, "<HTML") || strstr(rx_buf, "<!DOCTYPE") || strstr(rx_buf, "<!doctype")) {
-            LOGE("REJECTED: Interrupted by proxy warning/HTML screening page! File was NOT received by server.");
+            LOGE("REJECTED: Proxy screening page detected!");
             upload_accepted = false;
         } else if (strstr(rx_buf, "\"status\":\"ok\"") || strstr(rx_buf, "\"status\": \"ok\"") ||
                    strstr(rx_buf, "\"status\":\"OK\"") || strstr(rx_buf, "\"status\": \"OK\"")) {
-            LOGI("Verified server acknowledgement: JSON status:ok confirmed!");
+            LOGI("Server ACK: status:ok");
             upload_accepted = true;
         } else if ((strstr(rx_buf, "200 OK") || strstr(rx_buf, "201 Created") || strstr(rx_buf, "204 No Content")) &&
                    !strstr(rx_buf, "<")) {
             upload_accepted = true;
         } else {
-            LOGE("REJECTED: Server did not return a valid JSON status:ok confirmation!");
+            LOGE("REJECTED: Not status:ok");
             upload_accepted = false;
         }
     } else {
-        LOGE("REJECTED: No response data received from server!");
+        LOGE("REJECTED: No server response");
         upload_accepted = false;
     }
 
     if (upload_accepted) {
         s_upload_state = SD_UPLOAD_SUCCESS;
-        LOGI("SUCCESS: File '%s' (%lu bytes) uploaded to HTTP server!", base_filename, (unsigned long)file_size);
+        LOGI("SUCCESS: '%s' (%lu B) uploaded", base_filename, (unsigned long)file_size);
         if (notify_phone && notify_phone[0] != '\0') {
             char alert[160];
             snprintf(alert, sizeof(alert),
-                     "UPLOAD OK: '%s' (%lu bytes) transferred to %s successfully.",
-                     base_filename, (unsigned long)file_size, host);
+                     "UPLOAD OK: '%s' (%lu B)",
+                     base_filename, (unsigned long)file_size);
             nwy_hal_sms_send(1, notify_phone, alert);
         }
         return 0;
     } else {
         s_upload_state = SD_UPLOAD_ERROR;
-        LOGE("Server rejected upload or returned non-200 code!");
+        LOGE("Server returned non-200");
         if (notify_phone && notify_phone[0] != '\0') {
-            char alert[160];
+            char alert[200];
             snprintf(alert, sizeof(alert), "UPLOAD FAILED: Server rejected '%s'.", base_filename);
             nwy_hal_sms_send(1, notify_phone, alert);
         }
@@ -539,7 +539,7 @@ int remote_sd_upload_latest_sync(const char *server_url, const char *notify_phon
     WORD latest_time = 0;
 
     if (!nwy_sdcard_lock(5000)) {
-        LOGE("Failed to acquire SD card mutex for upload latest!");
+        LOGE("SD mutex fail");
         return -1;
     }
 
@@ -567,7 +567,7 @@ int remote_sd_upload_latest_sync(const char *server_url, const char *notify_phon
     if (latest_raw[0] == '\0') {
         LOGE("No .bmerawdata file found on SD card!");
         if (notify_phone && notify_phone[0] != '\0') {
-            nwy_hal_sms_send(1, notify_phone, "UPLOAD: No recorded datasets found on SD card.");
+            nwy_hal_sms_send(1, notify_phone, "UPLOAD: No files found");
         }
         return -2;
     }
@@ -577,7 +577,7 @@ int remote_sd_upload_latest_sync(const char *server_url, const char *notify_phon
     char *dot = strrchr(latest_info, '.');
     if (dot) strcpy(dot, ".bmelabelinfo");
 
-    LOGI("Identified latest dataset session: '%s' and '%s'", latest_raw, latest_info);
+    LOGI("Latest: '%s' & '%s'", latest_raw, latest_info);
 
     /* 1. Upload .bmerawdata */
     int ret1 = remote_sd_upload_file_sync(latest_raw, server_url, NULL);
@@ -601,10 +601,10 @@ int remote_sd_upload_latest_sync(const char *server_url, const char *notify_phon
         char alert[160];
         if (ret1 == 0) {
             snprintf(alert, sizeof(alert),
-                     "UPLOAD LATEST OK: Session '%s' uploaded successfully.", latest_raw);
+                     "UPLOAD OK: '%s' uploaded", latest_raw);
         } else {
             snprintf(alert, sizeof(alert),
-                     "UPLOAD LATEST FAILED: Error uploading '%s' (code %d).", latest_raw, ret1);
+                     "UPLOAD ERR: '%s' failed (%d)", latest_raw, ret1);
         }
         nwy_hal_sms_send(1, notify_phone, alert);
     }
@@ -644,7 +644,7 @@ int remote_sd_upload_all_sync(const char *server_url, const char *notify_phone)
     f_closedir(&dir);
     nwy_sdcard_unlock();
 
-    LOGI("Starting batch upload of %d dataset files found on SD card...", target_files);
+    LOGI("Batch upload: %d files", target_files);
 
     for (int i = 0; i < target_files; i++) {
         LOGI("Batch upload [%d/%d]: uploading '%s'...", i + 1, target_files, file_list[i]);
@@ -657,12 +657,12 @@ int remote_sd_upload_all_sync(const char *server_url, const char *notify_phone)
         nwy_hal_os_thread_sleep(500); // Inter-file breather
     }
 
-    LOGI("Batch upload completed: %d uploaded, %d failed", uploaded_count, failed_count);
+    LOGI("Batch done: %d ok, %d fail", uploaded_count, failed_count);
 
     if (notify_phone && notify_phone[0] != '\0') {
         char alert[160];
         snprintf(alert, sizeof(alert),
-                 "UPLOAD ALL COMPLETE: %d uploaded, %d failed.", uploaded_count, failed_count);
+                 "UPLOAD ALL: %d ok, %d fail", uploaded_count, failed_count);
         nwy_hal_sms_send(1, notify_phone, alert);
     }
 
@@ -689,7 +689,7 @@ static void remote_sd_uploader_task(void *param)
 
             switch (req.target_type) {
             case UPLOAD_TARGET_SINGLE:
-                LOGI("Executing queued SINGLE upload of '%s' to %s", req.filename, url_to_use);
+                LOGI("Upload single '%s'", req.filename, url_to_use);
                 remote_sd_upload_file_sync(req.filename, url_to_use, req.notify_phone);
                 break;
 
@@ -714,7 +714,7 @@ bool remote_sd_queue_upload(const sd_upload_request_t *req)
 {
     if (!req) return false;
     if (s_upload_state == SD_UPLOAD_BUSY || s_has_pending_req) {
-        LOGW("Cannot queue upload: uploader currently busy!");
+        LOGW("Uploader busy");
         return false;
     }
 
@@ -745,10 +745,10 @@ int remote_sd_manager_init(void)
     int th_ret = nwy_thread_create(&s_upload_thread, "sd_uploader", 48,
                                    remote_sd_uploader_task, NULL, 10, 1024 * 16, NULL);
     if (th_ret != 0) {
-        LOGE("Failed to spawn SD uploader worker thread!");
+        LOGE("Worker spawn fail");
         return -1;
     }
 
-    LOGI("Remote SD Card Manager initialized successfully.");
+    LOGI("Remote SD ready");
     return 0;
 }

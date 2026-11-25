@@ -17,6 +17,8 @@ bool nwy_hal_mqtt_subscribe(const char *topic, int qos, nwy_hal_mqtt_cb_t cb);
 bool nwy_hal_mqtt_publish(const char *topic, const char *payload, int qos,
                           bool retain);
 
+bool nwy_hal_mqtt_is_connected(void);
+
 void nwy_hal_mqtt_close(void);
 
-#endif
+#endif // __NWY_HAL_MQTT_H__

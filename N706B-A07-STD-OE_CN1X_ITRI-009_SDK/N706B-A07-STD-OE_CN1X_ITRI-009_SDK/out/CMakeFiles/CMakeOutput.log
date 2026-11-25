@@ -2,7 +2,7 @@ The target system is: Generic -  -
 The host system is: Windows - 10.0.26300 - AMD64
 Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
 Compiler: E:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/tools/GNU_Arm_Toolchain/bin/arm-none-eabi-gcc.exe 
-Build flags: ;-DFEATURE_NWY_OPEN_APP;-DFEATURE_NWY_ASR_PLAT;-mcpu=cortex-R5;-mlittle-endian;-mthumb;-mthumb-interwork;-mfloat-abi=soft;-Os;-g;-fshort-wchar;-fno-builtin;-Wall;-ffunction-sections;-fdata-sections;-std=c99;-Wl,--gc-sections;-TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds;-nostdlib
+Build flags: ;-DFEATURE_NWY_OPEN_APP;-DFEATURE_NWY_ASR_PLAT;-mcpu=cortex-R5;-mlittle-endian;-mthumb;-mthumb-interwork;-mfloat-abi=soft;-Os;-fshort-wchar;-fmerge-all-constants;-Wall;-ffunction-sections;-fdata-sections;-fno-unwind-tables;-fno-asynchronous-unwind-tables;-std=c99;-Wl,--gc-sections;-TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds;-nostdlib
 Id flags:  
 
 The output was:
@@ -13,7 +13,7 @@ Compilation of the C compiler identification source "CMakeCCompilerId.c" produce
 
 Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
 Compiler: E:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/tools/GNU_Arm_Toolchain/bin/arm-none-eabi-gcc.exe 
-Build flags: ;-DFEATURE_NWY_OPEN_APP;-DFEATURE_NWY_ASR_PLAT;-mcpu=cortex-R5;-mlittle-endian;-mthumb;-mthumb-interwork;-mfloat-abi=soft;-Os;-g;-fshort-wchar;-fno-builtin;-Wall;-ffunction-sections;-fdata-sections;-std=c99;-Wl,--gc-sections;-TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds;-nostdlib
+Build flags: ;-DFEATURE_NWY_OPEN_APP;-DFEATURE_NWY_ASR_PLAT;-mcpu=cortex-R5;-mlittle-endian;-mthumb;-mthumb-interwork;-mfloat-abi=soft;-Os;-fshort-wchar;-fmerge-all-constants;-Wall;-ffunction-sections;-fdata-sections;-fno-unwind-tables;-fno-asynchronous-unwind-tables;-std=c99;-Wl,--gc-sections;-TE:/projects/DevelopmentLevelCode/Neoway_N706B/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/N706B-A07-STD-OE_CN1X_ITRI-009_SDK/build/nwy_open_app.lds;-nostdlib
 Id flags: -c 
 
 The output was:

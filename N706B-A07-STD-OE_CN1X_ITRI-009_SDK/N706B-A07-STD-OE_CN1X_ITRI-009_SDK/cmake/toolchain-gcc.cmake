@@ -42,16 +42,17 @@ set(CPU_FLAGS
 # Optimization and debug options
 set(OPT_FLAGS
     "-Os"
-    "-g"
-	"-fshort-wchar"
+    "-fshort-wchar"
+    "-fmerge-all-constants"
 )
 
 # Code generation options
 set(CODE_GEN_FLAGS
-    "-fno-builtin"
     "-Wall"
     "-ffunction-sections"
     "-fdata-sections"
+    "-fno-unwind-tables"
+    "-fno-asynchronous-unwind-tables"
     "-std=c99"
 )
 

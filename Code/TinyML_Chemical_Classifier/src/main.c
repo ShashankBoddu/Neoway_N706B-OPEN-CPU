@@ -13,6 +13,7 @@
 #include "nwy_sd_card.h"
 #include "data_collector.h"
 #include "remote_sd_manager.h"
+#include "mqtt_manager.h"
 #include "hal/nwy_hal_secure_fota.h"
 #include "hal/net/nwy_hal_net.h"
 #include "hal/sms/nwy_hal_sms.h"
@@ -33,6 +34,7 @@
 #define PIN_PERIPHERAL_PWR_GPIO0 0       /* Module Pin 83 (GPIO_00: Q1/Q3 & Q5/Q10 Master Gate) */
 #define BME688_I2C_ADDR         0x76    /* Default SmartElex BME688 address (SDO tied to GND) */
 
+#define CodeVer "0.1"
 /* Global Device Handles */
 static bme68x_dev_t        g_bme_dev;
 static uint8_t             g_bme_addr = BME688_I2C_ADDR;
@@ -100,7 +102,7 @@ static void on_incoming_sms_cb(int sim_id, int sms_index)
         g_sms_q_head = next_head;
     } else {
         if (g_dbg_uart_fd >= 0) {
-            nwy_hal_uart_printf(g_dbg_uart_fd, "[SMS QUEUE] Warning: Queue full, dropping SMS index %d\r\n", sms_index);
+            nwy_hal_uart_printf(g_dbg_uart_fd, "[SMS Q full: %d]\r\n", sms_index);
         }
     }
     if (g_sms_q_mutex) nwy_sdk_mutex_unlock(g_sms_q_mutex);
@@ -116,7 +118,7 @@ static void on_incoming_sms_cb(int sim_id, int sms_index)
 static void sms_worker_task(void *param)
 {
     (void)param;
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[SMS WORKER] Worker task active and listening on SIM 1.\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "[SMS Worker active]\r\n");
 
     while (1) {
         /* Block indefinitely until an incoming SMS releases g_sms_sem */
@@ -135,11 +137,11 @@ static void sms_worker_task(void *param)
             memset(&sms_data, 0, sizeof(sms_data));
 
             if (nwy_hal_sms_read(1, idx, &sms_data)) {
-                nwy_hal_uart_printf(g_dbg_uart_fd, "\r\n======================================================\r\n");
-                nwy_hal_uart_printf(g_dbg_uart_fd, ">>> INCOMING SMS COMMAND RECEIVED <<<\r\n");
+                nwy_hal_uart_printf(g_dbg_uart_fd, "\r\n");
+                nwy_hal_uart_printf(g_dbg_uart_fd, "[SMS CMD IN]\r\n");
                 nwy_hal_uart_printf(g_dbg_uart_fd, "  * From Phone : %s\r\n", sms_data.source_phone_num);
                 nwy_hal_uart_printf(g_dbg_uart_fd, "  * Command    : \"%s\"\r\n", sms_data.msg_content);
-                nwy_hal_uart_printf(g_dbg_uart_fd, "======================================================\r\n");
+                nwy_hal_uart_printf(g_dbg_uart_fd, "");
 
                 /* Parse and execute command (START, STOP, STATUS, INTERVAL, HELP) */
                 data_collector_process_sms(sms_data.source_phone_num, (const char *)sms_data.msg_content);
@@ -147,7 +149,7 @@ static void sms_worker_task(void *param)
                 /* Delete SMS from SIM storage to keep slots available */
                 nwy_hal_sms_delete(1, idx);
             } else {
-                nwy_hal_uart_printf(g_dbg_uart_fd, "[SMS ERROR] Failed to read message at index %d\r\n", idx);
+                nwy_hal_uart_printf(g_dbg_uart_fd, "[SMS read err %d]\r\n", idx);
             }
         }
     }
@@ -158,27 +160,7 @@ static void sms_worker_task(void *param)
  * ------------------------------------------------------------------------- */
 static void print_system_banner(void)
 {
-    int boot_reason = nwy_pm_boot_res();
-    const char *reason_str = "Normal/Other";
-    if (boot_reason == 1) reason_str = "Power Key";
-    else if (boot_reason == 2) reason_str = "Pin Reset";
-    else if (boot_reason == 3) reason_str = "Alarm";
-    else if (boot_reason == 5) reason_str = "Watchdog";
-    else if (boot_reason == 10) reason_str = "Panic Reset";
-
-    nwy_hal_uart_printf(g_dbg_uart_fd, "\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "==============================================================\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "*  NEOWAY N706B — TINYML BME688 GAS SCANNER & DATA COLLECTOR *\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "==============================================================\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, " Firmware Ver : 0.1.0\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, " Build Timestamp: %s %s\r\n", __DATE__, __TIME__);
-    nwy_hal_uart_printf(g_dbg_uart_fd, " Boot Cause   : %d (%s)\r\n", boot_reason, reason_str);
-    nwy_hal_uart_printf(g_dbg_uart_fd, " Sensor Target: SmartElex BME688 (Bosch MEMS AI Gas Scanner)\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, " I2C Interface: I2C1 (Pin 57 SCL / Pin 58 SDA) -> Level Shifter U8\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, " Power Rail   : GPIO00 (Pin 83: VCC_SWout & MicroSD VCC ON)\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, " SD Interface : SPI1 (SSP0) + FatFs (Pin 79 CS, Pin 101 SCLK)\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, " Control Link : 3GPP SMS Paging (START <LABEL>, STOP, STATUS)\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "==============================================================\r\n\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "\r\n[N706B v%s (%s)]\r\n", CodeVer, __DATE__);
 }
 
 /* -------------------------------------------------------------------------
@@ -197,13 +179,13 @@ static void app_main_task(void *param)
     print_system_banner();
 
     /* 2. Assert Master Peripheral Rail Switch: GPIO 00 = HIGH */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[1/6] Powering peripheral rails (GPIO 00 = HIGH)...\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "[1/6] Rails ON\r\n");
     nwy_gpio_direction_set(PIN_PERIPHERAL_PWR_GPIO0, PIN_DIRECTION_OUT);
     nwy_gpio_value_set(PIN_PERIPHERAL_PWR_GPIO0, PIN_LEVEL_HIGH);
     nwy_hal_os_thread_sleep(100); /* Allow sensor LDO & MicroSD rails to settle */
 
     /* 3. Initialize I2C Bus 1 Subsystem */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[2/6] Initializing I2C Bus 1 (Pin 57 SCL, Pin 58 SDA)...\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "[2/6] I2C1 Init\r\n");
     i2c_bus_config_t i2c_cfg;
     i2c_cfg.bus_name   = I2C1_BUS_NAME;
     i2c_cfg.speed_hz   = I2C_DEFAULT_SPEED_HZ;
@@ -214,11 +196,11 @@ static void app_main_task(void *param)
     i2c_bus_init(&i2c_cfg);
 
     /* 4. Detect and Initialize Bosch BME688 Sensor */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[3/6] Probing SmartElex BME688 at address 0x%02X...\r\n", g_bme_addr);
+    nwy_hal_uart_printf(g_dbg_uart_fd, "[3/6] Probe BME688\r\n", g_bme_addr);
     bool ack = i2c_bus_ping(g_bme_addr);
     if (!ack) {
         /* Probe alternate address 0x77 */
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  Address 0x%02X not responding. Probing 0x77...\r\n", g_bme_addr);
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  0x%02X NACK, probe 0x77\r\n", g_bme_addr);
         if (i2c_bus_ping(0x77)) {
             g_bme_addr = 0x77;
             ack = true;
@@ -226,7 +208,7 @@ static void app_main_task(void *param)
     }
 
     if (ack) {
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  Device ACK received at 0x%02X! Initializing driver...\r\n", g_bme_addr);
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  ACK 0x%02X\r\n", g_bme_addr);
         memset(&g_bme_dev, 0, sizeof(g_bme_dev));
         g_bme_dev.dev_addr = g_bme_addr;
         g_bme_dev.intf_ptr = &g_bme_addr;
@@ -238,13 +220,13 @@ static void app_main_task(void *param)
         /* Test direct Chip ID read before init */
         uint8_t pre_id = 0;
         int pre_ret = bme_i2c_read(BME68X_REG_CHIP_ID, &pre_id, 1, &g_bme_addr);
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  Direct Read reg 0xD0 (Chip ID): 0x%02X (status=%d)\r\n", pre_id, pre_ret);
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  Chip ID: 0x%02X\r\n", pre_id, pre_ret);
 
         int8_t rslt = bme68x_init(&g_bme_dev);
         if (rslt != BME68X_OK) {
             /* Retry init with bus reset in case of power-up transient */
             for (int r = 1; r <= 3; r++) {
-                nwy_hal_uart_printf(g_dbg_uart_fd, "  [INIT RETRY #%d] Resetting bus and retrying bme68x_init...\r\n", r);
+                nwy_hal_uart_printf(g_dbg_uart_fd, "  Retry #%d bme68x_init\r\n", r);
                 i2c_bus_reset();
                 nwy_hal_os_thread_sleep(50);
                 rslt = bme68x_init(&g_bme_dev);
@@ -253,37 +235,37 @@ static void app_main_task(void *param)
         }
 
         if (rslt == BME68X_OK && g_bme_dev.chip_id == BME68X_CHIP_ID) {
-            nwy_hal_uart_printf(g_dbg_uart_fd, "  [BME688 READY] Bosch BME688 initialized successfully!\r\n");
-            nwy_hal_uart_printf(g_dbg_uart_fd, "  Chip ID: 0x%02X (Valid), Variant: %s\r\n",
+            nwy_hal_uart_printf(g_dbg_uart_fd, "  [BME688 READY]\r\n");
+            nwy_hal_uart_printf(g_dbg_uart_fd, "  Variant: %s\r\n",
                                 g_bme_dev.chip_id,
                                 (g_bme_dev.variant_id == BME68X_VARIANT_GAS_HIGH) ? "BME688 (Gas High)" : "BME680 (Gas Low)");
         } else {
-            nwy_hal_uart_printf(g_dbg_uart_fd, "  ERROR: bme68x_init failed with error %d (chip_id=0x%02X)\r\n", rslt, g_bme_dev.chip_id);
-            nwy_hal_uart_printf(g_dbg_uart_fd, "  Data collection will remain locked until sensor is connected.\r\n");
+            nwy_hal_uart_printf(g_dbg_uart_fd, "  ERR: init %d (0x%02X)\r\n", rslt, g_bme_dev.chip_id);
+            nwy_hal_uart_printf(g_dbg_uart_fd, "");
         }
     } else {
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  ERROR: No I2C ACK from BME688! Check wiring on VBATI2C1_SCL / VBATI2C1_SDA.\r\n");
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  ERR: No I2C ACK\r\n");
     }
 
     /* 5. Initialize MicroSD Card SPI & FatFs Engine */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[4/6] Initializing MicroSD Card SPI (FatFs Engine)...\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "[4/6] MicroSD Init\r\n");
     int sd_ret = nwy_sdcard_init(NULL);
     if (sd_ret == 0) {
         uint64_t free_bytes = nwy_sdcard_get_free_space();
         uint64_t total_bytes = nwy_sdcard_get_total_space();
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  MicroSD mounted! Total: %lu MB, Free: %lu MB\r\n",
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  SD: %luMB free\r\n",
                             (unsigned long)(total_bytes / (1024 * 1024)),
                             (unsigned long)(free_bytes / (1024 * 1024)));
     } else {
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  WARNING: MicroSD card not mounted (err: %d). Insert card.\r\n", sd_ret);
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  WARN: SD not mounted (%d)\r\n", sd_ret);
     }
 
     /* 6. Initialize Data Collector State Machine */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[5/6] Initializing Data Collector engine...\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "[5/6] Collector Init\r\n");
     data_collector_init(&g_bme_dev);
 
     /* 7. Initialize SIM & Arm 3GPP SMS Engine */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[6/6] Arming 3GPP Cellular SMS Engine on SIM 1...\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "[6/6] SMS Init\r\n");
     nwy_sdk_mutex_create(&g_sms_q_mutex);
     nwy_hal_os_semaphore_create(&g_sms_sem, 0, SMS_QUEUE_CAPACITY);
 
@@ -297,57 +279,44 @@ static void app_main_task(void *param)
     bool sd_ok = nwy_sdcard_is_mounted();
 
     /* 8. Initialize Cellular LTE Mode & Remote SD Uploader Engine */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[5/7] Initializing Remote SD Manager & Cellular Subsystems...\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "[Remote SD Init]\r\n");
     nwy_hal_net_set_mode(1, NWY_NW_MODE_MASK_LTE);
     remote_sd_manager_init();
 
     if (nwy_hal_sim_is_ready(1)) {
         char phone_num[32] = {0};
         nwy_hal_sim_get_msisdn(1, phone_num, sizeof(phone_num));
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  SIM 1 is READY! Local MSISDN: %s\r\n",
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  SIM ready: %s\r\n",
                             phone_num[0] ? phone_num : "Unknown");
 
         nwy_hal_sms_init(1, NWY_SMS_STORAGE_TYPE_UIM);
         nwy_hal_sms_register_recv_cb(1, on_incoming_sms_cb);
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  SMS callback registered. Device ready to receive commands!\r\n");
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  SMS ready\r\n");
 
-        /* Start LTE Data Call for Remote SD HTTP Uploads and FOTA */
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  Starting Cellular Data Call on CID 1...\r\n");
+        /* Start LTE Data Call for Remote SD HTTP Uploads, FOTA & MQTT */
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  Data call CID1\r\n");
         nwy_hal_net_start_data_call(1, 1, NULL);
 
+        /* Initialize Paho MQTT client & auto-reconnect engine */
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  MQTT Init\r\n");
+        mqtt_manager_init();
+
         /* Send one-time boot notification SMS to configured alert phone (+918074638788) */
-        data_collector_send_boot_status(bme_ok, sd_ok, "0.0.3");
+        data_collector_send_boot_status(bme_ok, sd_ok, CodeVer);
     } else {
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  WARNING: SIM 1 not ready after %d seconds.\r\n", sim_wait);
+        nwy_hal_uart_printf(g_dbg_uart_fd, "  WARN: SIM timeout %ds\r\n", sim_wait);
     }
 
     /* 9. Launch Background Worker Threads */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "Launching background FreeRTOS workers...\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "Workers started\r\n");
     nwy_thread_create(&g_collector_thread, "data_collector", 50,
                       data_collector_worker_task, NULL, 10, 1024 * 16, NULL);
 
     nwy_thread_create(&g_sms_worker_thread, "sms_worker", 45,
                       sms_worker_task, NULL, 10, 1024 * 16, NULL);
 
-    nwy_hal_uart_printf(g_dbg_uart_fd, "\r\n======================================================\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "SYSTEM READY! Send an SMS to this device:\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  --- DATA COLLECTION ---\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START BADFOOD\"       -> Start custom odor collection\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"START IPA_VAPOR\"     -> Start IP solution collection\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"STOP\"                -> Stop recording & flush SD\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"STATUS\"              -> Live sensor & SD diagnostics\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  --- REMOTE SD ACCESS ---\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"LIST\" or \"SD LIST\"  -> List all files on MicroSD card\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"UPLOAD LATEST\"       -> HTTP POST newest dataset to server\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"UPLOAD ALL\"          -> HTTP POST all datasets to server\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"UPLOAD <FILE>\"       -> HTTP POST specific file\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"SERVER <URL>\"        -> Set HTTP upload endpoint\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  --- SECURE FOTA UPDATE ---\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * \"FOTA <URL> <SZ> <SIG>\" -> Download, verify & apply update\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  --- CONFIGURATION ---\r\n");
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * Alerts Recipient      : %s\r\n", data_collector_get_alert_phone());
-    nwy_hal_uart_printf(g_dbg_uart_fd, "  * HTTP Upload Server    : %s\r\n", remote_sd_get_server_url());
-    nwy_hal_uart_printf(g_dbg_uart_fd, "======================================================\r\n\r\n");
+    nwy_hal_uart_printf(g_dbg_uart_fd, "[READY v%s] Alert: %s\r\n",
+                        CodeVer, data_collector_get_alert_phone(), remote_sd_get_server_url());
 
     /* Main heartbeat loop */
     uint32_t hb_counter = 0;
