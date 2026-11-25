@@ -733,6 +733,8 @@ def main():
     print("     * Upload Latest  : UPLOAD LATEST")
     print("     * Upload All     : UPLOAD ALL")
     print("     * Upload One     : UPLOAD <filename>")
+    print("     * Delete All     : DELETE ALL")
+    print("     * Delete Bundle  : DELETE <filename/prefix>")
     print("     * Device Status  : STATUS")
     print("     * Trigger FOTA   : FOTA   (Auto-downloads, verifies ECDSA & updates!)")
     print("="*74)

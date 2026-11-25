@@ -54,6 +54,15 @@ int remote_sd_manager_init(void);
 int remote_sd_list_files(char *summary_out, size_t max_len);
 
 /**
+ * @brief Delete dataset files from MicroSD card (ALL or matching a prefix/filename).
+ * @param target "ALL" to delete all dataset files, or a session prefix / filename (e.g. "20261125_0948_BASELINE_AIR_0")
+ * @param reply_out Output buffer for response message.
+ * @param max_len Size of reply_out buffer.
+ * @return Number of files deleted, or negative on error.
+ */
+int remote_sd_delete_files(const char *target, char *reply_out, size_t max_len);
+
+/**
  * @brief Configure target HTTP server upload endpoint.
  * @param url Full HTTP URL (e.g. "http://192.168.1.100:8080/upload" or "http://api.myserver.com/upload")
  */

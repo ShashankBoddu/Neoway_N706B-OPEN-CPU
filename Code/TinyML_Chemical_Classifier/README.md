@@ -93,6 +93,8 @@ You can collect data for **any environmental or odor condition** (e.g., `BADFOOD
 | `UPLOAD LATEST` | `UPLOAD LATEST` | Streams newest session files (`.bmerawdata` & `.bmelabelinfo`) to HTTP server. | `UPLOAD: Queued latest session files to server. Transferring in background...` |
 | `UPLOAD ALL` | `UPLOAD ALL` | Iterates and uploads all `.bmerawdata`, `.bmelabelinfo`, and `.csv` files on SD card. | `UPLOAD: Queued ALL dataset files to server. Transferring in background...` |
 | `UPLOAD <FILE>` | `UPLOAD IPA_0.bmerawdata` | Uploads a specific dataset file to the configured HTTP server. | `UPLOAD: Queued 'IPA_0.bmerawdata' to server. Transferring in background...` |
+| `DELETE ALL` | `DELETE ALL` | Safely removes all dataset files from the MicroSD card. | `DELETE ALL: 12 files deleted (1420KB freed). Free: 15189MB` |
+| `DELETE <FILE/PREFIX>` | `DELETE 20261125_0948_BASELINE_AIR_0` | Deletes all companion files (`.bmerawdata`, `.bmelabelinfo`, `.csv`) matching the session prefix. | `DELETE: 3 files deleted for '20261125_0948_BASELINE_AIR_0' (37KB freed). Free: 15189MB` |
 | `SERVER <URL>` | `SERVER https://<link>/upload` | Queries or sets the target HTTP server endpoint for remote SD uploads. | `SERVER: Upload URL set to https://<link>/upload` |
 | `FOTA` | `FOTA` | Zero-configuration OTA: auto-derives URL, reads size/hash/ECDSA signature from HTTP headers, flashes, and reboots! | `FOTA: Download https://.../nwy_open_app_fota.pkt...` |
 | `FOTA <URL> <SZ> <SIG>`| `FOTA https://... 83756 3044...` | Explicit OTA: downloads specific URL with verified size and signature. | `FOTA: Downloading 83756 bytes from https://... Verifying signature...` |

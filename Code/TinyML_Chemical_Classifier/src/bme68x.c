@@ -451,3 +451,44 @@ int8_t bme68x_perform_10step_scan(bme68x_dev_t *dev, float r_gas_out[10],
 
     return BME68X_OK;
 }
+
+int8_t bme68x_read_basic(bme68x_dev_t *dev, float *temp, float *hum, float *pres)
+{
+    if (dev == NULL) return BME68X_E_NULL_PTR;
+    if (!bme68x_check_connection(dev)) return BME68X_E_DEV_NOT_FOUND;
+
+    bme68x_conf_t conf;
+    conf.os_temp = BME68X_OS_2X;
+    conf.os_pres = BME68X_OS_4X;
+    conf.os_hum  = BME68X_OS_1X;
+    conf.filter  = BME68X_FILTER_SIZE_3;
+    conf.odr     = 0;
+    if (bme68x_set_conf(&conf, dev) != BME68X_OK) {
+        return BME68X_E_COM_FAIL;
+    }
+
+    /* Disable heater for quick ambient environmental read */
+    uint8_t ctrl_gas_0 = BME68X_DISABLE_HEATER;
+    dev->write(BME68X_REG_CTRL_GAS_0, &ctrl_gas_0, 1, dev->intf_ptr);
+
+    uint8_t ctrl_gas_1 = 0x00;
+    dev->write(BME68X_REG_CTRL_GAS_1, &ctrl_gas_1, 1, dev->intf_ptr);
+
+    if (bme68x_set_op_mode(BME68X_FORCED_MODE, dev) != BME68X_OK) {
+        return BME68X_E_COM_FAIL;
+    }
+
+    /* 15ms dwell time for T, P, H measurement conversion */
+    dev->delay_us(15000, dev->intf_ptr);
+
+    bme68x_data_t sample;
+    uint8_t n_data = 0;
+    int8_t rslt = bme68x_get_data(BME68X_FORCED_MODE, &sample, &n_data, dev);
+    if (rslt == BME68X_OK && n_data > 0) {
+        if (temp) *temp = sample.temperature;
+        if (hum)  *hum  = sample.humidity;
+        if (pres) *pres = sample.pressure;
+        return BME68X_OK;
+    }
+    return BME68X_E_COM_FAIL;
+}

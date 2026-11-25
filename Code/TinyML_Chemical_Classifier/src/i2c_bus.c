@@ -304,7 +304,6 @@ int i2c_bus_init(const i2c_bus_config_t *cfg)
     if (s_cfg.mode != I2C_MODE_SW) {
         if (hw_i2c_init_controller()) {
             s_active_engine = I2C_MODE_HW;
-            i2c_log("  [I2C BUS] Initialized %s (Hardware Fast Mode 400kHz)", s_cfg.bus_name);
         } else {
             i2c_log("  [I2C BUS] HW init failed. Falling back to Software Bit-Bang on GPIO %d/%d",
                     s_cfg.scl_gpio, s_cfg.sda_gpio);

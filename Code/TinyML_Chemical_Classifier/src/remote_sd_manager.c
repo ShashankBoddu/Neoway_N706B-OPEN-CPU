@@ -146,7 +146,7 @@ static bool ensure_data_connection(void)
         nwy_hal_os_thread_sleep(1000);
         wait_cycles++;
         if (nwy_hal_net_get_ip(1, 1, ip_buf, sizeof(ip_buf)) && strlen(ip_buf) > 4) {
-            LOGI("LTE ready: %s", wait_cycles, ip_buf);
+            LOGI("LTE ready in %ds: %s", wait_cycles, ip_buf);
             return true;
         }
     }
@@ -175,9 +175,8 @@ int remote_sd_list_files(char *summary_out, size_t max_len)
     FILINFO fno;
     int count = 0;
     uint32_t total_size = 0;
-    char latest_name[64] = {0};
 
-    LOGI("List SD...");
+    LOGI("SD scan 0:/");
 
     if (!nwy_sdcard_lock(5000)) {
         LOGE("SD mutex fail");
@@ -197,51 +196,183 @@ int remote_sd_list_files(char *summary_out, size_t max_len)
         return -1;
     }
 
-    char first_names[3][64];
-    uint32_t first_sizes[3] = {0};
-    int preview_count = 0;
+    #define MAX_PREVIEW_FILES 32
+    char file_names[MAX_PREVIEW_FILES][64];
+    uint32_t file_sizes[MAX_PREVIEW_FILES];
+    int stored_count = 0;
 
     while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0] != 0) {
         if (!(fno.fattrib & AM_DIR)) {
-            if (has_dataset_extension(fno.fname)) {
-                count++;
-                total_size += (uint32_t)fno.fsize;
-                strncpy(latest_name, fno.fname, sizeof(latest_name) - 1);
+            /* Skip hidden and OS system metadata files */
+            if (fno.fname[0] == '.' || fno.fname[0] == '_') continue;
+            if (strcasecmp(fno.fname, "System Volume Information") == 0) continue;
 
-                LOGI("  [%d] %-36s (%lu bytes)", count, fno.fname, (unsigned long)fno.fsize);
+            count++;
+            total_size += (uint32_t)fno.fsize;
 
-                if (preview_count < 3) {
-                    strncpy(first_names[preview_count], fno.fname, sizeof(first_names[preview_count]) - 1);
-                    first_sizes[preview_count] = (uint32_t)fno.fsize;
-                    preview_count++;
-                }
+            LOGI("  [%d] %s (%lu B)", count, fno.fname, (unsigned long)fno.fsize);
+
+            if (stored_count < MAX_PREVIEW_FILES) {
+                strncpy(file_names[stored_count], fno.fname, sizeof(file_names[stored_count]) - 1);
+                file_names[stored_count][sizeof(file_names[stored_count]) - 1] = '\0';
+                file_sizes[stored_count] = (uint32_t)fno.fsize;
+                stored_count++;
             }
         }
     }
     f_closedir(&dir);
     nwy_sdcard_unlock();
 
-    LOGI("Scan: %d files, %lu B", count, (unsigned long)total_size);
+    uint64_t free_bytes = nwy_sdcard_get_free_space();
+    uint32_t free_mb = (uint32_t)(free_bytes / (1024 * 1024));
+    uint32_t total_kb = (total_size + 1023) / 1024;
+
+    LOGI("Scan: %d files, %luKB, Free: %luMB",
+         count, (unsigned long)total_kb, (unsigned long)free_mb);
 
     if (summary_out && max_len > 0) {
         if (count == 0) {
-            snprintf(summary_out, max_len, "SD: 0 files found.");
-        } else if (count <= 3) {
-            int off = snprintf(summary_out, max_len, "SD Files (%d):\n", count);
-            for (int i = 0; i < preview_count && off < (int)max_len - 30; i++) {
-                uint32_t kb = (first_sizes[i] + 1023) / 1024;
-                off += snprintf(summary_out + off, max_len - off, "%d.%s(%luK)\n",
-                                i + 1, first_names[i], (unsigned long)kb);
-            }
+            snprintf(summary_out, max_len, "SD: 0 files found. Free: %luMB", (unsigned long)free_mb);
         } else {
-            uint32_t total_kb = (total_size + 1023) / 1024;
-            snprintf(summary_out, max_len,
-                     "SD: %d files (%luKB). Latest: %s",
-                     count, (unsigned long)total_kb, latest_name);
+            int off = snprintf(summary_out, max_len, "SD [%d files, %luKB | Free %luMB]:\n",
+                               count, (unsigned long)total_kb, (unsigned long)free_mb);
+            int shown = 0;
+            for (int i = 0; i < stored_count; i++) {
+                uint32_t kb = (file_sizes[i] + 1023) / 1024;
+                char line[80];
+                snprintf(line, sizeof(line), "%d. %.48s (%luK)\n", i + 1, file_names[i], (unsigned long)kb);
+                int line_len = (int)strlen(line);
+
+                /* Leave at least 24 bytes reserve for "...+X more" */
+                if (off + line_len >= (int)max_len - 24) {
+                    break;
+                }
+                strcpy(summary_out + off, line);
+                off += line_len;
+                shown++;
+            }
+            if (shown < count) {
+                snprintf(summary_out + off, max_len - off, "...+%d more", count - shown);
+            }
         }
     }
 
     return count;
+}
+
+static bool is_dataset_or_companion(const char *name)
+{
+    if (!name || name[0] == '\0' || name[0] == '.' || name[0] == '_') return false;
+    if (strcasecmp(name, "System Volume Information") == 0) return false;
+    return true;
+}
+
+int remote_sd_delete_files(const char *target, char *reply_out, size_t max_len)
+{
+    if (!target || target[0] == '\0') {
+        if (reply_out && max_len > 0) snprintf(reply_out, max_len, "DELETE ERR: Specify 'ALL' or filename/prefix.");
+        return -1;
+    }
+
+    while (*target && isspace((unsigned char)*target)) target++;
+    const char *target_clean = target;
+    if (strncmp(target_clean, "0:/", 3) == 0) target_clean += 3;
+    else if (strncmp(target_clean, "0:", 2) == 0) target_clean += 2;
+    else if (target_clean[0] == '/') target_clean++;
+
+    bool is_all = (strcasecmp(target_clean, "ALL") == 0);
+
+    char base_prefix[64] = {0};
+    strncpy(base_prefix, target_clean, sizeof(base_prefix) - 1);
+    char *dot = strrchr(base_prefix, '.');
+    if (dot) *dot = '\0'; /* Strip extension to match all companion files */
+
+    LOGI("Del: '%s' (all:%d, base:'%s')", target_clean, is_all, base_prefix);
+
+    if (!nwy_sdcard_lock(5000)) {
+        LOGE("SD mutex fail");
+        if (reply_out && max_len > 0) snprintf(reply_out, max_len, "DELETE ERR: SD busy.");
+        return -2;
+    }
+
+    DIR dir;
+    if (f_opendir(&dir, "0:/") != FR_OK) {
+        nwy_sdcard_unlock();
+        LOGE("Open dir fail");
+        if (reply_out && max_len > 0) snprintf(reply_out, max_len, "DELETE ERR: Open SD fail.");
+        return -3;
+    }
+
+    #define MAX_DELETE_FILES 32
+    char to_delete[MAX_DELETE_FILES][64];
+    uint32_t del_sizes[MAX_DELETE_FILES];
+    int delete_count = 0;
+
+    FILINFO fno;
+    while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0] != 0 && delete_count < MAX_DELETE_FILES) {
+        if (fno.fattrib & AM_DIR) continue;
+        if (!is_dataset_or_companion(fno.fname)) continue;
+
+        bool matches = is_all;
+        if (!matches) {
+            if (strcasecmp(fno.fname, target_clean) == 0) {
+                matches = true;
+            } else if (base_prefix[0] != '\0' && strncasecmp(fno.fname, base_prefix, strlen(base_prefix)) == 0) {
+                matches = true;
+            } else if (strstr(fno.fname, target_clean) != NULL) {
+                matches = true;
+            }
+        }
+
+        if (matches) {
+            strncpy(to_delete[delete_count], fno.fname, sizeof(to_delete[delete_count]) - 1);
+            to_delete[delete_count][sizeof(to_delete[delete_count]) - 1] = '\0';
+            del_sizes[delete_count] = (uint32_t)fno.fsize;
+            delete_count++;
+        }
+    }
+    f_closedir(&dir);
+
+    int deleted = 0;
+    uint32_t freed_bytes = 0;
+    for (int i = 0; i < delete_count; i++) {
+        char full_path[80];
+        snprintf(full_path, sizeof(full_path), "0:/%s", to_delete[i]);
+        if (f_unlink(full_path) == FR_OK) {
+            deleted++;
+            freed_bytes += del_sizes[i];
+            LOGI("DEL OK: %s", to_delete[i]);
+        } else {
+            LOGE("DEL FAIL: %s", to_delete[i]);
+        }
+    }
+    nwy_sdcard_unlock();
+
+    uint64_t free_bytes = nwy_sdcard_get_free_space();
+    uint32_t free_mb = (uint32_t)(free_bytes / (1024 * 1024));
+    uint32_t freed_kb = (freed_bytes + 1023) / 1024;
+
+    if (reply_out && max_len > 0) {
+        if (is_all) {
+            if (deleted == 0) {
+                snprintf(reply_out, max_len, "DELETE ALL: No files to delete. Free: %luMB", (unsigned long)free_mb);
+            } else {
+                snprintf(reply_out, max_len, "DELETE ALL: %d files deleted (%luKB freed). Free: %luMB",
+                         deleted, (unsigned long)freed_kb, (unsigned long)free_mb);
+            }
+        } else {
+            if (deleted == 0) {
+                snprintf(reply_out, max_len, "DELETE: No files matching '%s'. Free: %luMB",
+                         target_clean, (unsigned long)free_mb);
+            } else {
+                snprintf(reply_out, max_len, "DELETE: %d file%s deleted for '%s' (%luKB freed). Free: %luMB",
+                         deleted, (deleted > 1) ? "s" : "",
+                         base_prefix[0] ? base_prefix : target_clean,
+                         (unsigned long)freed_kb, (unsigned long)free_mb);
+            }
+        }
+    }
+    return deleted;
 }
 
 int remote_sd_upload_file_sync(const char *filename, const char *server_url, const char *notify_phone)
@@ -309,7 +440,7 @@ int remote_sd_upload_file_sync(const char *filename, const char *server_url, con
     s_bytes_sent = 0;
     s_upload_state = SD_UPLOAD_BUSY;
 
-    LOGI("Upload: '%s' (%lu B) -> %s:%u", base_filename, (unsigned long)file_size, host, port, uri);
+    LOGI("Upload: '%s' (%lu B) -> %s:%u%s", base_filename, (unsigned long)file_size, host, port, uri);
 
     /* 1. Ensure Cellular Data Connection */
     if (!ensure_data_connection()) {
@@ -572,18 +703,22 @@ int remote_sd_upload_latest_sync(const char *server_url, const char *notify_phon
         return -2;
     }
 
-    /* Derive corresponding .bmelabelinfo filename */
+    /* Derive corresponding .bmelabelinfo and .csv filenames */
     strncpy(latest_info, latest_raw, sizeof(latest_info) - 1);
     char *dot = strrchr(latest_info, '.');
     if (dot) strcpy(dot, ".bmelabelinfo");
 
-    LOGI("Latest: '%s' & '%s'", latest_raw, latest_info);
+    char latest_csv[64] = {0};
+    strncpy(latest_csv, latest_raw, sizeof(latest_csv) - 1);
+    char *dot_csv = strrchr(latest_csv, '.');
+    if (dot_csv) strcpy(dot_csv, ".csv");
+
+    LOGI("Latest bundle: '%s', '%s', '%s'", latest_raw, latest_info, latest_csv);
 
     /* 1. Upload .bmerawdata */
     int ret1 = remote_sd_upload_file_sync(latest_raw, server_url, NULL);
 
     /* 2. Upload .bmelabelinfo if it exists */
-    int ret2 = 0;
     bool info_exists = false;
     if (nwy_sdcard_lock(5000)) {
         FIL test_fil;
@@ -594,14 +729,28 @@ int remote_sd_upload_latest_sync(const char *server_url, const char *notify_phon
         nwy_sdcard_unlock();
     }
     if (info_exists) {
-        ret2 = remote_sd_upload_file_sync(latest_info, server_url, NULL);
+        remote_sd_upload_file_sync(latest_info, server_url, NULL);
+    }
+
+    /* 3. Upload .csv if it exists */
+    bool csv_exists = false;
+    if (nwy_sdcard_lock(5000)) {
+        FIL test_fil;
+        if (f_open(&test_fil, latest_csv, FA_READ) == FR_OK) {
+            f_close(&test_fil);
+            csv_exists = true;
+        }
+        nwy_sdcard_unlock();
+    }
+    if (csv_exists) {
+        remote_sd_upload_file_sync(latest_csv, server_url, NULL);
     }
 
     if (notify_phone && notify_phone[0] != '\0') {
         char alert[160];
         if (ret1 == 0) {
             snprintf(alert, sizeof(alert),
-                     "UPLOAD OK: '%s' uploaded", latest_raw);
+                     "UPLOAD OK: '%s' bundle uploaded", latest_raw);
         } else {
             snprintf(alert, sizeof(alert),
                      "UPLOAD ERR: '%s' failed (%d)", latest_raw, ret1);
@@ -609,7 +758,7 @@ int remote_sd_upload_latest_sync(const char *server_url, const char *notify_phon
         nwy_hal_sms_send(1, notify_phone, alert);
     }
 
-    return (ret1 == 0 && ret2 == 0) ? 0 : -3;
+    return (ret1 == 0) ? 0 : -3;
 }
 
 int remote_sd_upload_all_sync(const char *server_url, const char *notify_phone)
@@ -689,7 +838,7 @@ static void remote_sd_uploader_task(void *param)
 
             switch (req.target_type) {
             case UPLOAD_TARGET_SINGLE:
-                LOGI("Upload single '%s'", req.filename, url_to_use);
+                LOGI("Upload single '%s' -> %s", req.filename, url_to_use);
                 remote_sd_upload_file_sync(req.filename, url_to_use, req.notify_phone);
                 break;
 

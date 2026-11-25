@@ -97,6 +97,17 @@ int8_t bme68x_get_data(uint8_t op_mode, bme68x_data_t *data, uint8_t *n_data, bm
 int8_t bme68x_perform_10step_scan(bme68x_dev_t *dev, float r_gas_out[10],
                                  float *temp, float *hum, float *pres);
 
+/**
+ * @brief Fast non-blocking environmental read (T, H, P) in forced mode (~15ms).
+ *        No micro-hotplate heater delay.
+ * @param dev Pointer to device descriptor
+ * @param temp Output pointer for ambient temperature (°C)
+ * @param hum Output pointer for relative humidity (% RH)
+ * @param pres Output pointer for barometric pressure (hPa)
+ * @return BME68X_OK on success, negative error code on failure.
+ */
+int8_t bme68x_read_basic(bme68x_dev_t *dev, float *temp, float *hum, float *pres);
+
 #ifdef __cplusplus
 }
 #endif

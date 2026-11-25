@@ -94,8 +94,8 @@ static void mqtt_cmd_worker_task(void *param)
             nwy_hal_uart_printf(1, "  * Command    : \"%s\"\r\n", item.cmd);
             nwy_hal_uart_printf(1, "======================================================\r\n");
 
-            /* Execute unified command logic (START, STOP, STATUS, LIST, UPLOAD, SERVER, FOTA) */
-            char reply[256];
+            /* Execute unified command logic (START, STOP, STATUS, LIST, UPLOAD, DELETE, SERVER, FOTA) */
+            char reply[1024];
             memset(reply, 0, sizeof(reply));
             data_collector_execute_command(item.cmd, "MQTT", reply, sizeof(reply));
 

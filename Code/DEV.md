@@ -6,7 +6,7 @@
 | **Project Name** | Neoway N706B LTE Cat.1 OpenCPU Embedded Platform |
 | **Document Type** | Industrial Developer Log & System Technical Specification |
 | **Standard Reference** | IEEE 1016 / ISO/IEC/IEEE 26514 / 3GPP Rel-13 TS 24.008 |
-| **Document Revision** | `v2.7.0` |
+| **Document Revision** | `v2.9.0` |
 | **Last Updated** | `2026-11-25` |
 | **Classification** | Engineering Technical Documentation |
 | **Target Hardware** | Neoway N706B-CN (ASR1605S Cortex-R5 @ 614 MHz, 4 MB QSPI NOR Flash) |
@@ -2163,3 +2163,139 @@ To eliminate race conditions, direction contention, and kernel panics across dee
 * **Empirical Verification & Validation (V&V):**
   - **Run 1:** Board running `v0.0.8` received 83,756 / 83,756 B (100%), verified `uECC_verify result: 1`, executed bootloader update, and rebooted into `v0.0.10`.
   - **Run 2:** Board running `v0.0.10` re-tested with live FOTA: full 83,756 bytes delivered, signature authenticated, and bootloader update completed with zero dropped packets.
+
+---
+
+### [2026-11-25] - System Logging Subsystem Overhaul: Thread-Safety, Recursive Mutex Synchronization, Buffer Expansion & Format Hardening
+* **Subsystem Scope:** Diagnostics Console (`URT1`), UART HAL (`nwy_hal_uart.c`, `nwy_hal_uart.h`), Application Logging Across Concurrent FreeRTOS Tasks
+* **Description & Context:**
+  - Modernized the diagnostic console logging subsystem across the firmware to eliminate character interleaving, text truncation, format specifier crashes, and descriptor routing failures.
+  - Enabled support for multiple concurrent FreeRTOS tasks (main heartbeat, BME sampling task, SMS worker task, MQTT connection manager, MQTT yield pump, remote SD uploader / FOTA engine) safely logging to `URT1` simultaneously.
+* **Root Cause Analyses (RCA) & Historical Defect Resolutions:**
+  1. **Thread Race & Output Collision:**
+     - *Defect:* `nwy_hal_uart_printf` and `uart_log_format` (`nwy_hal_uart_log_*`) directly invoked `nwy_uart_write()` without synchronization. When the 10-second heartbeat thread fired during a FOTA download or MQTT yield event, characters from both threads collided mid-stream on UART1, producing garbled terminal lines.
+     - *Resolution:* Implemented thread-safe recursive mutex synchronization (`s_uart_mutex`, `s_uart_owner`, `s_uart_recursion`). Using `nwy_thread_get_current()`, recursion count tracks nested calls to prevent self-deadlock, and a 1000ms acquisition timeout ensures output never blocks indefinitely.
+  2. **Message Truncation on Long URLs & Metadata:**
+     - *Defect:* `uart_log_format` had a fixed 256-byte `content_buf` and 320-byte `log_buf`. Long Cloudflare tunnel URLs (e.g. `https://discount-characterization-archive-gazette.trycloudflare.com/upload`) combined with JSON error descriptions or headers exceeded 256 bytes and were silently clipped.
+     - *Resolution:* Expanded `content_buf` to 512 bytes and `log_buf` to 640 bytes. Added bounds clamping with `sizeof` protection.
+  3. **Format Specifier Mismatches in Callers:**
+     - *Defect 1 (`src/main.c:239`):* `nwy_hal_uart_printf(g_dbg_uart_fd, "  Variant: %s\r\n", g_bme_dev.chip_id, ...)` passed `chip_id` (integer `0x61`) into `%s`, dereferencing invalid memory and printing corrupted characters: `Variant: M)h!DJB\x0cF@(\x1c#"`.
+     - *Defect 2 (`src/main.c:256`):* Passed two arguments (`total_bytes` and `free_bytes`) to `"  SD: %luMB free\r\n"`, dropping the free space figure.
+     - *Defect 3 (`src/main.c:318`):* Passed 3 arguments (`CodeVer`, alert phone, server URL) into a format string with only 2 `%s` specifiers.
+     - *Defect 4 (`src/remote_sd_manager.c:149, 312, 692`):* Passed integer `wait_cycles` into `%s` (`LOGI("LTE ready: %s", wait_cycles, ip_buf)`), and omitted `%s` specifiers for destination URLs.
+     - *Resolution:* Corrected all format specifiers across `main.c` and `remote_sd_manager.c`. Fixed BME variant display, restored SD free/total display, and ensured strict 1:1 mapping between specifiers and variadic arguments.
+  4. **Hardcoded & Invalid File Descriptor Routing:**
+     - *Defect:* Multiple components called `nwy_hal_uart_printf(1, ...)` hardcoding `1`, or passed uninitialized/negative descriptors when `g_dbg_uart_fd` was expected.
+     - *Resolution:* Added smart descriptor resolver `resolve_target_fd(fd)`. If `fd <= 0` or `fd == 1 && g_log_fd >= 0`, writes automatically route to the active `g_log_fd`. If `g_log_fd < 0`, an auto-recovery fallback automatically opens `"URT1"` at 115200 baud.
+* **New Features & Architectural Enhancements:**
+  - **Severity Level Filtering:** Added `nwy_hal_log_level_t` (`NWY_HAL_LOG_VERBOSE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `NONE`) with runtime filter `nwy_hal_uart_set_log_level()` and `nwy_hal_uart_get_log_level()`.
+  - **Extended Logging Levels:** Added `nwy_hal_uart_log_v()` (`[V]`) and `nwy_hal_uart_log_d()` (`[D]`).
+  - **Uptime Millisecond Timestamps:** Added optional runtime uptime timestamp prefixing (`[%c][%05lu.%03lu][%s] %s\r\n`) powered by `nwy_uptime_get()`, toggled via `nwy_hal_uart_enable_timestamp(bool)`.
+  - **Binary Hex Dump Utility:** Added `nwy_hal_uart_log_hex(tag, desc, data, length)` for clean 16-byte-per-line formatted hex debugging of crypto keys, signatures, and sensor register frames.
+  - **Convenience Printf Macro:** Added `#define nwy_printf(fmt, ...) nwy_hal_uart_printf(0, fmt, ##__VA_ARGS__)`.
+* **Verification & Validation:**
+  - Full clean build with ARM GNU Toolchain (`arm-none-eabi-gcc 10.3.1`) yielding 0 errors and 0 warnings.
+  - Final signed FOTA binary size: 84,228 bytes (within 86 KB NOR partition budget).
+  - SHA-256 and ECDSA secp256r1 signature verified and updated in `tools/fota_metadata.json`.
+
+---
+
+### [2026-11-25] - MicroSD File Management & Remote Telemetry Overhaul: High-Fidelity LIST Catalog, Unified Session Triplet Schema & Safe Multi-File DELETE Engine
+* **Subsystem Scope:** MicroSD Storage Engine, FatFs SPI (`remote_sd_manager.c`, `remote_sd_manager.h`), Specimen Data Collector (`data_collector.c`), Remote Command Telemetry Dispatchers (`mqtt_manager.c`, `nwy_hal_sms.c`)
+* **Description & Context:**
+  - Completely overhauled the MicroSD file cataloging and remote management system over SMS and MQTT channels.
+  - Resolved major usability defect where the `LIST` command hid all filenames whenever more than 3 files existed on the SD card.
+  - Implemented a unified specimen file naming schema ensuring all three companion files (`.csv`, `.bmerawdata`, `.bmelabelinfo`) share identical timestamps and labels.
+  - Implemented a resilient, two-phase `DELETE` command engine supporting wildcard purging (`DELETE ALL`) and companion-aware prefix purging (`DELETE <filename/prefix>`) with FatFs iterator protection and active recording safeguards.
+  - Expanded MQTT command dispatcher reply buffers to 1024 bytes to support multi-line catalog deliveries.
+* **Root Cause Analyses (RCA) & Historical Defect Resolutions:**
+  1. **Opaque `LIST` Response on Normal Datasets (> 3 Files):**
+     - *Root Cause:* In `remote_sd_manager.c`, when `count > 3`, the code completely bypassed filename concatenation and formatted a minimal one-liner: `"SD: %d files (%luKB). Latest: %s"`. Operators were unable to inspect filenames, determine which specimen sessions were stored, or target specific files for remote upload or deletion.
+     - *Resolution:* Re-architected `remote_sd_list_files()` to scan up to 32 files with full metadata preview. Generates a numbered list (`1. <filename> (<size>KB)\r\n2. ...`) followed by summary metrics (`\r\nTotal: %d files (%luKB) | Free: %luMB`). Added truncation reserve margin (`...+%d more`) to guarantee buffer safety on SMS (160 bytes) and MQTT (1024 bytes) transports without buffer overruns. Every file is simultaneously logged with full details to the diagnostic UART console (`URT1`).
+  2. **Session Companion Filename Discrepancy:**
+     - *Root Cause:* In `data_collector_start()`, the `.csv` file was opened using a pre-RTC fallback timestamp or arbitrary index before the PMU RTC was polled and parsed, while Bosch AI-Studio companion files (`.bmerawdata`, `.bmelabelinfo`) were generated under a separate naming convention. As a result, related specimen files had differing timestamps or base names, complicating dataset association and batch deletion.
+     - *Resolution:* Consolidated timestamp acquisition and session prefix construction (`YYYYMMDD_HHMM_<LABEL>_0`) at the very entry of `data_collector_start()`. Both the CSV table (`0:/%s.csv`) and Bosch AI-Studio files (`0:/%s.bmerawdata`, `0:/%s.bmelabelinfo`) are guaranteed to share the exact same base name.
+  3. **FatFs Directory Corruption Risk During File Deletion:**
+     - *Root Cause:* FatFs `f_unlink()` alters internal cluster allocation tables and directory entry offsets. Calling `f_unlink()` while iterating across directory entries using `f_readdir()` corrupts directory pointers, leading to skipped entries, filesystem lockups, or orphaned clusters.
+     - *Resolution:* Designed a two-phase deletion architecture in `remote_sd_delete_files()`:
+       - *Phase 1 (Directory Scan & Collection):* Traverses the root directory (`0:/`), matches candidate files against the target filter without modifying the directory, and records matched filenames into a stack buffer `to_delete[MAX_DELETE_FILES][64]` (up to 32 entries).
+       - *Phase 2 (Safe Atomic Unlink):* Iterates through the collected list and executes `f_unlink("0:/<file>")`, tallying unlinked files, freed bytes, and logging actions to `URT1`.
+  4. **Active Recording Protection:**
+     - *Root Cause:* Executing file deletions during an ongoing specimen acquisition session could unlink active log files, causing subsequent write operations to fail or corrupt FatFs tables.
+     - *Resolution:* In `data_collector_execute_command()`, `DELETE`, `DEL`, and `REMOVE` commands are checked against `g_collector_state`. If state is `COLLECTOR_STATE_RECORDING`, the command is immediately aborted with: `DELETE REJECTED: Recording in progress! Send STOP first.`
+* **New Features & Architectural Enhancements:**
+  - **Companion-Aware Session Deletion (`DELETE <prefix/filename>`):**
+    - Automatically strips any extension (`.bmerawdata`, `.bmelabelinfo`, `.csv`, `.json`, `.txt`) from user input.
+    - Matches any file whose filename starts with the cleaned base name. E.g., issuing `DELETE 20261125_0948_BASELINE_AIR_0` or `DELETE 20261125_0948_BASELINE_AIR_0.bmerawdata` locates and unlinks all companion files (`.bmerawdata`, `.bmelabelinfo`, `.csv`), returning: `Deleted 3 files (84KB freed). SD Free: 15189MB`.
+  - **Global Card Wipe (`DELETE ALL`):**
+    - Unlinks all non-system files on the SD card (skipping `.` and system directories).
+    - Returns total files removed, total KB freed, and updated card capacity.
+  - **Companion CSV Upload in Remote SD Engine:**
+    - Updated `remote_sd_upload_latest_sync()`: Checks for and automatically uploads the companion `.csv` file alongside `.bmerawdata` and `.bmelabelinfo`.
+  - **MQTT Reply Buffer Expansion:**
+    - Expanded command response buffer in `src/mqtt_manager.c` from 256 bytes to 1024 bytes (`char reply[1024]`), allowing full multi-line `LIST` responses to publish to `sensor/output/N706B/BM688` without truncation.
+* **Verification & Validation:**
+  - Full clean compilation with GNU Arm Embedded Toolchain 10.3.1: 0 errors, 0 warnings.
+  - Binary size: 85,980 bytes (safely below 86,000 bytes NOR flash partition threshold).
+  - Dual SHA-256 and ECDSA secp256r1 signature verified and registered in `tools/fota_metadata.json`.
+
+---
+
+### [2026-11-25] - System Boot Sequence & Subsystem Telemetry: Industrial Table-Formatted Initialization
+* **Subsystem Scope:** Diagnostics Console (`URT1`), System Initialization (`main.c`, `i2c_bus.c`, `data_collector.c`)
+* **Description & Context:**
+  - Redesigned the module's initial power-on boot diagnostics from raw, fragmented step lines (`[1/6] Rails ON`, `[2/6] I2C1 Init`, `[3/6] Probe BME688`, `[4/6] MicroSD Init`, `[5/6] Collector Init`, `[6/6] SMS Init`) into an aligned, compact 62-character ASCII table.
+  - Sized precisely (62 chars) to ensure zero line-wrapping on standard 80-column serial monitors even when 16-character timestamp prefixes (`HH:MM:SS.mmm -> `) are enabled.
+  - Silenced redundant intermediate driver logs in `i2c_bus_init()` and `data_collector_init()` during boot, ensuring an uncorrupted table frame.
+* **Firmware Implementation:**
+  - Unified table borders (`+---+----------------+----------------------------+----------+`) and rows (`| %d | %-14.14s | %-26.26s | %-8.8s |`).
+  - Rows report:
+    1. `Power Rails`: GPIO 00 VCC_SW Switched Rail status.
+    2. `I2C1 Bus`: Hardware Fast Mode 400 kHz controller status.
+    3. `BME688 Sensor`: I2C address, Chip ID (`0x61`), and gas variant (`Gas High` / `Gas Low`).
+    4. `MicroSD Card`: Free / total space in MB, mount status.
+    5. `Data Collector`: TinyML sample interval and operational readiness.
+    6. `Cellular / SMS`: Registered SIM phone number or timeout status.
+  - Post-table summary provides immediate readouts of Alert Phone, Upload Server URL, and active FreeRTOS tasks.
+* **Verification & Validation:**
+  - Clean build with GNU Arm Toolchain 10.3.1: 0 errors, 0 warnings.
+  - Binary size: **85,988 bytes** (under the 86,000 byte QSPI NOR flash ceiling).
+  - Signed package `nwy_open_app_fota.pkt` generated with SHA-256 and ECDSA secp256r1 signature registered in `tools/fota_metadata.json`.
+
+---
+
+### [2026-11-25] - 12V Battery Voltage & State-of-Charge (SoC) Telemetry: ADC1 Calibration & Multi-Channel Reporting
+* **Subsystem Scope:** Analog-to-Digital Converter (`nwy_hal_adc.h`, `nwy_hal_adc.c`), Diagnostics Console (`URT1`), System Initialization (`main.c`), Data Collector (`data_collector.c`)
+* **Description & Context:**
+  - Implemented real-time external battery voltage sensing and battery percentage (State of Charge - SoC) computation utilizing the ASR1605S hardware ADC1 input (Module Pin 96).
+  - Configured hardware voltage divider calibration from empirical bench observation: $V_{adc1} = 0.902\text{ V}$ when $V_{in} = 12.01\text{ V}$ (Divider Ratio $K_{div} = \frac{12010}{902} \approx 13.314856$).
+  - Implemented 5-sample noise-rejection averaging with 4ms inter-sample pacing to filter cellular RF transmit burst transient ripples.
+  - Implemented a 12V lead-acid battery SoC curve mapping piecewise linear interpolation between 10.5V (0%) and 12.8V (100%), yielding exactly 50% at 12.01V.
+  - Integrated battery telemetry across all system interfaces:
+    1. **Boot Table Diagnostics (`main.c`):** Row 2 reports real-time battery status: `| 2 | Battery (Vin)  | 12.01V (50%) | 902mV | [  OK  ] |`.
+    2. **Periodic Heartbeat (`main.c`):** URT1 10-second heartbeat thread outputs `Batt: 12.01V (50%)`.
+    3. **Two-Way SMS & MQTT `STATUS` Command (`data_collector.c`):** Remote status replies output `STATUS: IDLE | Batt:12.01V(50%) | T:...`.
+    4. **Boot Notification SMS (`data_collector.c`):** Immediate startup SMS to alert contact reports `[READY v0.0.12] Batt: 12.01V (50%) | BME688: OK`.
+* **Verification & Validation:**
+  - Resolved compiler warnings in `remote_sd_manager.c` (`-Wunused-but-set-variable` for `ret2`, `ret3` and `-Wformat-truncation=` in `snprintf`).
+  - Full clean compilation with GNU Arm Embedded Toolchain 10.3.1: 0 errors, 0 warnings across all 27 object files.
+  - Binary size: **85,868 bytes** (strictly below the 86,000 bytes NOR flash partition ceiling).
+  - SHA-256 (`6c5a31ca6875cf09a1f9af78794e599786b99d642dfe609ecccb62a7a94c42d4`) and ECDSA secp256r1 signature verified and registered in `tools/fota_metadata.json`.
+
+---
+
+### [2026-11-25] - Environmental Telemetry & Formatting Fix: Integer Fixed-Point Conversion & IDLE Live Sampling
+* **Subsystem Scope:** BME688 Driver (`bme68x.h`, `bme68x.c`), Data Collector (`data_collector.c`), Telemetry Dispatcher (`URT1`, MQTT, SMS)
+* **Root Cause Analysis (RCA):**
+  - Querying `status` via MQTT or SMS returned `STATUS: IDLE | Batt:12.13V(59%) | T:C H:% | SD:GB`.
+  - The OpenCPU toolchain links GNU ARM `libc_nano.a` (`thumb/v7/nofp/libc_nano.a`) without floating-point `printf` enabled (`-u _printf_float`) to keep firmware footprint under the 86KB NOR flash threshold.
+  - Standard `snprintf` silently stripped `%f` / `%.1f` format specifiers, resulting in missing numbers between `T:`, `H:`, and `SD:`.
+  - Furthermore, in `IDLE` state prior to starting a recording session (`START <LABEL>`), continuous multi-heater scanning was inactive, leaving ambient variables unpopulated.
+* **Firmware Implementation:**
+  - **Live IDLE Environmental Sampling (`bme68x_read_basic`):** Implemented a fast 15ms non-blocking forced-mode read without micro-hotplate heater delays. Calling `status` in IDLE state instantly refreshes real-time ambient temperature, humidity, and barometric pressure.
+  - **Integer Fixed-Point Formatter (`fmt_f`):** Implemented an ultra-compact fixed-point string conversion routine utilizing integer math, supporting negative values, rounding (`+0.5`), and configurable decimal precision without dragging in 6KB-8KB of `libc` float formatting code.
+  - **Subsystem-Wide Float Elimination:** Replaced all float formatting in `data_collector_get_status()`, `data_collector_send_boot_status()`, CSV file output, Bosch `.bmerawdata` JSON streams, and UART progress logging with `fmt_f` and integer arithmetic.
+* **Verification & Validation:**
+  - Full clean compilation with GNU Arm Embedded Toolchain 10.3.1: 0 errors, 0 warnings across all 27 object files.
+  - Final signed binary size: **85,364 bytes** (well under the 86,000 bytes NOR flash partition threshold).
+  - SHA-256 (`7000f0fb9f817c3a027c67388e4209893a6c53a3368b8ccb9ebb1f19d2c84919`) and ECDSA secp256r1 signature updated and verified in `tools/fota_metadata.json`.

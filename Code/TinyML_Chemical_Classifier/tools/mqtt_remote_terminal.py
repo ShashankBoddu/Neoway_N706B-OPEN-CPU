@@ -38,7 +38,7 @@ def on_connect(client, userdata, flags, rc, properties=None):
         print(f"[*] Subscribed to Board Telemetry & Replies: {TOPIC_SUB_FROM_BOARD}")
         print(f"[*] Command Publish Topic: {TOPIC_PUB_TO_BOARD}")
         print("=" * 66)
-        print("  Type any command (STATUS, START <LABEL>, STOP, LIST, UPLOAD ALL, FOTA)")
+        print("  Type any command (STATUS, START <LABEL>, STOP, LIST, UPLOAD ALL, DELETE ALL, DELETE <FILE>, FOTA)")
         print("  or type 'exit' / 'quit' to close.")
         print("=" * 66 + "\n")
         client.subscribe(TOPIC_SUB_FROM_BOARD, qos=0)

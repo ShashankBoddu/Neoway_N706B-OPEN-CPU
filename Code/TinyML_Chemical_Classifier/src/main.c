@@ -15,6 +15,7 @@
 #include "remote_sd_manager.h"
 #include "mqtt_manager.h"
 #include "hal/nwy_hal_secure_fota.h"
+#include "hal/nwy_hal_adc.h"
 #include "hal/net/nwy_hal_net.h"
 #include "hal/sms/nwy_hal_sms.h"
 #include "hal/sim/nwy_hal_sim.h"
@@ -34,7 +35,7 @@
 #define PIN_PERIPHERAL_PWR_GPIO0 0       /* Module Pin 83 (GPIO_00: Q1/Q3 & Q5/Q10 Master Gate) */
 #define BME688_I2C_ADDR         0x76    /* Default SmartElex BME688 address (SDO tied to GND) */
 
-#define CodeVer "0.0.10"
+#define CodeVer "0.8"
 /* Global Device Handles */
 static bme68x_dev_t        g_bme_dev;
 static uint8_t             g_bme_addr = BME688_I2C_ADDR;
@@ -158,9 +159,26 @@ static void sms_worker_task(void *param)
 /* -------------------------------------------------------------------------
  * SYSTEM BOOT BANNER
  * ------------------------------------------------------------------------- */
+/* =========================================================================
+ * SYSTEM BOOT BANNER & HARDWARE STATUS TABLE
+ * ========================================================================= */
+static const char S_SEP[]  = "==============================================================\r\n";
+static const char S_TB[]   = "+---+----------------+----------------------------+----------+\r\n";
+static const char S_TR[]   = "| %d | %-14.14s | %-26.26s | %-8.8s |\r\n";
+static const char S_OK[]   = "[  OK  ]";
+static const char S_FAIL[] = "[ FAIL ]";
+static const char S_WARN[] = "[ WARN ]";
+
 static void print_system_banner(void)
 {
-    nwy_hal_uart_printf(g_dbg_uart_fd, "\r\n[N706B v%s (%s)]\r\n", CodeVer, __DATE__);
+    nwy_hal_uart_printf(g_dbg_uart_fd, "\r\n%s"
+                                       "    NEOWAY N706B OpenCPU — SYSTEM BOOT & SUBSYSTEM STATUS    \r\n"
+                                       "%s"
+                                       " Version : v%s (%s) | ASR1605S 4MB\r\n"
+                                       "%s"
+                                       "| # | SUBSYSTEM      | CONFIGURATION / DETAILS    | STATUS   |\r\n"
+                                       "%s",
+                        S_SEP, S_SEP, CodeVer, __DATE__, S_TB, S_TB);
 }
 
 /* -------------------------------------------------------------------------
@@ -178,14 +196,27 @@ static void app_main_task(void *param)
 
     print_system_banner();
 
-    /* 2. Assert Master Peripheral Rail Switch: GPIO 00 = HIGH */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[1/6] Rails ON\r\n");
+    /* Step 1: Assert Master Peripheral Rail Switch: GPIO 00 = HIGH */
     nwy_gpio_direction_set(PIN_PERIPHERAL_PWR_GPIO0, PIN_DIRECTION_OUT);
     nwy_gpio_value_set(PIN_PERIPHERAL_PWR_GPIO0, PIN_LEVEL_HIGH);
     nwy_hal_os_thread_sleep(100); /* Allow sensor LDO & MicroSD rails to settle */
+    nwy_hal_uart_printf(g_dbg_uart_fd, S_TR, 1, "Power Rails", "GPIO 00 (VCC_SW ON)", S_OK);
 
-    /* 3. Initialize I2C Bus 1 Subsystem */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[2/6] I2C1 Init\r\n");
+    /* Step 2: Battery Voltage & Percentage (ADC1 Pin 96) */
+    nwy_hal_adc_init();
+    nwy_batt_status_t b = {0};
+    nwy_hal_adc_get_battery(&b);
+    char b_det[32] = {0};
+    if (b.valid) {
+        snprintf(b_det, sizeof(b_det), "%lu.%02luV (%u%%) | %lumV",
+                 (unsigned long)(b.vin_mv / 1000), (unsigned long)((b.vin_mv % 1000) / 10),
+                 (unsigned int)b.percentage, (unsigned long)b.raw_adc_mv);
+    } else {
+        snprintf(b_det, sizeof(b_det), "ADC1 Read Error");
+    }
+    nwy_hal_uart_printf(g_dbg_uart_fd, S_TR, 2, "Battery (Vin)", b_det, b.valid ? S_OK : S_WARN);
+
+    /* Step 3: Initialize I2C Bus 1 Subsystem */
     i2c_bus_config_t i2c_cfg;
     i2c_cfg.bus_name   = I2C1_BUS_NAME;
     i2c_cfg.speed_hz   = I2C_DEFAULT_SPEED_HZ;
@@ -193,22 +224,24 @@ static void app_main_task(void *param)
     i2c_cfg.sda_gpio   = I2C1_DEFAULT_SDA_GPIO;
     i2c_cfg.mode       = I2C_MODE_AUTO;
     i2c_cfg.timeout_ms = I2C_DEFAULT_TIMEOUT_MS;
-    i2c_bus_init(&i2c_cfg);
+    int i2c_res = i2c_bus_init(&i2c_cfg);
+    nwy_hal_uart_printf(g_dbg_uart_fd, S_TR, 3, "I2C1 Bus",
+                        (i2c_res == 0) ? "HW Fast Mode (400kHz)" : "Init Error",
+                        (i2c_res == 0) ? S_OK : S_FAIL);
 
-    /* 4. Detect and Initialize Bosch BME688 Sensor */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[3/6] Probe BME688\r\n", g_bme_addr);
+    /* Step 4: Detect and Initialize Bosch BME688 Sensor */
     bool ack = i2c_bus_ping(g_bme_addr);
     if (!ack) {
-        /* Probe alternate address 0x77 */
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  0x%02X NACK, probe 0x77\r\n", g_bme_addr);
         if (i2c_bus_ping(0x77)) {
             g_bme_addr = 0x77;
             ack = true;
         }
     }
 
+    char bme_detail[32] = {0};
+    const char *bme_status = S_FAIL;
+
     if (ack) {
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  ACK 0x%02X\r\n", g_bme_addr);
         memset(&g_bme_dev, 0, sizeof(g_bme_dev));
         g_bme_dev.dev_addr = g_bme_addr;
         g_bme_dev.intf_ptr = &g_bme_addr;
@@ -217,16 +250,12 @@ static void app_main_task(void *param)
         g_bme_dev.delay_us = bme_delay_us;
         g_bme_dev.amb_temp = 25.0f;
 
-        /* Test direct Chip ID read before init */
         uint8_t pre_id = 0;
-        int pre_ret = bme_i2c_read(BME68X_REG_CHIP_ID, &pre_id, 1, &g_bme_addr);
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  Chip ID: 0x%02X\r\n", pre_id, pre_ret);
+        bme_i2c_read(BME68X_REG_CHIP_ID, &pre_id, 1, &g_bme_addr);
 
         int8_t rslt = bme68x_init(&g_bme_dev);
         if (rslt != BME68X_OK) {
-            /* Retry init with bus reset in case of power-up transient */
             for (int r = 1; r <= 3; r++) {
-                nwy_hal_uart_printf(g_dbg_uart_fd, "  Retry #%d bme68x_init\r\n", r);
                 i2c_bus_reset();
                 nwy_hal_os_thread_sleep(50);
                 rslt = bme68x_init(&g_bme_dev);
@@ -235,37 +264,42 @@ static void app_main_task(void *param)
         }
 
         if (rslt == BME68X_OK && g_bme_dev.chip_id == BME68X_CHIP_ID) {
-            nwy_hal_uart_printf(g_dbg_uart_fd, "  [BME688 READY]\r\n");
-            nwy_hal_uart_printf(g_dbg_uart_fd, "  Variant: %s\r\n",
-                                g_bme_dev.chip_id,
-                                (g_bme_dev.variant_id == BME68X_VARIANT_GAS_HIGH) ? "BME688 (Gas High)" : "BME680 (Gas Low)");
+            snprintf(bme_detail, sizeof(bme_detail), "0x%02X (ID:0x%02X, %s)",
+                     g_bme_addr, g_bme_dev.chip_id,
+                     (g_bme_dev.variant_id == BME68X_VARIANT_GAS_HIGH) ? "Gas High" : "Gas Low");
+            bme_status = S_OK;
         } else {
-            nwy_hal_uart_printf(g_dbg_uart_fd, "  ERR: init %d (0x%02X)\r\n", rslt, g_bme_dev.chip_id);
-            nwy_hal_uart_printf(g_dbg_uart_fd, "");
+            snprintf(bme_detail, sizeof(bme_detail), "Err %d (ID:0x%02X)", rslt, g_bme_dev.chip_id);
+            bme_status = S_FAIL;
         }
     } else {
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  ERR: No I2C ACK\r\n");
+        snprintf(bme_detail, sizeof(bme_detail), "No ACK (0x76/0x77)");
+        bme_status = S_FAIL;
     }
+    nwy_hal_uart_printf(g_dbg_uart_fd, S_TR, 4, "BME688 Sensor", bme_detail, bme_status);
 
-    /* 5. Initialize MicroSD Card SPI & FatFs Engine */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[4/6] MicroSD Init\r\n");
+    /* Step 5: Initialize MicroSD Card SPI & FatFs Engine */
     int sd_ret = nwy_sdcard_init(NULL);
+    char sd_detail[32] = {0};
+    const char *sd_status = S_WARN;
     if (sd_ret == 0) {
         uint64_t free_bytes = nwy_sdcard_get_free_space();
         uint64_t total_bytes = nwy_sdcard_get_total_space();
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  SD: %luMB free\r\n",
-                            (unsigned long)(total_bytes / (1024 * 1024)),
-                            (unsigned long)(free_bytes / (1024 * 1024)));
+        snprintf(sd_detail, sizeof(sd_detail), "%luMB free / %luMB",
+                 (unsigned long)(free_bytes / (1024 * 1024)),
+                 (unsigned long)(total_bytes / (1024 * 1024)));
+        sd_status = S_OK;
     } else {
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  WARN: SD not mounted (%d)\r\n", sd_ret);
+        snprintf(sd_detail, sizeof(sd_detail), "Not Mounted (err %d)", sd_ret);
+        sd_status = S_WARN;
     }
+    nwy_hal_uart_printf(g_dbg_uart_fd, S_TR, 5, "MicroSD Card", sd_detail, sd_status);
 
-    /* 6. Initialize Data Collector State Machine */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[5/6] Collector Init\r\n");
+    /* Step 6: Initialize Data Collector State Machine */
     data_collector_init(&g_bme_dev);
+    nwy_hal_uart_printf(g_dbg_uart_fd, S_TR, 6, "Data Collector", "TinyML (Interval: 12s)", S_OK);
 
-    /* 7. Initialize SIM & Arm 3GPP SMS Engine */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[6/6] SMS Init\r\n");
+    /* Step 7: Initialize SIM & Arm 3GPP SMS Engine */
     nwy_sdk_mutex_create(&g_sms_q_mutex);
     nwy_hal_os_semaphore_create(&g_sms_sem, 0, SMS_QUEUE_CAPACITY);
 
@@ -277,46 +311,52 @@ static void app_main_task(void *param)
 
     bool bme_ok = (g_bme_dev.chip_id == BME68X_CHIP_ID);
     bool sd_ok = nwy_sdcard_is_mounted();
+    bool sim_ready = nwy_hal_sim_is_ready(1);
 
-    /* 8. Initialize Cellular LTE Mode & Remote SD Uploader Engine */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[Remote SD Init]\r\n");
+    char sim_detail[32] = {0};
+    const char *sim_status = S_WARN;
+    if (sim_ready) {
+        char phone_num[32] = {0};
+        nwy_hal_sim_get_msisdn(1, phone_num, sizeof(phone_num));
+        snprintf(sim_detail, sizeof(sim_detail), "%s", phone_num[0] ? phone_num : "SMS Engine Ready");
+        sim_status = S_OK;
+    } else {
+        snprintf(sim_detail, sizeof(sim_detail), "SIM Timeout (%ds)", sim_wait);
+    }
+    nwy_hal_uart_printf(g_dbg_uart_fd, S_TR, 7, "Cellular / SMS", sim_detail, sim_status);
+
+    /* Close Table and Print System Summary */
+    nwy_hal_uart_printf(g_dbg_uart_fd, "%s"
+                                       " Alert: %s\r\n"
+                                       " Server: %s\r\n"
+                                       " Tasks: Collector, SMS, Remote SD, MQTT\r\n"
+                                       "%s",
+                        S_TB, data_collector_get_alert_phone(), remote_sd_get_server_url(), S_SEP);
+
+    /* Initialize Cellular LTE Mode & Remote SD Uploader Engine */
     nwy_hal_net_set_mode(1, NWY_NW_MODE_MASK_LTE);
     remote_sd_manager_init();
 
-    if (nwy_hal_sim_is_ready(1)) {
-        char phone_num[32] = {0};
-        nwy_hal_sim_get_msisdn(1, phone_num, sizeof(phone_num));
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  SIM ready: %s\r\n",
-                            phone_num[0] ? phone_num : "Unknown");
-
+    if (sim_ready) {
         nwy_hal_sms_init(1, NWY_SMS_STORAGE_TYPE_UIM);
         nwy_hal_sms_register_recv_cb(1, on_incoming_sms_cb);
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  SMS ready\r\n");
 
         /* Start LTE Data Call for Remote SD HTTP Uploads, FOTA & MQTT */
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  Data call CID1\r\n");
         nwy_hal_net_start_data_call(1, 1, NULL);
 
         /* Initialize Paho MQTT client & auto-reconnect engine */
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  MQTT Init\r\n");
         mqtt_manager_init();
 
         /* Send one-time boot notification SMS to configured alert phone (+918074638788) */
         data_collector_send_boot_status(bme_ok, sd_ok, CodeVer);
-    } else {
-        nwy_hal_uart_printf(g_dbg_uart_fd, "  WARN: SIM timeout %ds\r\n", sim_wait);
     }
 
-    /* 9. Launch Background Worker Threads */
-    nwy_hal_uart_printf(g_dbg_uart_fd, "Workers started\r\n");
+    /* Launch Background Worker Threads */
     nwy_thread_create(&g_collector_thread, "data_collector", 50,
                       data_collector_worker_task, NULL, 10, 1024 * 16, NULL);
 
     nwy_thread_create(&g_sms_worker_thread, "sms_worker", 45,
                       sms_worker_task, NULL, 10, 1024 * 16, NULL);
-
-    nwy_hal_uart_printf(g_dbg_uart_fd, "[READY v%s] Alert: %s\r\n",
-                        CodeVer, data_collector_get_alert_phone(), remote_sd_get_server_url());
 
     /* Main heartbeat loop */
     uint32_t hb_counter = 0;
@@ -344,9 +384,14 @@ static void app_main_task(void *param)
         collector_status_t cur_status;
         data_collector_get_status(&cur_status, NULL, 0);
 
-        nwy_hal_uart_printf(g_dbg_uart_fd, "[HEARTBEAT #%lu] State: %s | Sensor: %s | SD: %s | IP: %s\r\n",
+        nwy_batt_status_t cur_batt = {0};
+        nwy_hal_adc_get_battery(&cur_batt);
+
+        nwy_hal_uart_printf(g_dbg_uart_fd, "[HEARTBEAT #%lu] State: %s | Batt: %lu.%02luV (%u%%) | Sensor: %s | SD: %s | IP: %s\r\n",
                             (unsigned long)hb_counter,
                             (cur_status.state == COLLECTOR_STATE_RECORDING) ? "RECORDING" : "IDLE",
+                            (unsigned long)(cur_batt.vin_mv / 1000), (unsigned long)((cur_batt.vin_mv % 1000) / 10),
+                            (unsigned int)cur_batt.percentage,
                             bme_online ? "OK (0x76)" : "DISCONNECTED",
                             nwy_sdcard_is_mounted() ? "OK" : "DISCONNECTED",
                             ip_connected ? cur_ip : "DISCONNECTED");

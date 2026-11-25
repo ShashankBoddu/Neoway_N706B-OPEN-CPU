@@ -7,6 +7,7 @@
 #include "remote_sd_manager.h"
 #include "mqtt_manager.h"
 #include "hal/nwy_hal_secure_fota.h"
+#include "hal/nwy_hal_adc.h"
 #include "i2c_bus.h"
 #include "nwy_sd_card.h"
 #include "ff.h"
@@ -154,6 +155,35 @@ static void sanitize_label(char *dest, const char *src, size_t max_len)
     }
 }
 
+/* Format float into integer-based string to avoid newlib-nano float printf limitations */
+static int fmt_f(char *dest, size_t sz, float val, int dec)
+{
+    if (!dest || sz == 0) return 0;
+    if (val != val) { /* NaN check */
+        return snprintf(dest, sz, "0.0");
+    }
+    if (val < 0.0f) {
+        if (sz < 2) { dest[0] = '\0'; return 0; }
+        dest[0] = '-';
+        return 1 + fmt_f(dest + 1, sz - 1, -val, dec);
+    }
+    uint32_t mult = 1;
+    for (int i = 0; i < dec; i++) mult *= 10;
+    uint32_t int_part = (uint32_t)val;
+    uint32_t dec_part = (uint32_t)((val - (float)int_part) * (float)mult + 0.5f);
+    if (dec_part >= mult) {
+        dec_part = 0;
+        int_part++;
+    }
+    if (dec == 0) {
+        return snprintf(dest, sz, "%lu", (unsigned long)int_part);
+    } else if (dec == 1) {
+        return snprintf(dest, sz, "%lu.%01lu", (unsigned long)int_part, (unsigned long)dec_part);
+    } else {
+        return snprintf(dest, sz, "%lu.%02lu", (unsigned long)int_part, (unsigned long)dec_part);
+    }
+}
+
 /* -------------------------------------------------------------------------
  * PROACTIVE ALERT SMS DISPATCHER (LATCHED - SENT ONCE PER EVENT)
  * ------------------------------------------------------------------------- */
@@ -192,19 +222,28 @@ void data_collector_send_boot_status(bool bme_ok, bool sd_ok,const char *ver)
     if (s_boot_alert_sent) return; /* Enforce strictly once on startup */
     s_boot_alert_sent = true;
 
-    char msg[200];
+    char msg[160];
     uint64_t free_bytes = nwy_sdcard_get_free_space();
-    float free_gb = (float)free_bytes / (1024.0f * 1024.0f * 1024.0f);
+    uint32_t free_mb = (uint32_t)(free_bytes / (1024ULL * 1024ULL));
+    uint32_t gb_whole = free_mb / 1024;
+    uint32_t gb_frac = ((free_mb % 1024) * 10) / 1024;
+
+    nwy_batt_status_t b = {0};
+    nwy_hal_adc_get_battery(&b);
 
     if (bme_ok && sd_ok) {
         snprintf(msg, sizeof(msg),
-                 "[BME688 READY] Online!\n Ver: %s\n Sensor:OK(0x76), SD:OK(%.1fGB), State:IDLE. Send 'START <LABEL>' (e.g. START BADFOOD)",ver,
-                 free_gb);
+                 "[READY v%s] Batt:%lu.%02luV(%u%%) | BME688:OK | SD:%lu.%01luGB. Send 'START <LABEL>'",
+                 ver, (unsigned long)(b.vin_mv / 1000), (unsigned long)((b.vin_mv % 1000) / 10),
+                 (unsigned int)b.percentage, (unsigned long)gb_whole, (unsigned long)gb_frac);
     } else {
         snprintf(msg, sizeof(msg),
-                 "[BME688 ALERT] BOOT: %s%s Check hardware wiring!",
-                 !bme_ok ? "Sensor Missing (0x76)! " : "",
-                 !sd_ok ? "SD Card Mount Failed! " : "");
+                 "[ALERT v%s] BOOT: %s%s| Batt:%lu.%02luV(%u%%)",
+                 ver,
+                 !bme_ok ? "Sensor Missing " : "",
+                 !sd_ok ? "SD Fail " : "",
+                 (unsigned long)(b.vin_mv / 1000), (unsigned long)((b.vin_mv % 1000) / 10),
+                 (unsigned int)b.percentage);
     }
 
     data_collector_send_alert(msg);
@@ -263,8 +302,6 @@ int data_collector_init(bme68x_dev_t *bme_dev)
         nwy_sdk_mutex_create(&s_collector_mutex);
     }
 
-    nwy_hal_uart_printf(1, LOG_TAG "Engine initialized. Default interval: %d s | Sensor: %s\r\n",
-                        s_status.interval_sec, s_status.sensor_interfaced ? "READY" : "OFFLINE");
     return 0;
 }
 
@@ -316,19 +353,52 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
         strncpy(s_status.last_sender_phone, sender_phone, sizeof(s_status.last_sender_phone) - 1);
     }
 
-    /* Find next available file index */
-    char file_path[64];
-    int file_idx = 1;
-    for (; file_idx < 1000; file_idx++) {
-        snprintf(file_path, sizeof(file_path), "0:/dataset_%s_%03d.csv", s_status.current_label, file_idx);
-        if (!nwy_sdcard_exists(file_path)) {
-            break;
+    /* Construct unified session base name shared by all formats (.csv, .bmerawdata, .bmelabelinfo) */
+    nwy_time_t tm;
+    int tz = 0;
+    bool time_valid = false;
+    char iso_time[48] = "2026-11-16T12:00:00Z";
+    char session_base[96];
+    char file_path[128];
+    char bme_filename[128];
+    uint32_t session_seed = (uint32_t)(nwy_uptime_get() & 0xFFFF);
+
+    s_session_start_uptime_ms = (uint32_t)nwy_uptime_get();
+
+    if (nwy_hal_pm_get_time(&tm, &tz)) {
+        int full_year = (tm.year < 100) ? (2000 + tm.year) : tm.year;
+        if (full_year >= 2024 && tm.mon >= 1 && tm.mon <= 12 && tm.day >= 1 && tm.day <= 31) {
+            time_valid = true;
+            s_session_rtc_base = rtc_to_epoch(&tm, tz);
+            int tz_h = tz / 4;
+            int tz_m = (tz >= 0 ? (tz % 4) : (-tz % 4)) * 15;
+            snprintf(iso_time, sizeof(iso_time), "%04d-%02d-%02dT%02d:%02d:%02d%+03d:%02d",
+                     full_year, tm.mon, tm.day, tm.hour, tm.min, tm.sec, tz_h, tz_m);
+            snprintf(session_base, sizeof(session_base),
+                     "%04d%02d%02d_%02d%02d_%s_0",
+                     full_year, tm.mon, tm.day, tm.hour, tm.min, s_status.current_label);
         }
     }
+    if (!time_valid) {
+        uint32_t up_s = (uint32_t)(nwy_uptime_get() / 1000);
+        s_session_rtc_base = 1731834000 + up_s;
+        snprintf(iso_time, sizeof(iso_time), "2026-11-17T%02u:%02u:%02uZ",
+                 (unsigned int)((up_s / 3600) % 24),
+                 (unsigned int)((up_s / 60) % 60),
+                 (unsigned int)(up_s % 60));
+        snprintf(session_base, sizeof(session_base),
+                 "20261117_%02u%02u_%s_0",
+                 (unsigned int)((up_s / 3600) % 24),
+                 (unsigned int)((up_s / 60) % 60),
+                 s_status.current_label);
+    }
 
+    snprintf(file_path, sizeof(file_path), "0:/%s.csv", session_base);
+    snprintf(bme_filename, sizeof(bme_filename), "0:/%s.bmerawdata", session_base);
     strncpy(s_status.current_file_path, file_path, sizeof(s_status.current_file_path) - 1);
+    strncpy(s_status.current_bme_path, bme_filename, sizeof(s_status.current_bme_path) - 1);
 
-    /* Open new file for writing */
+    /* Open new CSV file for writing */
     if (!nwy_sdcard_lock(5000)) {
         if (reply_buf && reply_max > 0) {
             snprintf(reply_buf, reply_max, "ERROR: MicroSD card busy, lock timeout.");
@@ -356,52 +426,7 @@ int data_collector_start(const char *label, const char *sender_phone, char *repl
     f_write(&s_csv_file, header, (UINT)strlen(header), &bw);
     f_sync(&s_csv_file);
 
-    /* Construct Bosch BME AI-Studio native (.bmerawdata) filename & JSON header */
-    nwy_time_t tm;
-    int tz = 0;
-    bool time_valid = false;
-    char iso_time[48] = "2026-11-16T12:00:00Z";
-    char iso_prefix[32] = "2026-11-16T12:00:00";
-    char bme_filename[128];
-    uint32_t session_seed = (uint32_t)(nwy_uptime_get() & 0xFFFF);
-
-    s_session_start_uptime_ms = (uint32_t)nwy_uptime_get();
-
-    if (nwy_hal_pm_get_time(&tm, &tz)) {
-        int full_year = (tm.year < 100) ? (2000 + tm.year) : tm.year;
-        if (full_year >= 2024 && tm.mon >= 1 && tm.mon <= 12 && tm.day >= 1 && tm.day <= 31) {
-            time_valid = true;
-            s_session_rtc_base = rtc_to_epoch(&tm, tz);
-            int tz_h = tz / 4;
-            int tz_m = (tz >= 0 ? (tz % 4) : (-tz % 4)) * 15;
-            snprintf(iso_time, sizeof(iso_time), "%04d-%02d-%02dT%02d:%02d:%02d%+03d:%02d",
-                     full_year, tm.mon, tm.day, tm.hour, tm.min, tm.sec, tz_h, tz_m);
-            snprintf(iso_prefix, sizeof(iso_prefix), "%04d-%02d-%02dT%02d:%02d:%02d",
-                     full_year, tm.mon, tm.day, tm.hour, tm.min, tm.sec);
-            snprintf(bme_filename, sizeof(bme_filename),
-                     "0:/%04d%02d%02d_%02d%02d_%s_0.bmerawdata",
-                     full_year, tm.mon, tm.day, tm.hour, tm.min, s_status.current_label);
-        }
-    }
-    if (!time_valid) {
-        uint32_t up_s = (uint32_t)(nwy_uptime_get() / 1000);
-        s_session_rtc_base = 1731834000 + up_s;
-        snprintf(iso_time, sizeof(iso_time), "2026-11-17T%02u:%02u:%02uZ",
-                 (unsigned int)((up_s / 3600) % 24),
-                 (unsigned int)((up_s / 60) % 60),
-                 (unsigned int)(up_s % 60));
-        snprintf(iso_prefix, sizeof(iso_prefix), "2026-11-17T%02u:%02u:%02u",
-                 (unsigned int)((up_s / 3600) % 24),
-                 (unsigned int)((up_s / 60) % 60),
-                 (unsigned int)(up_s % 60));
-        snprintf(bme_filename, sizeof(bme_filename),
-                 "0:/20261117_%02u%02u_%s_0.bmerawdata",
-                 (unsigned int)((up_s / 3600) % 24),
-                 (unsigned int)((up_s / 60) % 60),
-                 s_status.current_label);
-    }
-    strncpy(s_status.current_bme_path, bme_filename, sizeof(s_status.current_bme_path) - 1);
-
+    /* Open native Bosch BME AI-Studio (.bmerawdata) file */
     FRESULT bme_res = f_open(&s_bme_file, bme_filename, FA_CREATE_ALWAYS | FA_WRITE);
     if (bme_res == FR_OK) {
         s_bme_file_is_open = true;
@@ -493,15 +518,8 @@ int data_collector_stop(char *reply_buf, size_t reply_max)
                 if (f_open(&linfo_file, labelinfo_path, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK) {
                     char linfo_buf[256];
                     int llen = snprintf(linfo_buf, sizeof(linfo_buf),
-                        "{\n"
-                        "  \"labelInformation\": [\n"
-                        "    {\n"
-                        "      \"labelTag\": 1,\n"
-                        "      \"labelName\": \"%s\",\n"
-                        "      \"labelDescription\": \"Recorded on Neoway N706B\"\n"
-                        "    }\n"
-                        "  ]\n"
-                        "}\n", s_status.current_label);
+                        "{\"labelInformation\":[{\"labelTag\":1,\"labelName\":\"%s\",\"labelDescription\":\"N706B\"}]}\n",
+                        s_status.current_label);
                     UINT bw_li = 0;
                     if (llen > 0) {
                         f_write(&linfo_file, linfo_buf, (UINT)llen, &bw_li);
@@ -548,6 +566,12 @@ void data_collector_get_status(collector_status_t *status_out, char *reply_buf, 
 
     bool bme_ok = data_collector_is_sensor_ready();
     bool sd_ok = nwy_sdcard_is_mounted();
+
+    /* Refresh live ambient data if in IDLE mode */
+    if (bme_ok && s_status.state == COLLECTOR_STATE_IDLE && s_bme_dev != NULL) {
+        bme68x_read_basic(s_bme_dev, &s_status.last_temperature, &s_status.last_humidity, &s_status.last_pressure);
+    }
+
     s_status.sensor_interfaced = bme_ok;
     s_status.sd_mounted = sd_ok;
 
@@ -556,24 +580,37 @@ void data_collector_get_status(collector_status_t *status_out, char *reply_buf, 
     }
 
     uint64_t free_bytes = nwy_sdcard_get_free_space();
-    float free_gb = (float)free_bytes / (1024.0f * 1024.0f * 1024.0f);
+    uint32_t free_mb = (uint32_t)(free_bytes / (1024ULL * 1024ULL));
+    uint32_t gb_whole = free_mb / 1024;
+    uint32_t gb_frac = ((free_mb % 1024) * 10) / 1024;
+
+    nwy_batt_status_t batt = {0};
+    nwy_hal_adc_get_battery(&batt);
+
+    char s_t[12], s_h[12];
+    fmt_f(s_t, sizeof(s_t), s_status.last_temperature, 1);
+    fmt_f(s_h, sizeof(s_h), s_status.last_humidity, 1);
 
     if (reply_buf && reply_max > 0) {
         if (!bme_ok) {
             snprintf(reply_buf, reply_max,
-                     "STATUS: SENSOR ERR(0x76)! State:%s | SD:%s(%.1fGB)",
-                     (s_status.state == COLLECTOR_STATE_RECORDING) ? "PAUSED" : "IDLE",
-                     sd_ok ? "OK" : "ERR", free_gb);
+                     "STATUS: SENSOR ERR(0x76)! Batt:%lu.%02luV(%u%%) | SD:%s(%lu.%01luGB)",
+                     (unsigned long)(batt.vin_mv / 1000), (unsigned long)((batt.vin_mv % 1000) / 10),
+                     (unsigned int)batt.percentage, sd_ok ? "OK" : "ERR",
+                     (unsigned long)gb_whole, (unsigned long)gb_frac);
         } else if (s_status.state == COLLECTOR_STATE_RECORDING) {
             snprintf(reply_buf, reply_max,
-                     "STATUS: RUN '%s'(%lu) | T:%.1fC H:%.1f%% | SD:%.1fGB",
+                     "STATUS: RUN '%s'(%lu) | Batt:%lu.%02luV(%u%%) | T:%sC | SD:%lu.%01luGB",
                      s_status.current_label, (unsigned long)s_status.sample_count,
-                     s_status.last_temperature, s_status.last_humidity, free_gb);
+                     (unsigned long)(batt.vin_mv / 1000), (unsigned long)((batt.vin_mv % 1000) / 10),
+                     (unsigned int)batt.percentage,
+                     s_t, (unsigned long)gb_whole, (unsigned long)gb_frac);
         } else {
             snprintf(reply_buf, reply_max,
-                     "STATUS: IDLE | T:%.1fC H:%.1f%% R0:%.1fk | SD:%.1fGB",
-                     s_status.last_temperature, s_status.last_humidity,
-                     s_status.last_rgas_0 / 1000.0f, free_gb);
+                     "STATUS: IDLE | Batt:%lu.%02luV(%u%%) | T:%sC H:%s%% | SD:%lu.%01luGB",
+                     (unsigned long)(batt.vin_mv / 1000), (unsigned long)((batt.vin_mv % 1000) / 10),
+                     (unsigned int)batt.percentage,
+                     s_t, s_h, (unsigned long)gb_whole, (unsigned long)gb_frac);
         }
     }
 
@@ -679,39 +716,7 @@ void data_collector_execute_command(const char *cmd_text, const char *sender_id,
         data_collector_stop(reply, reply_max);
     }
     else if (strncmp(cmd_upper, "STATUS", 6) == 0 || strncmp(cmd_upper, "STATE", 5) == 0) {
-        const char *extra = cmd + 6;
-        if (strncmp(cmd_upper, "STATE", 5) == 0) extra = cmd + 5;
-        while (*extra && isspace((unsigned char)*extra)) extra++;
-
-        if (*extra != '\0') {
-            /* User asked: e.g. "STATUS BADFOOD" or "STATUS TOILET_CLEAN" */
-            bool bme_live = data_collector_is_sensor_ready();
-            bool sd_live = nwy_sdcard_is_mounted();
-            uint64_t free_b = nwy_sdcard_get_free_space();
-            float free_g = (float)free_b / (1024.0f * 1024.0f * 1024.0f);
-
-            if (!bme_live) {
-                if (reply && reply_max > 0)
-                    snprintf(reply, reply_max,
-                             "STATUS: NOT READY for '%s'! Sensor not interfaced (0x76). Check wiring.", extra);
-            } else if (!sd_live) {
-                if (reply && reply_max > 0)
-                    snprintf(reply, reply_max,
-                             "STATUS: NOT READY for '%s'! MicroSD missing/unmounted. Insert card.", extra);
-            } else if (s_status.state == COLLECTOR_STATE_RECORDING) {
-                if (reply && reply_max > 0)
-                    snprintf(reply, reply_max,
-                             "STATUS: BUSY '%s' (%lu). Send STOP then START %s.",
-                             s_status.current_label, (unsigned long)s_status.sample_count, extra);
-            } else {
-                if (reply && reply_max > 0)
-                    snprintf(reply, reply_max,
-                             "STATUS: READY for '%s'. Sensor: OK(%.1fC), SD: %.1fGB.",
-                             extra, s_status.last_temperature, free_g);
-            }
-        } else {
-            data_collector_get_status(NULL, reply, reply_max);
-        }
+        data_collector_get_status(NULL, reply, reply_max);
     }
     else if (strncmp(cmd_upper, "INTERVAL", 8) == 0) {
         const char *sec_str = cmd + 8;
@@ -734,8 +739,33 @@ void data_collector_execute_command(const char *cmd_text, const char *sender_id,
     else if (strncmp(cmd_upper, "LIST", 4) == 0 ||
              strncmp(cmd_upper, "IIST", 4) == 0 ||
              strncmp(cmd_upper, "1IST", 4) == 0 ||
-             strncmp(cmd_upper, "SD LIST", 7) == 0) {
+             strncmp(cmd_upper, "SD LIST", 7) == 0 ||
+             strcmp(cmd_upper, "FILES") == 0) {
         remote_sd_list_files(reply, reply_max);
+    }
+    else if (strncmp(cmd_upper, "DELETE", 6) == 0 ||
+             strncmp(cmd_upper, "DEL ", 4) == 0 ||
+             strcmp(cmd_upper, "DEL") == 0 ||
+             strncmp(cmd_upper, "REMOVE", 6) == 0) {
+        const char *target = cmd;
+        if (strncmp(cmd_upper, "DELETE", 6) == 0) target += 6;
+        else if (strncmp(cmd_upper, "DEL", 3) == 0) target += 3;
+        else if (strncmp(cmd_upper, "REMOVE", 6) == 0) target += 6;
+
+        while (*target && isspace((unsigned char)*target)) target++;
+
+        if (*target == '\0') {
+            if (reply && reply_max > 0)
+                snprintf(reply, reply_max, "Usage: DELETE ALL or DELETE <filename/prefix>");
+        } else {
+            /* Check if recording is currently active */
+            if (s_status.state == COLLECTOR_STATE_RECORDING) {
+                if (reply && reply_max > 0)
+                    snprintf(reply, reply_max, "DELETE REJECTED: Recording in progress! Send STOP first.");
+            } else {
+                remote_sd_delete_files(target, reply, reply_max);
+            }
+        }
     }
     else if (strncmp(cmd_upper, "UPLOAD", 6) == 0) {
         const char *target = cmd + 6;
@@ -756,38 +786,23 @@ void data_collector_execute_command(const char *cmd_text, const char *sender_id,
 
         if (strcmp(target_upper, "LATEST") == 0 || strcmp(target_upper, "LAST") == 0) {
             req.target_type = UPLOAD_TARGET_LATEST;
-            if (remote_sd_queue_upload(&req)) {
-                if (reply && reply_max > 0)
-                    snprintf(reply, reply_max, "UPLOAD: Queued latest to %s",
-                             remote_sd_get_server_url());
-            } else {
-                if (reply && reply_max > 0)
-                    snprintf(reply, reply_max, "UPLOAD ERR: Busy");
-            }
         } else if (strcmp(target_upper, "ALL") == 0) {
             req.target_type = UPLOAD_TARGET_ALL;
-            if (remote_sd_queue_upload(&req)) {
-                if (reply && reply_max > 0)
-                    snprintf(reply, reply_max, "UPLOAD: Queued ALL to %s",
-                             remote_sd_get_server_url());
-            } else {
-                if (reply && reply_max > 0)
-                    snprintf(reply, reply_max, "UPLOAD ERR: Busy");
-            }
         } else if (strlen(target) > 0) {
             req.target_type = UPLOAD_TARGET_SINGLE;
             strncpy(req.filename, target, sizeof(req.filename) - 1);
-            if (remote_sd_queue_upload(&req)) {
-                if (reply && reply_max > 0)
-                    snprintf(reply, reply_max, "UPLOAD: Queued '%s' to %s",
-                             target, remote_sd_get_server_url());
-            } else {
-                if (reply && reply_max > 0)
-                    snprintf(reply, reply_max, "UPLOAD ERR: Busy");
-            }
         } else {
             if (reply && reply_max > 0)
-                snprintf(reply, reply_max, "Usage: UPLOAD LATEST|ALL|<FILE>");
+                snprintf(reply, reply_max, "Usage: UPLOAD LATEST | ALL | <file>");
+            return;
+        }
+
+        if (remote_sd_queue_upload(&req)) {
+            if (reply && reply_max > 0)
+                snprintf(reply, reply_max, "UPLOAD: Queued to %s", remote_sd_get_server_url());
+        } else {
+            if (reply && reply_max > 0)
+                snprintf(reply, reply_max, "UPLOAD ERR: Busy");
         }
     }
     else if (strncmp(cmd_upper, "SERVER", 6) == 0 || strstr(cmd_upper, "SERVER")) {
@@ -923,7 +938,7 @@ void data_collector_execute_command(const char *cmd_text, const char *sender_id,
     }
     else if (strcmp(cmd_upper, "HELP") == 0 || strcmp(cmd_upper, "?") == 0) {
         if (reply && reply_max > 0)
-            snprintf(reply, reply_max, "CMD: START, STOP, STATUS, LIST, UPLOAD, SERVER, FOTA, INTERVAL");
+            snprintf(reply, reply_max, "CMD: START, STOP, STATUS, LIST, UPLOAD, DELETE, SERVER, FOTA, INTERVAL");
     }
     else {
         if (reply && reply_max > 0)
@@ -1027,17 +1042,26 @@ void data_collector_worker_task(void *param)
                 s_status.last_pressure = pres;
                 s_status.last_rgas_0 = r_gas[0];
 
+                /* Format string representations with integer-based formatting for libc_nano compatibility */
+                char s_temp[12], s_hum[12], s_pres[12], s_rg[10][12];
+                fmt_f(s_temp, sizeof(s_temp), temp, 2);
+                fmt_f(s_hum, sizeof(s_hum), hum, 2);
+                fmt_f(s_pres, sizeof(s_pres), pres, 2);
+                for (int i = 0; i < 10; i++) {
+                    fmt_f(s_rg[i], sizeof(s_rg[i]), r_gas[i], 1);
+                }
+
                 /* Format CSV Data Row:
                  * timestamp_ms,sample_idx,label,temp_c,humidity_rh,pressure_hpa,R0..R9 */
                 snprintf(csv_row, sizeof(csv_row),
-                         "%u,%lu,%s,%.2f,%.2f,%.2f,"
-                         "%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\r\n",
+                         "%u,%lu,%s,%s,%s,%s,"
+                         "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\r\n",
                          (unsigned int)scan_start_time,
                          (unsigned long)s_status.sample_count,
                          s_status.current_label,
-                         temp, hum, pres,
-                         r_gas[0], r_gas[1], r_gas[2], r_gas[3], r_gas[4],
-                         r_gas[5], r_gas[6], r_gas[7], r_gas[8], r_gas[9]);
+                         s_temp, s_hum, s_pres,
+                         s_rg[0], s_rg[1], s_rg[2], s_rg[3], s_rg[4],
+                         s_rg[5], s_rg[6], s_rg[7], s_rg[8], s_rg[9]);
 
                 if (nwy_sdcard_lock(2000)) {
                     if (s_csv_file_is_open) {
@@ -1069,14 +1093,14 @@ void data_collector_worker_task(void *param)
                              *  temperature, pressure(hPa), relative_humidity, resistance_gassensor,
                              *  heater_profile_step_index, scanning_enabled, scanning_cycle_index, label_tag, error_code] */
                             int elen = snprintf(bme_entry, sizeof(bme_entry),
-                                "%s\n      [0, 1, %u, %u, %.2f, %.2f, %.2f, %.1f, %d, 1, %lu, 1, 0]",
+                                "%s\n      [0, 1, %u, %u, %s, %s, %s, %s, %d, 1, %lu, 1, 0]",
                                 s_bme_first_entry ? "" : ",",
                                 (unsigned int)step_time_ms,
                                 (unsigned int)step_rtc,
-                                temp,
-                                pres, /* pressure in Hectopascals (hPa) */
-                                hum,
-                                r_gas[step],
+                                s_temp,
+                                s_pres, /* pressure in Hectopascals (hPa) */
+                                s_hum,
+                                s_rg[step],
                                 (int)step,
                                 (unsigned long)s_status.sample_count);
                             s_bme_first_entry = false;
@@ -1107,9 +1131,9 @@ void data_collector_worker_task(void *param)
                 if (s_collector_mutex) nwy_sdk_mutex_unlock(s_collector_mutex);
 
                 /* Output live progress to UART console */
-                nwy_hal_uart_printf(1, "[DATA LOG #%lu] %s | T:%.1f C, H:%.1f %%, P:%.0f hPa | R0:%.0f..R9:%.0f Ohm\r\n",
+                nwy_hal_uart_printf(1, "[DATA LOG #%lu] %s | T:%s C, H:%s %%, P:%s hPa | R0:%s..R9:%s Ohm\r\n",
                                     (unsigned long)s_status.sample_count, s_status.current_label,
-                                    temp, hum, pres, r_gas[0], r_gas[9]);
+                                    s_temp, s_hum, s_pres, s_rg[0], s_rg[9]);
             } else {
                 nwy_hal_uart_printf(1, LOG_TAG "BME688 scan error code: %d at runtime\r\n", rslt);
                 s_status.sensor_interfaced = false;
