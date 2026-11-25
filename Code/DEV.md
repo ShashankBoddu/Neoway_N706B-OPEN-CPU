@@ -2089,3 +2089,77 @@ To eliminate race conditions, direction contention, and kernel panics across dee
 * **Verification:**
   - Build succeeded with code 0.
   - Refreshed package deployed to [`nwy_open_app.zip`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/nwy_open_app.zip).
+
+---
+
+### [2026-11-24] - Architecture & Deployment: Cellular Remote MicroSD Dataset Uploader Subsystem
+* **Subsystem Scope:** Cellular Networking, HTTP Stack, MicroSD SPI FatFs, Remote File Uploader
+* **Description & Context:**
+  - Designed, implemented, and validated an autonomous cellular dataset extraction pipeline allowing operators to retrieve multi-megabyte sensor logs (`.csv`, `.bmerawdata`, `.bmelabelinfo`) directly from the onboard MicroSD card over 4G LTE without physical card removal or USB cabling.
+  - Developed PC-side receiving server [`Code/TinyML_Chemical_Classifier/tools/http_receiver_server.py`](file:///e:/projects/DevelopmentLevelCode/Neoway_N706B/Code/TinyML_Chemical_Classifier/tools/http_receiver_server.py) equipped with automated tunneling (Cloudflare Quick Tunnel / Pinggy raw TCP) to penetrate Carrier-Grade NAT (CGNAT) without firewall port forwarding.
+* **Architecture & Implementation:**
+  1. **OpenCPU Client Pipeline (`src/remote_sd_manager.c` & `inc/remote_sd_manager.h`):**
+     - Runs as a dedicated background worker task (`remote_sd_worker_task`) with a 16 KB stack and priority `55`.
+     - Triggered via unified commands: `LIST`, `UPLOAD <filename>`, `UPLOAD LATEST`, and `UPLOAD ALL`.
+     - File streaming operates in 4 KB buffered chunks directly from FatFs (`f_open`, `f_read`, `f_close`) into the OpenCPU HTTP POST client (`nwy_http_post`).
+     - Includes a file transmission catalog tracking upload completion to avoid redundant uploads during `UPLOAD ALL`.
+     - Automatically reports progress and completion via both SMS and MQTT.
+  2. **Dual-Stack HTTP Server (`tools/http_receiver_server.py`):**
+     - Listens on `0.0.0.0:8080` supporting both IPv4 (`127.0.0.1`) and IPv6 (`::1`) loopback.
+     - Parses multipart form data and raw binary uploads, saving files into `tools/received_datasets/`.
+     - Automatically spawns `cloudflared.exe` or Pinggy SSH tunnels to generate public HTTPS endpoints (e.g. `https://<subdomain>.trycloudflare.com/upload`).
+* **Verification:**
+  - Successfully retrieved multiple dataset runs (`dataset_BASELINE_AIR_001.csv`, `20261125_0948_BASELINE_AIR_0.bmerawdata`, etc.) over Airtel 4G LTE with 0% data corruption.
+
+---
+
+### [2026-11-24] - Architecture & Deployment: Dual-Channel MQTT Command & Control Engine
+* **Subsystem Scope:** LTE Baseband, TCP/IP, MQTT Protocol Stack, Unified Command Dispatcher
+* **Description & Context:**
+  - Implemented an industrial dual-channel remote management architecture combining 3GPP SMS (out-of-band cellular fallback) and cloud MQTT telemetry (real-time low-latency telemetry).
+* **Architecture & Implementation:**
+  1. **Topic Mapping Topology (`inc/mqtt_manager.h`):**
+     - **Publish Topic:** `sensor/input/N706B/BM688` (board publishes telemetry, status, command replies, and alerts).
+     - **Subscribe Topic:** `sensor/output/N706B/BM688` (board listens for operator commands).
+     - **Broker Host:** `mqtt.fervidlabs.in:1883` (Credentials: `fervid` / `Fervid@123`).
+  2. **Non-Blocking Architecture (`src/mqtt_manager.c`):**
+     - Internal ring queue (`g_cmd_queue`) decoupling the MQTT packet receiver thread from the command dispatcher, preventing socket timeout stalls.
+     - Dedicated health monitor thread with automatic socket reconnect and subscription recovery.
+     - Unified command parser in `src/data_collector.c` (`data_collector_execute_command`) processing commands identically whether received via SMS, MQTT, or Debug UART (`URT1`).
+  3. **Interactive PC Terminal (`tools/mqtt_remote_terminal.py`):**
+     - Bi-directional command-line console providing interactive control, real-time board log streaming, and single-command execution.
+* **Verification:**
+  - Validated instant command dispatching (`STATUS`, `START <LABEL>`, `STOP`, `SERVER <URL>`, `FOTA`) over MQTT with sub-second response times.
+
+---
+
+### [2026-11-25] - Engineering Breakthrough: Cryptographically Secure Cellular FOTA (ECDSA secp256r1 + SHA-256) & Complete RCA Resolution
+* **Subsystem Scope:** Secure Bootloader, QSPI NOR Flash Driver, Crypto Verification (uECC & SHA-256), HTTP Streaming
+* **Description & Context:**
+  - Designed, implemented, and empirically validated an industrial-grade, cryptographically verified Over-The-Air (FOTA) firmware update system for the Neoway N706B OpenCPU platform operating over commercial 4G cellular LTE.
+  - Achieved successive zero-touch OTA firmware updates (`v0.0.8` $\to$ `v0.0.10`) with zero data drops, complete ECDSA secp256r1 signature verification, and automatic bootloader application and reboot.
+* **Root Cause Analyses (RCA) & Historical Defect Resolutions:**
+  1. **Flash Write Error `-600` at Offset 89,088 B:**
+     - *Root Cause:* The ASR1605 QSPI NOR flash wear-leveling reserve partition has an upper threshold of ~86 KB for application updates. Early builds containing verbose debug strings reached ~89 KB, exceeding the physical allocation and throwing error code `-600`.
+     - *Resolution:* Minified JSON payloads, stripped redundant debug strings, and optimized buffers. Firmware binary size reduced to ~83.5 KB (well below the 86 KB ceiling).
+  2. **Premature Origin Socket Teardown (Drop at 17,753 B / 21%):**
+     - *Root Cause:* The Python HTTP server streamed all 82 chunks into the local loopback socket (`127.0.0.1` $\to$ `cloudflared.exe`) in under 2.5 seconds. When `cloudflared` half-closed loopback, the server misinterpreted this EOF as the modem disconnecting, printed `[CLIENT FIN]`, and terminated its TCP socket. When the origin socket closed, Cloudflare dropped the downstream HTTPS tunnel to the modem. Over 4G LTE, the modem writes to SPI NOR flash at ~8–10 KB/s; in 2.5 seconds it had only flashed 17,753 bytes before the tunnel vanished.
+     - *Resolution:* Introduced a matched **100ms per 1KB pacing delay** (~10 KB/s) in `tools/http_receiver_server.py` and implemented a mandatory **20-second post-transmission socket hold period** (`time.sleep(20.0)`), keeping the TCP connection alive until the modem finishes downloading and burning all blocks.
+  3. **Cellular Baseband Contention (Stall at 43,698 B / 52%):**
+     - *Root Cause:* An experimental implementation fired MQTT publish ACKs on every received chunk from inside `NWY_HTTP_DATA_RECVED`. Concurrently transmitting MQTT packets while receiving TLS data congested the baseband socket buffers and mutexes, causing the HTTP stream to freeze at 43,698 bytes.
+     - *Resolution:* Completely eliminated application-level MQTT ACKs per industrial best practice. FOTA relies purely on standard TCP flow control and HTTP/1.1 streaming.
+  4. **Stale Metadata & Skipped Hold (Drop at 81,920 B / 98%):**
+     - *Root Cause:* The binary on disk was recompiled to 83,528 bytes, but `fota_metadata.json` had a stale size of 83,532 bytes (4-byte difference). The modem sent `Range: bytes=0-83531`. The server set `bytes_to_send = 83,532`, but the file ended at 83,528. Because `total_sent (83,528) != bytes_to_send (83,532)`, the server evaluated `if total_sent == bytes_to_send:` as false, skipped the 20s hold period, and immediately closed the socket. Over cellular LTE, chunk 80 (`80 * 1024 = 81,920 B`) was the last chunk received before the tunnel died.
+     - *Resolution:*
+       - **RFC 7233 Range Clamping:** Server clamps `end_byte = min(end_byte, file_size - 1)`.
+       - **Guaranteed Hold:** Hold condition changed to `if total_sent > 0:`.
+       - **Dynamic Ground-Truth Signing:** Server computes the real SHA-256 of the binary on disk and dynamically re-signs with `fota_private_key.pem`.
+       - **Authoritative Header Sync:** The OpenCPU client extracts `X-FOTA-Size`, `X-FOTA-SHA256`, and `X-FOTA-Signature` from HTTP response headers, dynamically overriding `g_expected_size` to match the exact file on the server.
+* **Firmware Implementation & Cryptographic Architecture:**
+  - **Micro-ECC Integration (`src/crypto/uECC.c`, `src/crypto/sha256.c`):** Integrated lightweight `uECC` (secp256r1) and native SHA-256, replacing heavy mbedTLS. Embedded raw 64-byte public key `PUBLIC_KEY_RAW` inside `nwy_hal_secure_fota.c`.
+  - **Direct NOR Flash Streaming (`nwy_fota_write`):** Data chunks are written directly to flash and fed into the running SHA-256 context incrementally without RAM buffering.
+  - **Proactive Connection Closure:** When `g_firmware_offset >= g_expected_size`, the modem calls `nwy_http_close()` cleanly.
+  - **Dual Verification:** Validates both SHA-256 hash digest and ECDSA secp256r1 signature via `uECC_verify()`. Upon success, executes `nwy_fota_update(1)` to trigger bootloader flashing and reset.
+* **Empirical Verification & Validation (V&V):**
+  - **Run 1:** Board running `v0.0.8` received 83,756 / 83,756 B (100%), verified `uECC_verify result: 1`, executed bootloader update, and rebooted into `v0.0.10`.
+  - **Run 2:** Board running `v0.0.10` re-tested with live FOTA: full 83,756 bytes delivered, signature authenticated, and bootloader update completed with zero dropped packets.

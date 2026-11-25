@@ -89,55 +89,83 @@ You can collect data for **any environmental or odor condition** (e.g., `BADFOOD
 | `<LABEL>` *(Direct)*| `BADFOOD` | Typing the label directly also starts recording automatically! | `STARTED: Dataset 'BADFOOD'. File: dataset_BADFOOD_001.csv. Sampling every 3s.` |
 | `STOP` | `STOP` | Stops the active recording session and syncs the CSV & BME files safely to the SD card. | `STOPPED: 'BADFOOD' (142 samples). Dual saved: dataset_BADFOOD_001.csv & .bmerawdata` |
 | `STATUS` | `STATUS` | Queries active state, sensor readings, and storage availability. | `STATUS: RUNNING \| Label: BADFOOD \| Count: 35 \| T: 26.4C \| H: 48.1% \| R0: 184.2k \| SD: 14.8GB free` |
-| `LIST` or `SD LIST` | `LIST` | Scans MicroSD card and returns file count and filenames via SMS. | `SD Files (3):\n1. 20261117_1336_IP_0.bmerawdata (14K)\n2. 20261117_1336_IP_0.bmelabelinfo (1K)...` |
+| `LIST` or `SD LIST` | `LIST` | Scans MicroSD card and returns file count and filenames via SMS / MQTT. | `SD Files (3):\n1. 20261117_1336_IP_0.bmerawdata (14K)\n2. 20261117_1336_IP_0.bmelabelinfo (1K)...` |
 | `UPLOAD LATEST` | `UPLOAD LATEST` | Streams newest session files (`.bmerawdata` & `.bmelabelinfo`) to HTTP server. | `UPLOAD: Queued latest session files to server. Transferring in background...` |
 | `UPLOAD ALL` | `UPLOAD ALL` | Iterates and uploads all `.bmerawdata`, `.bmelabelinfo`, and `.csv` files on SD card. | `UPLOAD: Queued ALL dataset files to server. Transferring in background...` |
 | `UPLOAD <FILE>` | `UPLOAD IPA_0.bmerawdata` | Uploads a specific dataset file to the configured HTTP server. | `UPLOAD: Queued 'IPA_0.bmerawdata' to server. Transferring in background...` |
-| `SERVER <URL>` | `SERVER http://192.168.1.100:8080/upload` | Queries or sets the target HTTP server endpoint for remote SD uploads. | `SERVER: Upload URL set to http://192.168.1.100:8080/upload` |
-| `FOTA <URL> <SZ> <SIG>`| `FOTA http://... 124422 3044...` | Downloads, verifies (SHA-256 + ECDSA), flashes, and reboots to new firmware! | `FOTA: Downloading 124422 bytes from http://... Verifying signature...` |
+| `SERVER <URL>` | `SERVER https://<link>/upload` | Queries or sets the target HTTP server endpoint for remote SD uploads. | `SERVER: Upload URL set to https://<link>/upload` |
+| `FOTA` | `FOTA` | Zero-configuration OTA: auto-derives URL, reads size/hash/ECDSA signature from HTTP headers, flashes, and reboots! | `FOTA: Download https://.../nwy_open_app_fota.pkt...` |
+| `FOTA <URL> <SZ> <SIG>`| `FOTA https://... 83756 3044...` | Explicit OTA: downloads specific URL with verified size and signature. | `FOTA: Downloading 83756 bytes from https://... Verifying signature...` |
 | `INTERVAL <SEC>` | `INTERVAL 5` | Configures the scanning interval in seconds (2 to 300 s). | `INTERVAL: Sampling rate set to 5 seconds.` |
 | `ALERT <PHONE>` | `ALERT +918074638788` | Queries or updates the destination phone number for proactive alerts. | `Alerts recipient updated to: +918074638788` |
-| `HELP` | `HELP` | Returns a list of supported SMS commands. | `Commands: START <LBL>, STOP, STATUS, LIST, UPLOAD <TARGET>, SERVER <URL>, FOTA <URL> <SZ> <SIG>, INTERVAL, ALERT` |
+| `HELP` | `HELP` | Returns a list of supported SMS / MQTT commands. | `Commands: START <LBL>, STOP, STATUS, LIST, UPLOAD <TARGET>, SERVER <URL>, FOTA, INTERVAL, ALERT` |
 
 ---
 
-## 4. Remote SD Card Access & HTTP Receiver Tool
+## 4. Remote MicroSD Access & Cellular HTTP Receiver Tool
 
-A dedicated multi-threaded Python server is included in `tools/http_receiver_server.py`. It serves two purposes:
-1. **HTTP Receiver**: Receives dataset files pushed by the Neoway N706B and saves them to `tools/received_datasets/`.
-2. **FOTA Host**: Serves compiled firmware binaries (`nwy_open_app_fota.pkt`) for over-the-air updates.
+A dedicated multi-threaded Python server is included in `tools/http_receiver_server.py`. It provides two core functions:
+1. **Cellular Dataset Receiver**: Receives dataset files uploaded by the Neoway N706B and stores them in `tools/received_datasets/`.
+2. **Industrial FOTA Host**: Serves compiled firmware binaries (`nwy_open_app_fota.pkt`) with live ECDSA signing, RFC 7233 range clamping, 100ms flow pacing, and a 20s post-stream hold period.
 
-### Running the Receiver:
+### Launching the Server (with Zero-Drop Cloudflare Tunnel):
 ```cmd
 python tools/http_receiver_server.py --port 8080
 ```
-The server displays its LAN IP and the exact SMS command to configure the device:
+The server automatically launches a Cloudflare Quick Tunnel and outputs the public endpoint:
 ```
-SERVER http://<YOUR_IP>:8080/upload
+[+] Tunnel online (Cloudflare Quick Tunnel (HTTPS))! Public endpoint: https://<subdomain>.trycloudflare.com/upload
+```
+
+Configure the board via SMS, COM8 serial, or MQTT terminal:
+```
+SERVER https://<subdomain>.trycloudflare.com/upload
 ```
 
 ---
 
-## 5. Secure FOTA (Firmware Over-The-Air) Updating
+## 5. Secure Cellular FOTA (Firmware Over-The-Air) Updating
 
-The firmware integrates the standalone **ECDSA secp256r1 + SHA-256** crypto engine (`src/crypto/`) ported from `Code/FOTA_Test`.
+The firmware integrates the standalone **ECDSA secp256r1 + SHA-256** crypto engine (`src/crypto/`) utilizing lightweight Micro-ECC (`uECC`), replacing heavy mbedTLS and ensuring binary size stays within the 86 KB wear-leveled NOR flash partition.
 
-### Step-by-Step OTA Workflow:
-1. Recompile firmware: `build_TinyML_Chemical_Classifier.bat`.
-2. Run the automated signer:
+### Zero-Touch FOTA Workflow:
+1. Recompile and sign firmware:
    ```cmd
-   python tools/fota_signer.py
+   build_TinyML_Chemical_Classifier.bat && python tools/fota_signer.py
    ```
-3. The script signs `release/nwy_open_app_fota.pkt` with `tools/fota_private_key.pem` and displays the exact ready-to-send SMS command:
+2. Start the cellular receiver server:
+   ```cmd
+   python tools/http_receiver_server.py --port 8080
    ```
-   FOTA http://<YOUR_IP>:8080/nwy_open_app_fota.pkt 124422 30440220...
+3. Set the endpoint on the board:
    ```
-4. Send this SMS to the device handset. The device will:
-   - Connect to the HTTP server over LTE data.
-   - Download chunks, compute on-the-fly SHA-256, and write directly into FOTA partition.
-   - Cryptographically verify the ECDSA signature against the baked-in raw public key.
-   - Send confirmation SMS to operator: `"FOTA SUCCESS: 124422 bytes verified! Rebooting into new firmware..."`
-   - Reboot and apply the update via bootloader!
+   SERVER https://<subdomain>.trycloudflare.com/upload
+   ```
+4. Send the simple trigger command (via SMS, COM8, or MQTT):
+   ```
+   FOTA
+   ```
+5. The device executes:
+   - Derives the binary URL `/nwy_open_app_fota.pkt` and requests it over native HTTPS/TLS.
+   - Extracts `X-FOTA-Size`, `X-FOTA-SHA256`, and `X-FOTA-Signature` from HTTP headers to ensure ground-truth synchronization.
+   - Streams all chunks directly to NOR flash via `nwy_fota_write()`.
+   - Proactively closes connection cleanly at 100% and executes `uECC_verify()`.
+   - On signature authentication (`uECC_verify result: 1`), calls `nwy_fota_update(1)` and reboots into the updated firmware.
+
+---
+
+## 6. Dual-Channel MQTT Command Terminal
+
+In addition to SMS and serial console, the device provides real-time dual-channel command and control over cloud MQTT:
+- **Broker**: `mqtt.fervidlabs.in:1883`
+- **Device Publish / Telemetry Topic**: `sensor/input/N706B/BM688`
+- **Device Subscribe / Command Topic**: `sensor/output/N706B/BM688`
+
+Run the interactive terminal:
+```cmd
+python tools/mqtt_remote_terminal.py
+```
+Send commands (`STATUS`, `START <LABEL>`, `STOP`, `LIST`, `UPLOAD ALL`, `FOTA`) and receive real-time device logs and alerts.
 
 ---
 
