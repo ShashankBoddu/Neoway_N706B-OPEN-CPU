@@ -6,13 +6,13 @@
 | **Project Name** | Neoway N706B LTE Cat.1 OpenCPU Embedded Platform |
 | **Document Type** | Industrial Developer Log & System Technical Specification |
 | **Standard Reference** | IEEE 1016 / ISO/IEC/IEEE 26514 / 3GPP Rel-13 TS 24.008 |
-| **Document Revision** | `v2.6.0` |
-| **Last Updated** | `2026-11-17` |
+| **Document Revision** | `v2.7.0` |
+| **Last Updated** | `2026-11-25` |
 | **Classification** | Engineering Technical Documentation |
 | **Target Hardware** | Neoway N706B-CN (ASR1605S Cortex-R5 @ 614 MHz, 4 MB QSPI NOR Flash) |
 | **Carrier Board** | `ELEKTRONIKA_N706B_prototype` (Custom PCB Rev 1.0) & Neoway Mini EVB V1.0 |
 | **Firmware Subsystem** | OpenCPU Application Firmware (`nwy_open_app.bin`), Flash Offset `0x3A2000` |
-| **Active Subsystems** | GNSS Location Engine (CC1161W), Puya P24C128D I2C EEPROM, SD Card FatFs SPI, PMU Deep Sleep, 3GPP Rel-13 eDRX & SMS Paging Wakeup Engine, LTE Cat.1 Baseband, MQTT Telemetry, RS-485 (`URT2`), Modbus RTU Hydrostatic Sensor, SmartElex BME688 AI Gas Scanner (Bosch MEMS 4-in-1, HP-354 Multi-Heater Profile), TinyML Specimen Collection & Classification Engine, Bidirectional 3GPP SMS Remote Control |
+| **Active Subsystems** | GNSS Location Engine (CC1161W), Puya P24C128D I2C EEPROM, SD Card FatFs SPI, PMU Deep Sleep, 3GPP Rel-13 eDRX & SMS Paging Wakeup Engine, LTE Cat.1 Baseband, Dual-Channel MQTT Telemetry & Command Dispatcher (`sensor/input/N706B/BM688`, `sensor/output/N706B/BM688`), RS-485 (`URT2`), Modbus RTU Hydrostatic Sensor, SmartElex BME688 AI Gas Scanner (Bosch MEMS 4-in-1, HP-354 Multi-Heater Profile), TinyML Specimen Collection & Classification Engine, Bidirectional 3GPP SMS Remote Control, Remote MicroSD HTTP Cellular Dataset Uploader, Secure Over-The-Air (FOTA) Cellular Firmware Update Engine (ECDSA secp256r1 + SHA-256) |
 | **SDK & Toolchain** | Neoway OpenCPU SDK (`N706B-A07-STD-OE_CN1X_ITRI-009_SDK`), GNU Arm Toolchain 10.3.1, CMake, Ninja |
 | **Flashing System** | Aboot Package Pipeline (`arelease.exe` -> `nwy_open_app.zip`), SWDownloader |
 | **Power Instrumentation**| Nordic Power Profiler Kit 2 (PPK2, Source Meter Mode @ 3.60 V - 3.80 V) |
@@ -162,7 +162,11 @@ The development environment in `E:\projects\DevelopmentLevelCode\Neoway_N706B\Co
 * **`Code/Network_Mqtt_Rs485_DeepSleep`**: Integrated Production IoT Edge Engine. Features sequential half-duplex RS-485 transceiver sampling on MAIN UART (`URT2`), Modbus RTU hydrostatic level sensor queries, LTE Cat.1 network attachment & packet data call (CID 1), structured JSON telemetry publishing over MQTT (`mqtt.fervidlabs.in:1883`), clean multi-stage teardown, and low-power deep sleep (568.69 uA) with automatic RTC wakeup.
 * **`Code/GNSS_Location`**: Industrial Multi-Constellation Satellite Positioning Subsystem (GPS, BDS, GLONASS, Galileo) utilizing onboard CC1161W, 30-sample inverse-variance weighted precision filter (16.44m verified accuracy), 50-meter EEPROM wear-leveling threshold, and active antenna bias-T power delivery.
 * **`Code/eDRX_Power_Benchmark`**: 3GPP Rel-13 Extended Discontinuous Reception (eDRX) power benchmark application. Features Indian MNO APN auto-detection, real-time incoming SMS paging wakeup engine, Indian DoT 13-digit M2M numbering and ToA `0x91` sanitization, zero-poll FreeRTOS binary semaphore synchronization, and AP bus clock gating.
-* **`Code/TinyML_Chemical_Classifier`**: Edge AI Gas Classification and Specimen Data Collection Engine on Neoway N706B OpenCPU using the SmartElex BME688 sensor (Bosch MEMS 4-in-1 gas scanner on level-shifted I2C1) and MicroSD SPI FatFs datalogger. Controlled remotely in real time via bidirectional 3GPP SMS text commands (`START <LABEL>`, `STOP`, `STATUS`, `INTERVAL <SEC>`, `HELP`). Features 10-step sequential heating scan (HP-354 profile, 200°C–400°C), per-sample FAT32 sync flushing, zero-poll FreeRTOS semaphore wakeup, and PC-side Python training / C header generation pipeline (`train_classifier.py`).
+* **`Code/TinyML_Chemical_Classifier`**: Edge AI Gas Classification, Multi-Specimen Data Collection, Remote MicroSD Telemetry, and Secure Cellular FOTA Engine on Neoway N706B OpenCPU using the SmartElex BME688 sensor (Bosch MEMS 4-in-1 gas scanner on level-shifted I2C1) and MicroSD SPI FatFs datalogger.
+  - **Sensory & AI Core**: 10-step sequential heating scan (HP-354 profile, 200°C–400°C, 140ms per cycle), per-sample FAT32 sync flushing, dual BME AI-Studio export formats (`.csv` and `.bmerawdata` / `.bmelabelinfo`), zero-poll FreeRTOS semaphore wakeup.
+  - **Dual-Channel Remote Control**: Fully synchronized 3GPP SMS text commands and cloud MQTT broker (`mqtt.fervidlabs.in:1883`, publishing on `sensor/input/N706B/BM688`, subscribing on `sensor/output/N706B/BM688`) supporting unified remote commands (`START <LABEL>`, `STOP`, `STATUS`, `INTERVAL <SEC>`, `LIST`, `UPLOAD <FILE>`, `UPLOAD ALL`, `SERVER <URL>`, `FOTA`).
+  - **Remote MicroSD Cellular Uploader**: Non-blocking asynchronous worker thread streaming raw datasets from MicroSD over cellular 4G LTE to a local dual-stack HTTP server (`http_receiver_server.py`) exposed via Cloudflare Quick Tunnel / Pinggy TCP tunnels.
+  - **Cryptographically Secure Cellular FOTA Engine**: Zero-cable Over-The-Air firmware upgrade engine over 4G LTE. Implements pure HTTP/1.1 streaming with 100ms flow pacing, direct wear-leveled NOR flash programming (`nwy_fota_write`), ECDSA secp256r1 signature verification using Micro-ECC (`uECC`), SHA-256 validation, authoritative `X-FOTA-*` header synchronization, and bootloader update triggering (`nwy_fota_update`). Verified and validated with zero data drops and automatic reboots.
 
 ---
 

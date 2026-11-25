@@ -217,8 +217,21 @@ static void fota_http_result_cb(nwy_http_result_t *result) {
                     LOGI("HTTP headers stripped (%u B)", (unsigned int)header_len);
                     g_http_headers_parsed = true;
 
-                    // Auto-extract Content-Length if expected_size was 0
-                    if (g_expected_size == 0) {
+                    // Extract exact package size from X-FOTA-Size or Content-Length (authoritative server ground truth)
+                    char *xsz = strstr((char *)payload, "X-FOTA-Size:");
+                    if (!xsz) xsz = strstr((char *)payload, "x-fota-size:");
+                    if (xsz) {
+                        xsz += 12;
+                        while (*xsz == ' ' || *xsz == '\t') xsz++;
+                        uint32_t srv_sz = (uint32_t)strtoul(xsz, NULL, 10);
+                        if (srv_sz > 0) {
+                            if (g_expected_size != srv_sz) {
+                                LOGI("Synchronized expected size to server X-FOTA-Size: %lu -> %lu B",
+                                     (unsigned long)g_expected_size, (unsigned long)srv_sz);
+                                g_expected_size = srv_sz;
+                            }
+                        }
+                    } else if (g_expected_size == 0) {
                         char *cl = strstr((char *)payload, "Content-Length:");
                         if (!cl) cl = strstr((char *)payload, "content-length:");
                         if (cl) {
@@ -227,36 +240,32 @@ static void fota_http_result_cb(nwy_http_result_t *result) {
                         }
                     }
 
-                    // Auto-extract ECDSA Signature from HTTP header if not set
-                    if (g_expected_signature_hex[0] == '\0') {
-                        char *sig = strstr((char *)payload, "X-FOTA-Signature:");
-                        if (!sig) sig = strstr((char *)payload, "x-fota-signature:");
-                        if (sig) {
-                            sig += 17;
-                            while (*sig == ' ' || *sig == '\t') sig++;
-                            char *eol = strpbrk(sig, "\r\n");
-                            int slen = eol ? (int)(eol - sig) : (int)strlen(sig);
-                            if (slen >= (int)sizeof(g_expected_signature_hex)) slen = sizeof(g_expected_signature_hex) - 1;
-                            strncpy(g_expected_signature_hex, sig, slen);
-                            g_expected_signature_hex[slen] = '\0';
-                            LOGI("Auto-detected signature from HTTP header");
-                        }
+                    // Auto-extract ECDSA Signature from HTTP header (authoritative server ground truth)
+                    char *sig = strstr((char *)payload, "X-FOTA-Signature:");
+                    if (!sig) sig = strstr((char *)payload, "x-fota-signature:");
+                    if (sig) {
+                        sig += 17;
+                        while (*sig == ' ' || *sig == '\t') sig++;
+                        char *eol = strpbrk(sig, "\r\n");
+                        int slen = eol ? (int)(eol - sig) : (int)strlen(sig);
+                        if (slen >= (int)sizeof(g_expected_signature_hex)) slen = sizeof(g_expected_signature_hex) - 1;
+                        strncpy(g_expected_signature_hex, sig, slen);
+                        g_expected_signature_hex[slen] = '\0';
+                        LOGI("Synchronized signature from HTTP header: %.32s...", g_expected_signature_hex);
                     }
 
-                    // Auto-extract SHA-256 from HTTP header if not set
-                    if (g_expected_sha256_hex[0] == '\0') {
-                        char *hsh = strstr((char *)payload, "X-FOTA-SHA256:");
-                        if (!hsh) hsh = strstr((char *)payload, "x-fota-sha256:");
-                        if (hsh) {
-                            hsh += 14;
-                            while (*hsh == ' ' || *hsh == '\t') hsh++;
-                            char *eol = strpbrk(hsh, "\r\n");
-                            int hlen = eol ? (int)(eol - hsh) : (int)strlen(hsh);
-                            if (hlen >= (int)sizeof(g_expected_sha256_hex)) hlen = sizeof(g_expected_sha256_hex) - 1;
-                            strncpy(g_expected_sha256_hex, hsh, hlen);
-                            g_expected_sha256_hex[hlen] = '\0';
-                            LOGI("Auto-detected SHA-256: %.16s...", g_expected_sha256_hex);
-                        }
+                    // Auto-extract SHA-256 from HTTP header (authoritative server ground truth)
+                    char *hsh = strstr((char *)payload, "X-FOTA-SHA256:");
+                    if (!hsh) hsh = strstr((char *)payload, "x-fota-sha256:");
+                    if (hsh) {
+                        hsh += 14;
+                        while (*hsh == ' ' || *hsh == '\t') hsh++;
+                        char *eol = strpbrk(hsh, "\r\n");
+                        int hlen = eol ? (int)(eol - hsh) : (int)strlen(hsh);
+                        if (hlen >= (int)sizeof(g_expected_sha256_hex)) hlen = sizeof(g_expected_sha256_hex) - 1;
+                        strncpy(g_expected_sha256_hex, hsh, hlen);
+                        g_expected_sha256_hex[hlen] = '\0';
+                        LOGI("Synchronized SHA-256 from HTTP header: %.16s...", g_expected_sha256_hex);
                     }
 
                     payload = (uint8_t *)header_end;

@@ -41,18 +41,35 @@ ACTIVE_TUNNEL_URL = None
 
 def get_fota_signature(pkt_path):
     """Retrieve or dynamically compute the ECDSA secp256r1 signature for a .pkt file."""
+    if not os.path.exists(pkt_path):
+        return None, None
+
+    file_size = os.path.getsize(pkt_path)
+    h = hashlib.sha256()
+    with open(pkt_path, "rb") as f:
+        while True:
+            c = f.read(16384)
+            if not c:
+                break
+            h.update(c)
+    hash_raw = h.digest()
+    hash_hex = h.hexdigest()
+
     meta_path = os.path.join(SCRIPT_DIR, "fota_metadata.json")
     if os.path.exists(meta_path):
         try:
             with open(meta_path, "r") as f:
                 data = json.load(f)
-                if data.get("filename") == os.path.basename(pkt_path):
-                    return data.get("signature"), data.get("sha256")
+                if (data.get("filename") == os.path.basename(pkt_path) and
+                    data.get("size") == file_size and
+                    data.get("sha256") == hash_hex and
+                    data.get("signature")):
+                    return data.get("signature"), hash_hex
         except Exception:
             pass
 
     key_path = os.path.join(SCRIPT_DIR, "fota_private_key.pem")
-    if os.path.exists(key_path) and os.path.exists(pkt_path):
+    if os.path.exists(key_path):
         try:
             from cryptography.hazmat.primitives import hashes, serialization
             from cryptography.hazmat.primitives.asymmetric import ec, utils
@@ -60,17 +77,21 @@ def get_fota_signature(pkt_path):
             with open(key_path, "rb") as f:
                 priv_key = serialization.load_pem_private_key(f.read(), password=None)
 
-            h = hashlib.sha256()
-            with open(pkt_path, "rb") as f:
-                while True:
-                    c = f.read(16384)
-                    if not c:
-                        break
-                    h.update(c)
-            hash_raw = h.digest()
-            hash_hex = h.hexdigest()
             sig = priv_key.sign(hash_raw, ec.ECDSA(utils.Prehashed(hashes.SHA256())))
-            return binascii.hexlify(sig).decode(), hash_hex
+            sig_hex = binascii.hexlify(sig).decode()
+
+            try:
+                with open(meta_path, "w") as f:
+                    json.dump({
+                        "filename": os.path.basename(pkt_path),
+                        "size": file_size,
+                        "sha256": hash_hex,
+                        "signature": sig_hex
+                    }, f, indent=2)
+            except Exception:
+                pass
+
+            return sig_hex, hash_hex
         except Exception as e:
             print(f"[!] Warning: Failed to dynamically sign {pkt_path}: {e}")
 
@@ -479,6 +500,16 @@ class N706BHTTPHandler(BaseHTTPRequestHandler):
                 end_byte = file_size - 1
                 is_range = False
 
+        # Strictly clamp range to file boundary
+        if is_range:
+            if start_byte >= file_size:
+                self.send_response(416)
+                self.send_header("Content-Range", f"bytes */{file_size}")
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return
+            end_byte = min(end_byte, file_size - 1)
+
         bytes_to_send = (end_byte - start_byte) + 1
 
         if is_range:
@@ -518,7 +549,7 @@ class N706BHTTPHandler(BaseHTTPRequestHandler):
 
         # Industrial Standard Chunked Streaming: Max 1 KB (1024 bytes) per chunk
         chunk_size = getattr(self.server, "chunk_size", 1024)
-        chunk_delay = getattr(self.server, "chunk_delay", 0.035)
+        chunk_delay = getattr(self.server, "chunk_delay", 0.100)
         total_chunks = (bytes_to_send + chunk_size - 1) // chunk_size
         total_sent = 0
         chunk_num = 0
@@ -558,7 +589,7 @@ class N706BHTTPHandler(BaseHTTPRequestHandler):
         # Post-transfer completion & grace period:
         # All bytes have been delivered into the tunnel. Keep the connection open so the cellular module
         # can finish reading and flashing all bytes across the 4G LTE link.
-        if total_sent == bytes_to_send:
+        if total_sent > 0:
             try:
                 self.wfile.flush()
             except Exception:

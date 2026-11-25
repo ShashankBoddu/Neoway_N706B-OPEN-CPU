@@ -100,25 +100,32 @@ def main():
                 print("[*] Exiting...")
                 break
 
-            # Smart FOTA auto-enhancement if fota_metadata.json exists
+            # Smart FOTA auto-enhancement from release package on disk
             if cmd.lower() in ("fota", "ota") or cmd.lower().startswith("fota ") or cmd.lower().startswith("ota "):
+                release_pkt = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "release", "nwy_open_app_fota.pkt")
+                release_pkt = os.path.normpath(release_pkt)
                 meta_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fota_metadata.json")
+                fw_sz = os.path.getsize(release_pkt) if os.path.exists(release_pkt) else None
+                fw_sig = None
+
                 if os.path.exists(meta_file):
                     try:
                         with open(meta_file, "r") as mf:
                             mdata = json.load(mf)
-                        fw_sz = mdata.get("size")
-                        fw_sig = mdata.get("signature")
-                        if fw_sz and fw_sig:
-                            parts = cmd.split(maxsplit=1)
-                            if len(parts) > 1 and parts[1].startswith("http"):
-                                cmd = f"FOTA {parts[1]} {fw_sz} {fw_sig}"
-                                print(f"[*] Auto-appended Size ({fw_sz}B) & Signature to URL")
-                            elif len(parts) == 1:
-                                cmd = f"FOTA {fw_sz} {fw_sig}"
-                                print(f"[*] Auto-appended Size ({fw_sz}B) & Signature (using configured server)")
+                        if fw_sz is None or mdata.get("size") == fw_sz:
+                            fw_sz = mdata.get("size")
+                            fw_sig = mdata.get("signature")
                     except Exception:
                         pass
+
+                if fw_sz and fw_sig:
+                    parts = cmd.split(maxsplit=1)
+                    if len(parts) > 1 and parts[1].startswith("http"):
+                        cmd = f"FOTA {parts[1]} {fw_sz} {fw_sig}"
+                        print(f"[*] Auto-appended verified Size ({fw_sz}B) & Signature to URL")
+                    elif len(parts) == 1:
+                        cmd = f"FOTA {fw_sz} {fw_sig}"
+                        print(f"[*] Auto-appended verified Size ({fw_sz}B) & Signature (using configured server)")
 
             client.publish(TOPIC_PUB_TO_BOARD, cmd)
             print(f"    -> [SENT to {TOPIC_PUB_TO_BOARD}]: \"{cmd}\"")
